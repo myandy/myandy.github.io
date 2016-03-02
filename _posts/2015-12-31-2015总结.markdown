@@ -4,7 +4,7 @@ title:      "2015总结——时光的痕迹"
 subtitle:   "Goodbye 2015"
 date:       2015-12-31 12:00:00
 author:     "安地"
-header-img: "img/post-bg-2015.jpg"
+header-img: "img/post-2015-time.jpg"
 tags:
     - 生活
 ---
