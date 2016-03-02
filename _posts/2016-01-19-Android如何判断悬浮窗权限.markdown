@@ -1,0 +1,136 @@
+---
+layout:     post
+title:      "Welcome to Andy's Blog"
+subtitle:   " \"Boodbye 2015\""
+date:       2016-01-19 12:00:00
+author:     "安地"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - Android
+---
+
+
+
+##Android如何获取判断是否有悬浮窗权限##
+
+
+现在很多应用都会用到悬浮窗，很多国产rom把悬浮窗权限加入控制了，你就需要判断是否有悬浮窗权限，然后做对应操作。
+Android 原生有自带权限管理的，只是被隐藏了。看android源码在android.app下就有个AppOpsManager类。
+类说明如下：
+
+```
+/**
+ * API for interacting with "application operation" tracking.
+ *
+ * <p>This API is not generally intended for third party application developers; most
+ * features are only available to system applications.  Obtain an instance of it through
+ * {@link Context#getSystemService(String) Context.getSystemService} with
+ * {@link Context#APP_OPS_SERVICE Context.APP_OPS_SERVICE}.</p>
+ */
+```
+上面说明了只对系统应用有用，rom厂商们应该就是利用这个AppOps机制开放一些权限控制。
+我们要判断是否有权限该如何做呢？就只能通过反射去判断了。
+
+AppOpsManager的checkOp方法，就是检测是否有某项权限的方法有这些返回值，分别是允许，忽略，错误和默认：
+```
+/**
+ * Result from {@link #checkOp}, {@link #noteOp}, {@link #startOp}: the given caller is
+ * allowed to perform the given operation.
+ */
+public static final int MODE_ALLOWED = 0;
+
+/**
+ * Result from {@link #checkOp}, {@link #noteOp}, {@link #startOp}: the given caller is
+ * not allowed to perform the given operation, and this attempt should
+ * <em>silently fail</em> (it should not cause the app to crash).
+ */
+public static final int MODE_IGNORED = 1;
+
+/**
+ * Result from {@link #checkOpNoThrow}, {@link #noteOpNoThrow}, {@link #startOpNoThrow}: the
+ * given caller is not allowed to perform the given operation, and this attempt should
+ * cause it to have a fatal error, typically a {@link SecurityException}.
+ */
+public static final int MODE_ERRORED = 2;
+
+/**
+ * Result from {@link #checkOp}, {@link #noteOp}, {@link #startOp}: the given caller should
+ * use its default security check.  This mode is not normally used; it should only be used
+ * with appop permissions, and callers must explicitly check for it and deal with it.
+ */
+public static final int MODE_DEFAULT = 3;
+```
+只有MODE_ALLOWED才是确定有权限的。
+
+类里面checkOp方法如下，三个参数分别是操作id，uid和包名：
+```
+/**
+ * Do a quick check for whether an application might be able to perform an operation.
+ * This is <em>not</em> a security check; you must use {@link #noteOp(int, int, String)}
+ * or {@link #startOp(int, int, String)} for your actual security checks, which also
+ * ensure that the given uid and package name are consistent.  This function can just be
+ * used for a quick check to see if an operation has been disabled for the application,
+ * as an early reject of some work.  This does not modify the time stamp or other data
+ * about the operation.
+ * @param op The operation to check.  One of the OP_* constants.
+ * @param uid The user id of the application attempting to perform the operation.
+ * @param packageName The name of the application attempting to perform the operation.
+ * @return Returns {@link #MODE_ALLOWED} if the operation is allowed, or
+ * {@link #MODE_IGNORED} if it is not allowed and should be silently ignored (without
+ * causing the app to crash).
+ * @throws SecurityException If the app has been configured to crash on this op.
+ * @hide
+ */
+public int checkOp(int op, int uid, String packageName) {
+    try {
+        int mode = mService.checkOperation(op, uid, packageName);
+        if (mode == MODE_ERRORED) {
+            throw new SecurityException(buildSecurityExceptionMsg(op, uid, packageName));
+        }
+        return mode;
+    } catch (RemoteException e) {
+    }
+    return MODE_IGNORED;
+}
+```
+操作id即op可以在该类中找到静态值定义，android23里面有62种权限，我们需要的是OP_SYSTEM_ALERT_WINDOW=24
+
+知道这些就可以用反射把我们的方法写出了：
+
+```
+
+ /**
+     * 判断 悬浮窗口权限是否打开
+     *
+     * @param context
+     * @return true 允许  false禁止
+     */
+    public static boolean getAppOps(Context context) {
+        try {
+            Object object = context.getSystemService("appops");
+            if (object == null) {
+                return false;
+            }
+            Class localClass = object.getClass();
+            Class[] arrayOfClass = new Class[3];
+            arrayOfClass[0] = Integer.TYPE;
+            arrayOfClass[1] = Integer.TYPE;
+            arrayOfClass[2] = String.class;
+            Method method = localClass.getMethod("checkOp", arrayOfClass);
+            if (method == null) {
+                return false;
+            }
+            Object[] arrayOfObject1 = new Object[3];
+            arrayOfObject1[0] = Integer.valueOf(24);
+            arrayOfObject1[1] = Integer.valueOf(Binder.getCallingUid());
+            arrayOfObject1[2] = context.getPackageName();
+            int m = ((Integer) method.invoke(object, arrayOfObject1)).intValue();
+            return m == AppOpsManager.MODE_ALLOWED;
+        } catch (Exception ex) {
+
+        }
+        return false;
+    }
+```
+
+测试在魅族华为小米大部分机型上都是可以的，但这个方法也不能保证正确，一些机型上会返回错误即MODE_ERRORED(经提醒是在Api19前会取不到)，就是获取不到权限值，这个方法就返回了false，但实际上悬浮窗是可以使用的。
