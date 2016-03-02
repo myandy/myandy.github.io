@@ -44,7 +44,7 @@ kramdown:
 # Duoshuo settings
 duoshuo_username: huxblog
 # Share component is depend on Comment so we can NOT use share only.
-duoshuo_share: true                     # set to false if you want to use Comment without Sharing
+duoshuo_share: false                     # set to false if you want to use Comment without Sharing
 
 
 
@@ -60,7 +60,7 @@ ga_domain: huangxuan.me
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "写写代码，写写文章，看看风景，一直在路上。"
+sidebar-about-description: "敲敲代码，写写文章，看看风景，一直在路上。"
 sidebar-avatar: /img/avatar-andy2.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
