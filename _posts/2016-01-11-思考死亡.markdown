@@ -1,9 +1,7 @@
-
 ---
 layout:     post
 title:      "思考死亡"
-subtitle:   " \"
-人固有一死，死并不可怕，可怕的是死后即被遗忘，与草木同朽，仿佛没有存在过。\""
+subtitle:   "人固有一死，死并不可怕，可怕的是死后即被遗忘，与草木同朽，仿佛没有存在过。"
 date:       2016-01-11 12:00:00
 author:     "安地"
 header-img: "img/dead_classmate.jpg"
