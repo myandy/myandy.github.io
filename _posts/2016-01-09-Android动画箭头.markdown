@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "带动画的自定义view——做一个移动的箭头"
-subtitle:   " \"Android 帧动画 自定义View刷新动画\""
+subtitle:   " Android 帧动画 自定义View刷新动画"
 date:       2016-01-09 12:00:00
 author:     "安地"
 header-img: "img/post-bg-2015.jpg"
@@ -9,7 +9,11 @@ tags:
     - Android
 --- 
 
+##需求
+
  有一个需求是做一个移动的箭头，循环往复向上移动的效果。
+
+ ##帧动画实现
 一开始想到帧动画，让设计切好图，定好时间就ok了。代码很简单：
 ```    	
     image.setImageResource(R.drawable.animal_totop);
@@ -56,6 +60,8 @@ tags:
 ```
 
 五张图片，每张展示200ms，然后空白2000ms，设置oneShot为false，就是会循环不停的播放。
+
+##自定义View实现
 
 发现效果有点差，5帧的动画，当然啦。就想可以自定义View，让其移动并设置透明度，移动就是在onDraw时绘制不同的位置即可了。
 

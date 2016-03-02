@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "Android如何判断是否有悬浮窗权限"
-subtitle:   " \"Android源码阅读 反射使用\""
+subtitle:   "Android源码阅读 反射使用"
 date:       2016-01-19 12:00:00
 author:     "安地"
 header-img: "img/post-bg-2015.jpg"
@@ -11,7 +11,7 @@ tags:
 
 
 
-##Android如何获取判断是否有悬浮窗权限##
+##正文
 
 
 现在很多应用都会用到悬浮窗，很多国产rom把悬浮窗权限加入控制了，你就需要判断是否有悬浮窗权限，然后做对应操作。
