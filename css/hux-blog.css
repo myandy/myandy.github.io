@@ -372,7 +372,7 @@ pre code {
   }
 }
 .intro-header {
-  background: no-repeat center bottom;
+  background: no-repeat bottom center;
   background-color: #808080;
   background-attachment: scroll;
   -webkit-background-size: cover;
