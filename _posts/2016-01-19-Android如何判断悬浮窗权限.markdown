@@ -18,8 +18,7 @@ tags:
 Android 原生有自带权限管理的，只是被隐藏了。看android源码在android.app下就有个AppOpsManager类。
 类说明如下：
 
-```
-   /**
+   	/**
      * API for interacting with "application operation" tracking.
      *
      * <p>This API is not generally intended for third party application developers; most
@@ -27,15 +26,14 @@ Android 原生有自带权限管理的，只是被隐藏了。看android源码�
      * {@link Context#getSystemService(String) Context.getSystemService} with
      * {@link Context#APP_OPS_SERVICE Context.APP_OPS_SERVICE}.</p>
      */
-```
+
  
 
 上面说明了只对系统应用有用，rom厂商们应该就是利用这个AppOps机制开放一些权限控制。
 我们要判断是否有权限该如何做呢？就只能通过反射去判断了。
 
 AppOpsManager的checkOp方法，就是检测是否有某项权限的方法有这些返回值，分别是允许，忽略，错误和默认：
-
-```    
+   
         /**
         * Result from {@link #checkOp}, {@link #noteOp}, {@link #startOp}: the given caller is
         * allowed to perform the given operation.
@@ -62,7 +60,7 @@ AppOpsManager的checkOp方法，就是检测是否有某项权限的方法有这
         * with appop permissions, and callers must explicitly check for it and deal with it.
         */
        public static final int MODE_DEFAULT = 3;
-```
+
 
 
 只有MODE_ALLOWED才是确定有权限的。
@@ -70,7 +68,7 @@ AppOpsManager的checkOp方法，就是检测是否有某项权限的方法有这
 类里面checkOp方法如下，三个参数分别是操作id，uid和包名：
 
 
-```
+
         /**
         * Do a quick check for whether an application might be able to perform an operation.
         * This is <em>not</em> a security check; you must use {@link #noteOp(int, int, String)}
@@ -99,14 +97,13 @@ AppOpsManager的checkOp方法，就是检测是否有某项权限的方法有这
            }
            return MODE_IGNORED;
        }
-```
+
 操作id即op可以在该类中找到静态值定义，android23里面有62种权限，我们需要的是OP_SYSTEM_ALERT_WINDOW=24
 
 知道这些就可以用反射把我们的方法写出了：
 
-```
 
- /**
+ 	/**
      * 判断 悬浮窗口权限是否打开
      *
      * @param context
@@ -138,6 +135,6 @@ AppOpsManager的checkOp方法，就是检测是否有某项权限的方法有这
         }
         return false;
     }
-```
+
 
 测试在魅族华为小米大部分机型上都是可以的，但这个方法也不能保证正确，一些机型上会返回错误即MODE_ERRORED(经提醒是在Api19前会取不到)，就是获取不到权限值，这个方法就返回了false，但实际上悬浮窗是可以使用的。

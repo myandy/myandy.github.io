@@ -16,7 +16,7 @@ Android项目一般都是一个project，用到的独立的库的就是一个lib
 虽然原理不是很难，但整个框架还是很多的。先从使用部分分析了，源码可以到我的github去看。里面有实例和框架源码。
 
 ##	解析
-	 public class MainActivity extends Activity {
+	public class MainActivity extends Activity {
         
         @Module(TestModule.MODULE_NAME)
         private TestModule mTestModule;
@@ -44,8 +44,7 @@ Android项目一般都是一个project，用到的独立的库的就是一个lib
 定义一个模块，用ModuleOperator.inject(this)  反射去new 出对象，和注册View是不是很像呢。但这里提前需要 定义好模块的实现类，即ModuleOperator.register(new TestModuleRegister());这一句可以统一写在Application里，在项目发布时写进去就行了。然后就可以直接调用mTestModule的方法了。
 使用清楚了，再看ModuleOperator.inject(this)是如何做的
 
-```
-  	public static void inject(Object o, Class c) {
+	public static void inject(Object o, Class c) {
         Field[] fields = c.getDeclaredFields();
         boolean foundAnnotation = false;
         Field[] arr$ = fields;
@@ -76,13 +75,14 @@ Android项目一般都是一个project，用到的独立的库的就是一个lib
         }
 
     }
-```
+
 
 其实就是通过反射去new出module对象，new的方法实际在这一句里面：
 	IModule module = moduleManager.getModule(moduleName, moduleClass);
 再看register做了什么，怎么把实现类注册到接口模块中。里面是通过下面这个方法去具体实现：
  	moduleManager.addModule(moduleName, defClass, (IModule)c.newInstance());
 再就是moduleManager如何实现addModule和getModule的：
+
     private static final IModuleManager mModuleManager = new ModuleManagerImpl();
     private final HashMap<String, IModule> mBuiltinModules = new LinkedHashMap();
 

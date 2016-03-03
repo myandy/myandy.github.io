@@ -15,14 +15,14 @@ tags:
 
 ## 帧动画实现
 一开始想到帧动画，让设计切好图，定好时间就ok了。代码很简单：
-```    	
+  	
     image.setImageResource(R.drawable.animal_totop);
     AnimationDrawable animationDrawable = (AnimationDrawable) image.getDrawable();
     animationDrawable.start();
-```    
+    
 
 获取到AnimationDrawable，然后start就可以了。动画是这样写的：
-```	
+
 	<?xml version="1.0" encoding="utf-8"?><!--
 	根标签为animation-list，其中oneshot代表着是否只展示一遍，设置为false会不停的循环播放动画
 	根标签下，通过item标签对动画中的每一个图片进行声明
@@ -57,7 +57,7 @@ tags:
     </item>
 
 	</animation-list>
-```
+
 
 五张图片，每张展示200ms，然后空白2000ms，设置oneShot为false，就是会循环不停的播放。
 
