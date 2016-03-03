@@ -65,7 +65,7 @@ sidebar-about-description: "敲敲代码，写写文章，看看风景，一直�
 sidebar-avatar: /img/avatar-andy2.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 sidebar-wexin: /img/avatar-wexin.jpg  #微信公众号
-sidebar-wexin-intro: 我的公众号  #微信公众号介绍
+sidebar-wexin-intro: 我的公众号，非技术内容都在这里  #微信公众号介绍
 
 # Featured Tags
 featured-tags: true                     # whether or not using Feature-Tags
