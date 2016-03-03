@@ -1,0 +1,126 @@
+---
+layout:     post
+title:      "Android模块间解耦"
+subtitle:   "接口化使各个模块间不再依赖"
+date:       2015-09-14 12:00:00
+author:     "安地"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - Android
+---
+
+##	介绍
+Android项目一般都是一个project，用到的独立的库的就是一个library，library用第三方的比较多，有时自己也会建library工程，把一些公用的东西放此工程下，实现一定程度上的分离。对一些较大的项目而言，为了解耦，使各个部分完全独立开发，甚至还有保密的需要，可以把整个项目拆分为多个模块，非主模块都是一个library项目，但这样各个项目间还是会互相依赖怎么办呢?那就要各个项目间依赖接口而不依赖实现。
+
+整个项目有个Interface的library，所有工程都依赖它，每个library都在interface下对应一个module，然后在自己工程里面去实现。
+虽然原理不是很难，但整个框架还是很多的。先从使用部分分析了，源码可以到我的github去看。里面有实例和框架源码。
+
+##	解析
+	 public class MainActivity extends Activity {
+        
+        @Module(TestModule.MODULE_NAME)
+        private TestModule mTestModule;
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            ModuleOperator.register(new TestModuleRegister());
+
+            ModuleOperator.inject(this);
+            setContentView(R.layout.activity_main);
+
+            findViewById(R.id.btn).setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    mTestModule.startModule(MainActivity.this);
+
+                }
+            });
+        }
+    }
+
+
+定义一个模块，用ModuleOperator.inject(this)  反射去new 出对象，和注册View是不是很像呢。但这里提前需要 定义好模块的实现类，即ModuleOperator.register(new TestModuleRegister());这一句可以统一写在Application里，在项目发布时写进去就行了。然后就可以直接调用mTestModule的方法了。
+使用清楚了，再看ModuleOperator.inject(this)是如何做的
+
+```
+  	public static void inject(Object o, Class c) {
+        Field[] fields = c.getDeclaredFields();
+        boolean foundAnnotation = false;
+        Field[] arr$ = fields;
+        int len$ = fields.length;
+
+        for(int i$ = 0; i$ < len$; ++i$) {
+            Field field = arr$[i$];
+            Module fieldAnnotation = (Module)field.getAnnotation(Module.class);
+            if(fieldAnnotation != null) {
+                foundAnnotation = true;
+                Class moduleClass = field.getType();
+                if(IModule.class.isAssignableFrom(moduleClass)) {
+                    String moduleName = fieldAnnotation.value();
+                    IModule module = moduleManager.getModule(moduleName, moduleClass);
+                    field.setAccessible(true);
+
+                    try {
+                        field.set(o, module);
+                    } catch (IllegalAccessException var13) {
+                        var13.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        if(!foundAnnotation) {
+            logError(o.getClass().getSimpleName() + " 请求注入却没有发现要注入的字段．");
+        }
+
+    }
+```
+
+其实就是通过反射去new出module对象，new的方法实际在这一句里面：
+	IModule module = moduleManager.getModule(moduleName, moduleClass);
+再看register做了什么，怎么把实现类注册到接口模块中。里面是通过下面这个方法去具体实现：
+ 	moduleManager.addModule(moduleName, defClass, (IModule)c.newInstance());
+再就是moduleManager如何实现addModule和getModule的：
+    private static final IModuleManager mModuleManager = new ModuleManagerImpl();
+    private final HashMap<String, IModule> mBuiltinModules = new LinkedHashMap();
+
+    public static IModuleManager getModuleManager() {
+        return mModuleManager;
+    }
+
+    private ModuleManagerImpl() {
+    }
+
+    @NonNull
+    public IModule getModule(@NonNull String moduleName, Class<? extends IModule> c) {
+        if(TextUtils.isEmpty(moduleName)) {
+            throw new IllegalArgumentException();
+        } else {
+            String key = this.buildKey(moduleName, c);
+            IModule iModule = (IModule)this.mBuiltinModules.get(key);
+            if(iModule == null) {
+                iModule = this.getEmptyModule(c);
+            }
+
+            return iModule;
+        }
+    }
+
+    public void addModule(String moduleName, Class<? extends IModule> c, IModule module) {
+        if(TextUtils.isEmpty(moduleName)) {
+            throw new IllegalArgumentException();
+        } else {
+            String key = this.buildKey(moduleName, c);
+            this.mBuiltinModules.put(key, module);
+        }
+    }
+看到是通过一个hashMap保存这个关系的，这里有个点，key是由模块名称和class名称组成的，value是IModule对象。
+
+##	总结
+那整个脉路就很清楚了，注册实现类那Manager中用Map保存，用注解去获取模块的实现，从Map中去取。这样就各个模块间完全解耦了。再也不会在项目中出现你等我我等你的事情了。
+
+
+源码地址：<https://github.com/myandy/IModule>
+
