@@ -1,12 +1,12 @@
 ---
 layout:     post
-title:      "Android如何判断是否有悬浮窗权限"
-subtitle:   "Android源码阅读 反射使用"
+title:      "把格子纸里的格子随机染黑白两色，平均每片色斑有多少格子？"
+subtitle:   "知乎上看到的有趣问题"
 date:       2015-07-30 12:00:00
 author:     "安地"
 header-img: "img/post-bg-2015.jpg"
 tags:
-    - 知乎  - java
+    - java
 ---
 
 ## 前因
@@ -70,7 +70,8 @@ at Test.main(Test.java:10)
 ## 源码
 非常简单的代码相信会点的人都能看懂，写得很水，欢迎指教
 
-  	import java.util.Random;
+  	
+	import java.util.Random;
 
     public class Test {
 
