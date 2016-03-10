@@ -1,0 +1,344 @@
+---
+layout:     post
+title:      "Android中的文件锁的实现"
+subtitle:   "异或加解密文件与加密图片的加载方法"
+date:       2016-03-10 12:00:00
+author:     "安地"
+header-img: "img/post-bg-2016.jpg"
+tags:
+    - Android
+---
+
+##  需求
+项目中有个需求是文件加锁，开始需求比较急，同事是通过移动文件实现的，移动到应用的私有缓存目录，这样就只有我们自己可以访问了。但这样有些问题，一是清除缓存后所有文件都没有了，而是每次加锁费时较长。
+
+然后我就想把文件混淆加密，这样文件不动，只有我们自己知道如何改回这些文件。
+
+##  混淆方法
+
+文件全混淆比较费时，是不必要的，就只混淆头尾各1Kb的数据。每个字节的混淆方法是与几个数异或处理，包括一个混淆key。异或操作两次就等于原数据了，所以加密和解密就可以用同一个方法了。
+代码如下：
+
+	/**
+     * 混淆文件
+     *
+     * @param origin 源文件
+     * @param rename 是否自动重新命名
+     */
+    public File encoder(File origin, boolean rename) throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(origin, "rw");
+        final long length = raf.length();
+
+        if (length > FileX.MIN_SIZE) {
+            byte[] buff = new byte[1024];
+            int offset = 0;
+            // 混淆头
+            raf.readFully(buff);
+            for (int i = 0; i < buff.length; i++) {
+                byte o = buff[i];
+                buff[i] = exByte(i, o);
+            }
+
+            raf.seek(offset);
+            raf.write(buff);
+
+            // 混淆尾
+            // may 可以对大于2G的文件有问题。 没有测
+            long tail = length - 1024;
+            offset = (int) tail;
+            raf.seek(tail);
+            raf.readFully(buff);
+
+            for (int i = 0; i < buff.length; i++) {
+                byte o = buff[i];
+                buff[i] = exByte(offset + i, o);
+            }
+
+            raf.seek(tail);
+            raf.write(buff);
+        } else if (length > 0l) {
+            // 小于2K的文件直接全混淆
+            int len = (int) length;
+            byte[] buff = new byte[len];
+            int offset = 0;
+            // 混淆头
+            raf.readFully(buff);
+            for (int i = 0; i < buff.length; i++) {
+                byte o = buff[i];
+                buff[i] = exByte(i, o);
+            }
+
+            raf.seek(offset);
+            raf.write(buff);
+        }
+
+        raf.getFD().sync();
+        raf.close();
+
+        if (rename) {
+            File dest = new File(origin.getAbsolutePath() + FileX.X_EXTENSION);
+            origin.renameTo(dest);
+            return dest;
+        }
+
+        return origin;
+    }
+
+      private byte exByte(int position, byte origin) {
+        position = position + 2;
+        int p = (position * position * position) >> 1;
+        //int f = (p & 0x000000FF) ^ FileX.X_KEY ^ origin;
+        return (byte) (((byte) (p & 0x000000FF)) ^ FileX.X_KEY ^ origin);
+    }
+
+几个常量定义如下：
+
+	public final class FileX {
+
+    /**
+     * 混淆的key
+     */
+    public static final byte X_KEY = 0x73;
+
+    /**
+     * 最小2K的文件
+     */
+    public static final long MIN_SIZE = 2048;
+
+	/**
+     * 加密后的文件后缀
+     */
+    public static final String X_EXTENSION = ".mxloc";
+	}
+
+通过文件后缀判断是否是我们的已加密文件。
+
+## 加密流程
+
+文件加密后被我们重命名在原目录了，这时候要把加密后的文件路径记录在我们的数据库里面，文件再重命名为已点开头，这样自动识别为隐藏文件就不容易被他人访问到了。针对视频和图片还需要让媒体库更新，不然还会看到一个打不开的文件，方法是发送一个更新媒体库的广播，代码如下：
+
+  	Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file));
+    context.sendBroadcast(intent);
+
+解密流程也是一样，重命名回去，解码回去，图片或视频的话还是要更新媒体库使能被看到。
+
+## 加密图片的展示方法
+
+图片被加密后正常是打不开图片的，但我们的保险箱中还需要能看到图片，如果每次都把图片解密到缓存中就太麻烦了。
+我们的图片加载用的Picasso,可以通过RequestHandler重写load方法加载加密图片了。
+自定义的RequestHandler如下：
+ 	/**
+     * 对于FileX的Picasso加载
+     */
+    public class FilexRequestHandler extends RequestHandler {
+
+        public static final String SCHEMA_FILEX = "filexm";
+        private static final int PREFIX_LENGTH = SCHEMA_FILEX.length() + 3; // filexm://
+
+        @Override
+        public boolean canHandleRequest(Request data) {
+            return SCHEMA_FILEX.equals(data.uri.getScheme()) &&
+                    !data.uri.getPathSegments().isEmpty();
+        }
+
+        @Override
+        public Result load(Request request, int networkPolicy) throws IOException {
+            String filepath = request.uri.toString().substring(PREFIX_LENGTH);
+            File file = new File(filepath);
+            InputStream inputStream = new FilexInputStreamV2(new FileInputStream(file), file.length());
+            return new Result(inputStream, DISK);
+        }
+
+    }
+自定义的uri格式为filexm://(file_path),在canHandleRequest判断是否是该格式，在load时通过uri获取到文件路径，然后把文件通过还原流获取到文件流，返回给result。
+
+
+这里关键就是还原流FilexInputStreamV2的实现了，其实和加解密过程一样，头尾读取重新处理，中间不变，代码如下：
+
+		public class FilexInputStreamV2 extends FilterInputStream{
+
+        protected InputStream in;
+
+        private long mTotal;
+        private long mTail;
+        private int mPos = 2;
+
+        /** 当前位置 */
+        private long mReaded = 0;
+        private final boolean mFullX;
+
+        /**
+         * Creates a <code>FilterInputStream</code>
+         * by assigning the  argument <code>in</code>
+         * to the field <code>this.in</code> so as
+         * to remember it for later use.
+         *
+         * @param in the underlying input stream, or <code>null</code> if
+         *           this instance is to be created without an underlying stream.
+         */
+        public FilexInputStreamV2(InputStream in, long length) {
+            super(in);
+            mTotal = length;
+            mFullX = mTotal <= FileX.MIN_SIZE;
+            if (!mFullX){
+                mTail = length - 1024;
+            }
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = in.read();
+            if (b == -1) {
+                return -1;
+            }
+
+            int f;
+            if (!mFullX){
+                if (mReaded < 1024l || (mReaded >= mTail)){
+                    f = readx(b);
+                }else {
+                    f = b;
+                }
+            }else {
+                f = readx(b);
+            }
+
+            mPos ++;
+            mReaded ++;
+            return f;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int readCount = super.read(b, off, len);
+            if (readCount == -1){
+                return readCount;
+            }
+
+            // fixed: 15-10-29 holmes 优化中段数据读取
+
+            if (!mFullX && mReaded >= 1024l && mReaded < (mTail - readCount)){
+                // 中间段数据，都不用解, 直接返回
+                mReaded = mReaded + readCount;
+                mPos = mPos + readCount;
+            }else {
+                // fixed: 15-11-3 holmes 在一定大小的图片里，最后一段数据
+                // off 会大于readcount
+                final int terminal = readCount + off;
+                for (int i = off; i < terminal; i ++){
+                    byte f;
+                    if (!mFullX){
+                        if (mReaded < 1024l || (mReaded >= mTail)){
+                            f = b[i];
+                            f = readxb(f);
+                            b[i] = f;
+                        }
+                    }else {
+                        f = b[i];
+                        f = readxb(f);
+                        b[i] = f;
+                    }
+
+                    mPos ++;
+                    mReaded ++;
+                }
+            }
+
+            // 测试
+            //  System.out.println(hashCode() + "xin read ;r:" + mReaded
+            //  + ",p:" + mPos
+            //  + ", rc:" + readCount
+            //  + ", l:" + len
+            //  + ", off:" + off
+            //  + ", tail:" + mTail
+            //  );
+
+
+            return readCount;
+        }
+
+        @Override
+        public synchronized void mark(int readlimit) {
+            super.mark(readlimit);
+            //System.out.println("xin mark ");
+        }
+
+        @Override
+        public boolean markSupported() {
+            //System.out.println("xin marks ");
+            return false;
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            super.reset();
+            //System.out.println("xin reset ");
+        }
+
+        @Override
+        public long skip(long byteCount) throws IOException {
+            long act = super.skip(byteCount);
+            mReaded = mReaded + act;
+            // FIXME: 15-11-3 可能 有问题
+            mPos = mPos + (int) act;
+            //System.out.println("xin skip " + act);
+            return act;
+        }
+
+
+
+        private int readx(int b){
+            int p = (mPos * mPos * mPos) >> 1;
+            return (p & 0x000000FF) ^ FileX.X_KEY ^ b;
+        }
+
+        private byte readxb(byte origin) {
+            int p = (mPos * mPos * mPos) >> 1;
+            return (byte) (((byte) (p & 0x000000FF)) ^ FileX.X_KEY ^ origin);
+        }
+
+        @Override
+        public int available() throws IOException {
+            if (in != null){
+                return in.available();
+            }
+            return 0;
+        }
+
+    }
+
+
+通过Picasso加载加密图片就很简单了，通过判断后缀绝对加载方式，通过Picasso.Builder设入RequestHandler，从而加载，注意这里的自定义uri格式：
+   
+    if (imagePath.endsWith(FileX.X_EXTENSION)) {
+        Picasso.Builder builder = new Picasso.Builder(context);
+        builder.addRequestHandler(new FilexRequestHandler());
+        builder.build().
+                load(FilexHelper.genFilxLoadUri(file)).
+                resize(width, height).
+                placeholder(R.drawable.pic_load).
+                error(R.drawable.pic_fail).
+                centerCrop().
+                into(holder.mImageView);
+    }
+
+其中生成Uri代码如下，对应前面RequestHandler的解析：
+
+    /**
+     * 获取picasso加载的uri
+     * @param file
+     * @return
+     */
+    public static String genFilxLoadUri(File file) {
+        return "filexm://" + file.getAbsolutePath();
+    }
+## 后记
+
+这个算很麻烦的一个需求了，中间遇到了很多坑。
+
+主要要技术点如下：
+
+1. 异或操作对文件加解密
+2. Android媒体库更新
+3. Picasso中RequstHandler的使用
+4. 使用FilterInputStream过滤流，这里是解密流
