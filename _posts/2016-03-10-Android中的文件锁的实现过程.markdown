@@ -128,7 +128,7 @@ tags:
 我们的图片加载用的Picasso,可以通过RequestHandler重写load方法加载加密图片。
 自定义的RequestHandler如下：
 
- 	/**
+	/**
      * 对于FileX的Picasso加载
      */
     public class FilexRequestHandler extends RequestHandler {
@@ -151,8 +151,8 @@ tags:
         }
 
     }
-自定义的uri格式为filexm://(file_path),在canHandleRequest判断是否是该格式，在load时通过uri获取到文件路径，然后把文件通过还原流获取到文件流，返回给result。
 
+自定义的uri格式为filexm://(file_path),在canHandleRequest判断是否是该格式，在load时通过uri获取到文件路径，然后把文件通过还原流获取到文件流，返回给result。
 
 这里关键就是还原流FilexInputStreamV2的实现了，其实和加解密过程一样，头尾读取重新处理，中间不变，代码如下：
 
