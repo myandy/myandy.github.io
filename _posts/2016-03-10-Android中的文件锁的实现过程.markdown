@@ -116,8 +116,8 @@ tags:
 ## 加密流程
 
 文件加密后被我们重命名在原目录了，这时候要把加密后的文件路径记录在我们的数据库里面，文件再重命名为以点开头，这样自动识别为隐藏文件就不容易被他人访问到了。针对视频和图片还需要让媒体库更新，不然还会看到一个打不开的文件，方法是发送一个更新媒体库的广播，代码如下：
-
-  	Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file));
+  	
+	Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file));
     context.sendBroadcast(intent);
 
 解密流程也是一样，重命名回去，解码回去，图片或视频的话还是要更新媒体库使能被看到。
@@ -127,6 +127,7 @@ tags:
 图片被加密后正常是打不开图片的，但我们的保险箱中还需要能看到图片，如果每次都把图片解密到缓存中就太麻烦了。
 我们的图片加载用的Picasso,可以通过RequestHandler重写load方法加载加密图片。
 自定义的RequestHandler如下：
+
  	/**
      * 对于FileX的Picasso加载
      */
@@ -155,7 +156,8 @@ tags:
 
 这里关键就是还原流FilexInputStreamV2的实现了，其实和加解密过程一样，头尾读取重新处理，中间不变，代码如下：
 
-		public class FilexInputStreamV2 extends FilterInputStream{
+
+	public class FilexInputStreamV2 extends FilterInputStream{
 
         protected InputStream in;
 
@@ -332,9 +334,10 @@ tags:
     public static String genFilxLoadUri(File file) {
         return "filexm://" + file.getAbsolutePath();
     }
+
 ## 后记
 
-这个算很麻烦的一个需求了，中间遇到了很多坑。
+这个算很麻烦的一个需求了，中间遇到了很多坑，包括之前介绍的外置SD卡的问题等，但关键点也就这些了。
 
 主要要技术点如下：
 
