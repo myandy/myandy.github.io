@@ -77,7 +77,7 @@ featured-condition-size: 0              # A tag will be featured if the size of 
 friends: [
     {
         title: "李文涛的博客",
-        http://likebamboo.com/
+        href: "http://likebamboo.com"
     },
     {
         title: "刘睿哲的博客",
