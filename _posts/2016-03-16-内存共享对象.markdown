@@ -1,0 +1,146 @@
+---
+layout:     post
+title:      "Activity间如何传输非序列化对象"
+subtitle:   "通过存储类共享对象"
+date:       2016-03-14 12:00:00
+author:     "安地"
+header-img: "img/post-bg-2016.jpg"
+tags:
+    - Android
+---
+
+## Activity中常用的数据交互方式
+
+1. 通过bundle 优点快速高效，确定不能用于非序列化对象，大点的数据也不适合使用。最常用。
+2. 通过静态数据，优点简单，确定不可靠。不推荐使用。
+3. 通过外部方式转存。如文件，数据库，ContentProvider,Preference等。适合公共数据，不适合临时数据。
+
+## 问题
+
+通过bundle只能传输序列化对象。非序列化对象无法处理。序列化也给对象带来了很多限制，一般都说要谨慎序列化。
+序列化真正特点是适合远程传输，比如不同jvm间的传输还有binder间的传输。
+
+对于应用内较大的数据的可以使用存储类在共享内存对象实现。优点是不用额外处理，只需要简单管理下对象引用就行了，适合临时较大的数据传输。
+
+序列化的步骤为：原对象——>序列化——>反序列化——>目标对象
+
+共享内存对象的步骤为：原对象——>存入对象——>取出对象——>目标对象
+
+## 实现
+
+过程非常简单，通过HashMap保存key和对应对象，对外提供put和get方法用于保存和取出对象。对象取出后则取出引用，否则过一段时间自动去除引用。需要注意的是要设置读写锁。
+
+源码如下：
+
+	public final class DataTransport {
+
+    /** 对象回收时间 */
+    public static final long GC_SCHEDULE = 8000l;
+
+    private static DataTransport sInstance;
+
+    public static DataTransport getInstance() {
+        if (sInstance == null) {
+            sInstance = new DataTransport();
+        }
+        return sInstance;
+    }
+
+    private HashMap<Object, Object> mTransPool;
+    private ReentrantReadWriteLock mLock;
+
+    private Handler mGcHandler;
+    private Gc mGc;
+
+    private DataTransport() {
+        mTransPool = new HashMap<>(16);
+        mLock = new ReentrantReadWriteLock();
+        HandlerThread ht = ThreadUtils.getSingleHandlerThread();
+        mGcHandler = new Handler(ht.getLooper());
+        mGc = new Gc();
+    }
+
+    /**
+     * 添加一个对象
+     * @param key
+     * @param obj
+     */
+    public void put(@NonNull Object key, @NonNull Object obj) {
+        if (obj == null) {
+            return;
+        }
+        delayGc();
+        mLock.writeLock().lock();
+        try {
+            mTransPool.put(key, obj);
+        } finally {
+            mLock.writeLock().unlock();
+        }
+
+    }
+
+    /**
+     * 获取一个对象,
+     * 读取一次后，就会自动被清除
+     * @param target
+     * @return
+     */
+    public Object get(@NonNull Object target) {
+        Object v = null;
+        mLock.readLock().lock();
+        try {
+            v = mTransPool.get(target);
+        } finally {
+            mLock.readLock().unlock();
+        }
+
+        if (v != null) {
+            remove(target);
+        }
+
+        return v;
+    }
+
+    /**
+     * 移除一个对象
+     * @param target
+     */
+    public void remove(Object target) {
+        mLock.writeLock().lock();
+        try {
+            mTransPool.remove(target);
+        } finally {
+            mLock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * 延迟GC
+     */
+    private void delayGc() {
+        mGcHandler.removeCallbacks(mGc);
+        mGcHandler.postDelayed(mGc, GC_SCHEDULE);
+    }
+
+    private class Gc implements Runnable {
+
+        @Override
+        public void run() {
+            mLock.writeLock().lock();
+            try {
+                mTransPool.clear();
+            } finally {
+                mLock.writeLock().unlock();
+            }
+
+        }
+
+    }
+}
+
+使用方法：
+
+存入：
+ DataTransport.getInstance().put("key", object);  
+取出：
+ object =  DataTransport.getInstance().get("key");
