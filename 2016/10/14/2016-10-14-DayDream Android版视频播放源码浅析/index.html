@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="上一篇讲到Android中VR播放方式，最后就用到了DayDream（GVR） Android SDK中的VrVideoView来进行视频播放，现在来简要分析下其源码。">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DayDream Android SDK视频播放源码浅析">
+<meta property="og:url" content="http://anddymao.com/2016/10/14/2016-10-14-DayDream Android版视频播放源码浅析/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="上一篇讲到Android中VR播放方式，最后就用到了DayDream（GVR） Android SDK中的VrVideoView来进行视频播放，现在来简要分析下其源码。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.880Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DayDream Android SDK视频播放源码浅析">
+<meta name="twitter:description" content="上一篇讲到Android中VR播放方式，最后就用到了DayDream（GVR） Android SDK中的VrVideoView来进行视频播放，现在来简要分析下其源码。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2016/10/14/2016-10-14-DayDream Android版视频播放源码浅析/">
+
+
+
+
+
+  <title>DayDream Android SDK视频播放源码浅析 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2016/10/14/2016-10-14-DayDream Android版视频播放源码浅析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">DayDream Android SDK视频播放源码浅析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-14T12:00:00+08:00">
+                2016-10-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  上一篇讲到Android中VR播放方式，最后就用到了DayDream（GVR） Android SDK中的VrVideoView来进行视频播放，现在来简要分析下其源码。
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>上一篇讲到Android中VR播放方式，最后就用到了DayDream（GVR） Android SDK中的VrVideoView来进行视频播放，现在来简要分析下其源码。</p>
+<h3 id="VrVideoView"><a href="#VrVideoView" class="headerlink" title="VrVideoView"></a>VrVideoView</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VrVideoView</span> <span class="keyword">extends</span> <span class="title">VrWidgetView</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = VrVideoView.class.getSimpleName();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> DEBUG = <span class="keyword">false</span>;</span><br><span class="line">    <span class="comment">//内部播放器</span></span><br><span class="line">    <span class="keyword">private</span> VrVideoPlayerInternal videoPlayer;</span><br><span class="line">    <span class="comment">//Vr渲染器</span></span><br><span class="line">    <span class="keyword">private</span> VrVideoRenderer renderer;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">VrVideoView</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, attrs);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">VrVideoView</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">      创建渲染器，先初始化播放器和渲染器，然后把播放器获取到的元数据设入渲染器的球形数据中</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> VrVideoRenderer <span class="title">createRenderer</span><span class="params">(Context context, GLThreadScheduler glThreadScheduler, <span class="keyword">float</span> xMetersPerPixel, <span class="keyword">float</span> yMetersPerPixel, <span class="keyword">int</span> screenRotation)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.videoPlayer = <span class="keyword">new</span> VrVideoPlayerInternal(context);</span><br><span class="line">        <span class="keyword">this</span>.renderer = <span class="keyword">new</span> VrVideoRenderer(<span class="keyword">this</span>.videoPlayer, <span class="keyword">this</span>.getContext(), glThreadScheduler, xMetersPerPixel, yMetersPerPixel, screenRotation);</span><br><span class="line">        <span class="keyword">this</span>.videoPlayer.setVideoTexturesListener(<span class="keyword">new</span> VideoTexturesListener() &#123;</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onVideoTexturesReady</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                VrVideoView.<span class="keyword">this</span>.renderer.setSphericalMetadata(VrVideoView.<span class="keyword">this</span>.videoPlayer.getMetadata());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.renderer;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 下面是一些播放控制，通过播放器去实现</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pauseRendering</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.pauseRendering();</span><br><span class="line">        <span class="keyword">this</span>.pauseVideo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadVideo</span><span class="params">(Uri uri, VrVideoView.Options options)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.videoPlayer.openUri(<span class="keyword">new</span> Uri[]&#123;uri&#125;, options);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadVideoFromAsset</span><span class="params">(String filename, VrVideoView.Options options)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.videoPlayer.openAsset(<span class="keyword">new</span> String[]&#123;filename&#125;, options);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//设置播放监听，在videoPlayer中实现，这个后续会讲</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEventListener</span><span class="params">(VrVideoEventListener eventListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.setEventListener(eventListener);</span><br><span class="line">        <span class="keyword">this</span>.videoPlayer.setEventListener(eventListener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">playVideo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        VrVideoPlayerInternal var1 = <span class="keyword">this</span>.videoPlayer;</span><br><span class="line">        <span class="keyword">synchronized</span>(<span class="keyword">this</span>.videoPlayer) &#123;</span><br><span class="line">            <span class="keyword">this</span>.videoPlayer.getExoPlayer().setPlayWhenReady(<span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pauseVideo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        VrVideoPlayerInternal var1 = <span class="keyword">this</span>.videoPlayer;</span><br><span class="line">        <span class="keyword">synchronized</span>(<span class="keyword">this</span>.videoPlayer) &#123;</span><br><span class="line">            <span class="keyword">this</span>.videoPlayer.getExoPlayer().setPlayWhenReady(<span class="keyword">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">seekTo</span><span class="params">(<span class="keyword">long</span> positionMs)</span> </span>&#123;</span><br><span class="line">        VrVideoPlayerInternal var3 = <span class="keyword">this</span>.videoPlayer;</span><br><span class="line">        <span class="keyword">synchronized</span>(<span class="keyword">this</span>.videoPlayer) &#123;</span><br><span class="line">            <span class="keyword">this</span>.videoPlayer.getExoPlayer().seekTo(positionMs);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getDuration</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        VrVideoPlayerInternal var3 = <span class="keyword">this</span>.videoPlayer;</span><br><span class="line">        <span class="keyword">synchronized</span>(<span class="keyword">this</span>.videoPlayer) &#123;</span><br><span class="line">            <span class="keyword">long</span> duration = <span class="keyword">this</span>.videoPlayer.getExoPlayer().getDuration();</span><br><span class="line">            <span class="keyword">return</span> duration;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getCurrentPosition</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        VrVideoPlayerInternal var3 = <span class="keyword">this</span>.videoPlayer;</span><br><span class="line">        <span class="keyword">synchronized</span>(<span class="keyword">this</span>.videoPlayer) &#123;</span><br><span class="line">            <span class="keyword">long</span> position = <span class="keyword">this</span>.videoPlayer.getExoPlayer().getCurrentPosition();</span><br><span class="line">            <span class="keyword">return</span> position;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//一些设置选项， inputFormat为流格式，inputType为视频格式</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Options</span> </span>&#123;</span><br><span class="line">        <span class="comment">//开始标记</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FORMAT_START_MARKER = <span class="number">0</span>;</span><br><span class="line">        <span class="comment">//默认格式，MP4等</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FORMAT_DEFAULT = <span class="number">1</span>;</span><br><span class="line">        <span class="comment">//HLS (HTTP Live Streaming)直播流</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FORMAT_HLS = <span class="number">2</span>;</span><br><span class="line">        <span class="comment">//结束标记</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FORMAT_END_MARKER = <span class="number">3</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">int</span> inputFormat = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_START_MARKER = <span class="number">0</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//全景</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_MONO = <span class="number">1</span>;</span><br><span class="line">        <span class="comment">//上下立体</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_STEREO_OVER_UNDER = <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TYPE_END_MARKER = <span class="number">3</span>;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">int</span> inputType = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Options</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">validate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            String var10000;</span><br><span class="line">            <span class="keyword">int</span> var1;</span><br><span class="line">            <span class="keyword">if</span>(<span class="keyword">this</span>.inputFormat &lt;= <span class="number">0</span> || <span class="keyword">this</span>.inputFormat &gt;= <span class="number">3</span>) &#123;</span><br><span class="line">                var10000 = VrVideoView.TAG;</span><br><span class="line">                var1 = <span class="keyword">this</span>.inputFormat;</span><br><span class="line">                Log.e(var10000, (<span class="keyword">new</span> StringBuilder(<span class="number">40</span>)).append(<span class="string">"Invalid Options.inputFormat: "</span>).append(var1).toString());</span><br><span class="line">                <span class="keyword">this</span>.inputFormat = <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(<span class="keyword">this</span>.inputType &lt;= <span class="number">0</span> || <span class="keyword">this</span>.inputFormat &gt;= <span class="number">3</span>) &#123;</span><br><span class="line">                var10000 = VrVideoView.TAG;</span><br><span class="line">                var1 = <span class="keyword">this</span>.inputType;</span><br><span class="line">                Log.e(var10000, (<span class="keyword">new</span> StringBuilder(<span class="number">38</span>)).append(<span class="string">"Invalid Options.inputType: "</span>).append(var1).toString());</span><br><span class="line">                <span class="keyword">this</span>.inputType = <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>播放调用非常简单，设置好Options后加载视频然后播放就行了，这里播放会在准备好时播放，所以顺序无所谓。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadOnLineNormalVrVideo</span><span class="params">(String path)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    VrVideoView.Options mOptions = <span class="keyword">new</span> Options();</span><br><span class="line">    mOptions.inputFormat = Options.FORMAT_DEFAULT;</span><br><span class="line">    mOptions.inputType = Options.TYPE_MONO;</span><br><span class="line">    playVideo();</span><br><span class="line">    loadVideo(Uri.parse(path), mOptions);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>VrVideoView还是比较简单的，不过要注意一下周期控制，对播放器做对应操作就行了，看官方demo就很清楚，不再细说了。如果只是使用的话看到这里就够了，下面继续分析播放器。</p>
+<h3 id="播放器VrVideoPlayerInternal"><a href="#播放器VrVideoPlayerInternal" class="headerlink" title="播放器VrVideoPlayerInternal"></a>播放器VrVideoPlayerInternal</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VrVideoPlayerInternal</span> <span class="keyword">implements</span> <span class="title">Listener</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> DEBUG = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAX_NUM_RENDERERS = <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG;</span><br><span class="line">    <span class="keyword">private</span> Context context;</span><br><span class="line">    <span class="keyword">private</span> VrVideoEventListener eventListener;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">boolean</span> isLooping;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> isPreparing;</span><br><span class="line">    <span class="keyword">private</span> SphericalMetadata metadata;</span><br><span class="line">    <span class="comment">//真正的播放器</span></span><br><span class="line">    <span class="keyword">protected</span> ExoPlayer player;</span><br><span class="line">    <span class="comment">//渲染队列</span></span><br><span class="line">    <span class="keyword">private</span> TrackRenderer[] videoRenderers;</span><br><span class="line">    <span class="comment">//纹理队列</span></span><br><span class="line">    <span class="keyword">private</span> VideoTexture[] videoTextures;</span><br><span class="line">    <span class="keyword">private</span> VideoTexturesListener videoTexturesListener;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//视频帧刷新通知器，被调用后post到主线程，由eventListener回调出去，用于刷新视频播放器进度状态</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">NewFrameNotifier</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> Handler mainHandler;</span><br><span class="line"></span><br><span class="line">        NewFrameNotifier() &#123;</span><br><span class="line">            <span class="keyword">this</span>.mainHandler = <span class="keyword">new</span> Handler(Looper.getMainLooper());</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNewFrame</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.mainHandler.post(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (VrVideoPlayerInternal.<span class="keyword">this</span>.eventListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                VrVideoPlayerInternal.<span class="keyword">this</span>.eventListener.onNewFrame();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//视频状态监听器，监听ExoPlayer，又回调给eventListener</span></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">VideoLooperListener</span> <span class="keyword">implements</span> <span class="title">ExoPlayer</span>.<span class="title">Listener</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="title">VideoLooperListener</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPlayerError</span><span class="params">(ExoPlaybackException error)</span> </span>&#123;</span><br><span class="line">            Log.e(TAG, hashCode() + <span class="string">".onPlayerError"</span>, error);</span><br><span class="line">            <span class="keyword">if</span> (VrVideoPlayerInternal.<span class="keyword">this</span>.eventListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                VrVideoPlayerInternal.<span class="keyword">this</span>.eventListener.onLoadError(error.getMessage());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPlayerStateChanged</span><span class="params">(<span class="keyword">boolean</span> playWhenReady, <span class="keyword">int</span> playbackState)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (playbackState == <span class="number">2</span>) &#123;</span><br><span class="line">                VrVideoPlayerInternal.<span class="keyword">this</span>.isPreparing = <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (playbackState == <span class="number">4</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (VrVideoPlayerInternal.<span class="keyword">this</span>.isPreparing &amp;&amp; VrVideoPlayerInternal.<span class="keyword">this</span>.eventListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    VrVideoPlayerInternal.<span class="keyword">this</span>.isPreparing = DEBUG;</span><br><span class="line">                    VrVideoPlayerInternal.<span class="keyword">this</span>.eventListener.onLoadSuccess();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (playWhenReady &amp;&amp; playbackState == <span class="number">5</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (VrVideoPlayerInternal.<span class="keyword">this</span>.eventListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    VrVideoPlayerInternal.<span class="keyword">this</span>.eventListener.onCompletion();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (VrVideoPlayerInternal.<span class="keyword">this</span>.isLooping) &#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (VrVideoPlayerInternal.<span class="keyword">this</span>) &#123;</span><br><span class="line">                        VrVideoPlayerInternal.<span class="keyword">this</span>.player.seekTo(<span class="number">0</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPlayWhenReadyCommitted</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">interface</span> <span class="title">VideoTexturesListener</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">onVideoTexturesReady</span><span class="params">()</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        TAG = VrVideoPlayerInternal.class.getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//新建渲染队列和纹理队列</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">VrVideoPlayerInternal</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.videoRenderers = <span class="keyword">new</span> TrackRenderer[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">this</span>.videoTextures = <span class="keyword">new</span> VideoTexture[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">this</span>.isPreparing = <span class="keyword">false</span>;</span><br><span class="line">        init(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">VrVideoPlayerInternal</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.videoRenderers = <span class="keyword">new</span> TrackRenderer[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">this</span>.videoTextures = <span class="keyword">new</span> VideoTexture[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">this</span>.isPreparing = <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//初始化，工厂模式新建Exo播放器，设入最大渲染数（3）</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(Context context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.context = context;</span><br><span class="line">        <span class="keyword">this</span>.player = Factory.newInstance(MAX_NUM_RENDERERS, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">this</span>.player.addListener(<span class="keyword">new</span> VideoLooperListener());</span><br><span class="line">        <span class="keyword">this</span>.player.setPlayWhenReady(<span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//加载视频到真正的播放器</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadVideoIntoPlayer</span><span class="params">(Uri[] uris, Options options)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//选项没有设置就new一个，有就验证下，确保合法</span></span><br><span class="line">        <span class="keyword">if</span> (options == <span class="keyword">null</span>) &#123;</span><br><span class="line">            options = <span class="keyword">new</span> Options();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            options.validate();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (uris.length &gt; <span class="number">2</span>) &#123;</span><br><span class="line">            Log.e(TAG, <span class="string">"Try to load more streams than we support. Maximum is 2"</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//通过选项选择渲染器创建者</span></span><br><span class="line">        RendererBuilder builder;</span><br><span class="line">        <span class="keyword">if</span> (options.inputFormat == <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (uris.length &gt; <span class="number">1</span>) &#123;</span><br><span class="line">                Log.w(TAG, <span class="string">"Only first Uri will be used with HLS format."</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            builder = <span class="keyword">new</span> HlsRendererBuilder(<span class="keyword">this</span>.context, uris[<span class="number">0</span>]);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            builder = <span class="keyword">new</span> ExtractorRendererBuilder(<span class="keyword">this</span>.context, uris);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//VrVideoPlayerInternal实现了RendererBuilder的listener，把this放入创建RendererBuilder，完成后回调下面的onRenderersReady方法</span></span><br><span class="line">        builder.buildRenderers(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//渲染器准备好的回调</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">onRenderersReady</span><span class="params">(TrackRenderer audioRenderer, TrackRenderer[] videoRenderers)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> i;</span><br><span class="line">        <span class="keyword">this</span>.videoRenderers = <span class="keyword">new</span> TrackRenderer[videoRenderers.length];</span><br><span class="line">        System.arraycopy(videoRenderers, <span class="number">0</span>, <span class="keyword">this</span>.videoRenderers, <span class="number">0</span>, videoRenderers.length);</span><br><span class="line">        TrackRenderer[] allRenderers = <span class="keyword">new</span> TrackRenderer[<span class="number">3</span>];</span><br><span class="line">        allRenderers[<span class="number">0</span>] = audioRenderer;</span><br><span class="line">        System.arraycopy(videoRenderers, <span class="number">0</span>, allRenderers, <span class="number">1</span>, videoRenderers.length);</span><br><span class="line">        <span class="keyword">for</span> (i = videoRenderers.length + <span class="number">1</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">            allRenderers[i] = <span class="keyword">new</span> DummyTrackRenderer();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//准备所有渲染器</span></span><br><span class="line">        <span class="keyword">this</span>.player.prepare(allRenderers);</span><br><span class="line">        <span class="comment">//新建纹理</span></span><br><span class="line">        <span class="keyword">this</span>.videoTextures = <span class="keyword">new</span> VideoTexture[videoRenderers.length];</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; videoRenderers.length; i++) &#123;</span><br><span class="line">            <span class="keyword">this</span>.videoTextures[i] = <span class="keyword">new</span> VideoTexture();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//设置帧刷新通知</span></span><br><span class="line">        <span class="keyword">this</span>.videoTextures[<span class="number">0</span>].setFrameNotifier(<span class="keyword">new</span> NewFrameNotifier());</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.videoTexturesListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.videoTexturesListener.onVideoTexturesReady();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//渲染器准备失败的回调</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onRenderersError</span><span class="params">(String errorMessage)</span> </span>&#123;</span><br><span class="line">        Log.e(TAG, <span class="keyword">new</span> StringBuilder(String.valueOf(errorMessage).length() + <span class="number">29</span>).append(hashCode()).append(<span class="string">".onRenderersError "</span>).append(errorMessage).toString());</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.eventListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.eventListener.onLoadError(errorMessage);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//设置eventListener，在VrVideoView中调用的</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEventListener</span><span class="params">(VrVideoEventListener eventListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.eventListener = eventListener;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//下面两个方法都是打开播放源，最后调用前面的loadVideoIntoPlayer</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">openAsset</span><span class="params">(String[] filenames, Options options)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.metadata = <span class="keyword">new</span> SphericalMetadata();</span><br><span class="line">        <span class="keyword">if</span> (options != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.metadata = createMetadataFromOptions(options);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">this</span>.metadata = parseMetadataFromVideoInputStream(<span class="keyword">this</span>.context.getAssets().open(filenames[<span class="number">0</span>]));</span><br><span class="line">        &#125;</span><br><span class="line">        Uri[] videoUris = <span class="keyword">new</span> Uri[filenames.length];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; filenames.length; i++) &#123;</span><br><span class="line">            String str = <span class="string">"file:///android_asset/"</span>;</span><br><span class="line">            String valueOf = String.valueOf(filenames[i]);</span><br><span class="line">            videoUris[i] = Uri.parse(valueOf.length() != <span class="number">0</span> ? str.concat(valueOf) : <span class="keyword">new</span> String(str));</span><br><span class="line">        &#125;</span><br><span class="line">        loadVideoIntoPlayer(videoUris, options);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">openUri</span><span class="params">(Uri[] uris, Options options)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.metadata = <span class="keyword">new</span> SphericalMetadata();</span><br><span class="line">        <span class="keyword">if</span> (options != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.metadata = createMetadataFromOptions(options);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            String scheme = uris[<span class="number">0</span>].getScheme();</span><br><span class="line">            <span class="keyword">if</span> (scheme == <span class="keyword">null</span> || !scheme.startsWith(<span class="string">"http"</span>)) &#123;</span><br><span class="line">                <span class="keyword">this</span>.metadata = parseMetadataFromVideoInputStream(<span class="keyword">new</span> FileInputStream(uris[<span class="number">0</span>].getPath()));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        loadVideoIntoPlayer(uris, options);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> SphericalMetadata <span class="title">getMetadata</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.metadata;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">byte</span>[] getMetadataBytes() &#123;</span><br><span class="line">        <span class="keyword">return</span> SphericalMetadata.toByteArray(<span class="keyword">this</span>.metadata);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//绑定纹理，在渲染器中调用的</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">int</span>[] bindTexture() &#123;</span><br><span class="line">        <span class="keyword">int</span>[] textureIds;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.videoTextures.length == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"openXXX() should be called successfully first."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        textureIds = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="keyword">this</span>.videoTextures.length];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.videoTextures.length; i++) &#123;</span><br><span class="line">            <span class="comment">//从纹理队列取出一个纹理</span></span><br><span class="line">            VideoTexture videoTexture = <span class="keyword">this</span>.videoTextures[i];</span><br><span class="line">            <span class="comment">//没有初始化就初始化</span></span><br><span class="line">            <span class="keyword">if</span> (!videoTexture.getIsTextureSet()) &#123;</span><br><span class="line">                videoTexture.init();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//播放器刷新纹理，并且进度跳转</span></span><br><span class="line">            <span class="keyword">this</span>.player.sendMessage(<span class="keyword">this</span>.videoRenderers[i], <span class="number">1</span>, <span class="keyword">new</span> Surface(videoTexture.getSurfaceTexture()));</span><br><span class="line">            <span class="keyword">this</span>.player.seekTo(<span class="keyword">this</span>.player.getCurrentPosition() + <span class="number">1</span>);</span><br><span class="line">            <span class="comment">//设置纹理Id</span></span><br><span class="line">            textureIds[i] = videoTexture.getTextureId();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//返回纹理Id列表</span></span><br><span class="line">        <span class="keyword">return</span> textureIds;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//准备帧，也是在渲染器中调用的</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">boolean</span> <span class="title">prepareFrame</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> isReady;</span><br><span class="line">        <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>.videoTextures.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                isReady = <span class="keyword">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                isReady = <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            VideoTexture[] videoTextureArr = <span class="keyword">this</span>.videoTextures;</span><br><span class="line">            <span class="keyword">int</span> length = videoTextureArr.length;</span><br><span class="line">            <span class="keyword">while</span> (i &lt; length) &#123;</span><br><span class="line">                VideoTexture videoTexture = videoTextureArr[i];</span><br><span class="line">                <span class="keyword">if</span> (videoTexture.getIsTextureSet()) &#123;</span><br><span class="line">                    videoTexture.updateTexture();</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    isReady = DEBUG;</span><br><span class="line">                &#125;</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> isReady;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//视图断开后，把渲染器和纹理释放掉</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">onViewDetach</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.videoRenderers.length; i++) &#123;</span><br><span class="line">            <span class="keyword">this</span>.player.blockingSendMessage(<span class="keyword">this</span>.videoRenderers[i], <span class="number">1</span>, <span class="keyword">null</span>);</span><br><span class="line">            <span class="keyword">this</span>.videoTextures[i].release();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//关闭，也要释放纹理列表</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">shutdown</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.player.stop();</span><br><span class="line">        <span class="keyword">this</span>.player.release();</span><br><span class="line">        <span class="keyword">for</span> (VideoTexture videoTexture : <span class="keyword">this</span>.videoTextures) &#123;</span><br><span class="line">            videoTexture.release();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">long</span> <span class="title">getCurrentPositionMs</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.player.getCurrentPosition();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ExoPlayer <span class="title">getExoPlayer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.player;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setVideoTexturesListener</span><span class="params">(VideoTexturesListener videoTexturesListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.videoTexturesListener = videoTexturesListener;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//新建metadata，根据option设置全景还是上下立体</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> SphericalMetadata <span class="title">createMetadataFromOptions</span><span class="params">(Options options)</span> </span>&#123;</span><br><span class="line">        SphericalMetadata metadata = <span class="keyword">new</span> SphericalMetadata();</span><br><span class="line">        <span class="keyword">switch</span> (options.inputType) &#123;</span><br><span class="line">            <span class="keyword">case</span> SphericalMetadata.STEREO_FRAME_LAYOUT_MONO <span class="comment">/*1*/</span>:</span><br><span class="line">                metadata.frameLayoutMode = <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> SphericalMetadata.STEREO_FRAME_LAYOUT_TOP_BOTTOM <span class="comment">/*2*/</span>:</span><br><span class="line">                metadata.frameLayoutMode = <span class="number">2</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Unexpected options.inputType "</span> + options.inputType);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> metadata;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//根据视频流转换出球面metadata，在打开播放源时调用的</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> SphericalMetadata <span class="title">parseMetadataFromVideoInputStream</span><span class="params">(InputStream videoInputStream)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        SphericalMetadata sphericalMetadata = <span class="keyword">new</span> SphericalMetadata();</span><br><span class="line">        sphericalMetadata = SphericalMetadataParser.parse(SphericalMetadataMP4.extract(videoInputStream));</span><br><span class="line">        videoInputStream.close();</span><br><span class="line">        <span class="keyword">return</span> sphericalMetadata;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看完VrVideoPlayerInternal的代码，都很清晰了，打开播放源，管理纹理和渲染，设入真正的播放器ExoPlayer，回调事件监听方法等。再看一下最重要的渲染器。</p>
+<h3 id="渲染器VrVideoRenderer"><a href="#渲染器VrVideoRenderer" class="headerlink" title="渲染器VrVideoRenderer"></a>渲染器VrVideoRenderer</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VrVideoRenderer</span> <span class="keyword">extends</span> <span class="title">VrWidgetRenderer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = VrVideoRenderer.class.getSimpleName();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> DEBUG = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">private</span> VrVideoPlayerInternal player;</span><br><span class="line">    <span class="keyword">private</span> SphericalMetadata metadata;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">float</span> frameRate;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> elapsedFramesSinceMeasurement;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> lastFrameTimeMs;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> VrVideoRenderer.LoadVideoRequest lastVideoRequest;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">VrVideoRenderer</span><span class="params">(VrVideoPlayerInternal player, Context context, GLThreadScheduler glThreadScheduler, <span class="keyword">float</span> xMetersPerPixel, <span class="keyword">float</span> yMetersPerPixel, <span class="keyword">int</span> screenRotation)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(context, glThreadScheduler, xMetersPerPixel, yMetersPerPixel, screenRotation);</span><br><span class="line">        <span class="keyword">this</span>.player = player;</span><br><span class="line">        System.loadLibrary(<span class="string">"pano_video_renderer"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//设置元数据，在GL线程中执行LoadVideoRequest</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSphericalMetadata</span><span class="params">(SphericalMetadata metadata)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.lastVideoRequest = <span class="keyword">new</span> VrVideoRenderer.LoadVideoRequest(metadata);</span><br><span class="line">        <span class="keyword">this</span>.postApiRequestToGlThread(<span class="keyword">this</span>.lastVideoRequest);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//一帧绘制后更新时间</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDrawFrame</span><span class="params">(GL10 gl)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">this</span>.player.prepareFrame()) &#123;</span><br><span class="line">            <span class="keyword">super</span>.onDrawFrame(gl);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">this</span>.lastFrameTimeMs == <span class="number">0L</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.lastFrameTimeMs = SystemClock.elapsedRealtime();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        ++<span class="keyword">this</span>.elapsedFramesSinceMeasurement;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">shutdown</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.player.shutdown();</span><br><span class="line">        <span class="keyword">super</span>.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onViewDetach</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.player.onViewDetach();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSurfaceCreated</span><span class="params">(GL10 gl, EGLConfig config)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onSurfaceCreated(gl, config);</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">this</span>.lastVideoRequest != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">this</span>.executeApiRequestOnGlThread(<span class="keyword">this</span>.lastVideoRequest);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">float</span> <span class="title">getCurrentFramerate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.frameRate;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">nativeCreate</span><span class="params">(ClassLoader var1, Context var2, <span class="keyword">float</span> var3)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeResize</span><span class="params">(<span class="keyword">long</span> var1, <span class="keyword">int</span> var3, <span class="keyword">int</span> var4, <span class="keyword">float</span> var5, <span class="keyword">float</span> var6, <span class="keyword">int</span> var7)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeRenderFrame</span><span class="params">(<span class="keyword">long</span> var1)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeSetStereoMode</span><span class="params">(<span class="keyword">long</span> var1, <span class="keyword">boolean</span> var3)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeDestroy</span><span class="params">(<span class="keyword">long</span> var1)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeOnPause</span><span class="params">(<span class="keyword">long</span> var1)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeOnResume</span><span class="params">(<span class="keyword">long</span> var1)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeOnPanningEvent</span><span class="params">(<span class="keyword">long</span> var1, <span class="keyword">float</span> var3, <span class="keyword">float</span> var4)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeGetHeadRotation</span><span class="params">(<span class="keyword">long</span> var1, <span class="keyword">float</span>[] var3)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeSetSphericalMetadata</span><span class="params">(<span class="keyword">long</span> var1, <span class="keyword">byte</span>[] var3)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">long</span> <span class="title">nativeSetVideoTexture</span><span class="params">(<span class="keyword">long</span> var1, <span class="keyword">int</span>[] var3)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//调用的native方法去获取渲染器，然后调用播放器的bindTexture</span></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">LoadVideoRequest</span> <span class="keyword">implements</span> <span class="title">ApiRequest</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> SphericalMetadata metadata;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">LoadVideoRequest</span><span class="params">(SphericalMetadata metadata)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.metadata = metadata;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            VrVideoRenderer.access$<span class="number">100</span>(VrVideoRenderer.<span class="keyword">this</span>, VrVideoRenderer.<span class="keyword">this</span>.getNativeRenderer(), SphericalMetadata.toByteArray(<span class="keyword">this</span>.metadata));</span><br><span class="line">            VrVideoRenderer.access$<span class="number">400</span>(VrVideoRenderer.<span class="keyword">this</span>, VrVideoRenderer.<span class="keyword">this</span>.getNativeRenderer(), VrVideoRenderer.<span class="keyword">this</span>.player.bindTexture());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>VrVideoRenderer继承了VrWidgetRenderer，VrWidgetRenderer继承了Renderer，里面都比较简单就不说了。VR显示的关键部分就是这里了，可惜关键代码写在native层，没法解析了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>播放视图 VrVideoView -&gt;播放器 VrVideoPlayerInternal -&gt;渲染器 VrVideoRenderer -&gt;渲染器底层实现 pano_video_renderer.so</p>
+<p>差不多一个这样的流程，其中播放器底层由ExoPlayer实现，ExoPlayer是google开源的播放器，介于现有MediaPlayer和自定义媒体播放器之间的。VrVideoView只支持VR播放，可以自己写增加一个普通渲染器支持非VR的播放。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/13/2016-10-13-Android中VR播放方式及实现分析/" rel="next" title="Android中VR播放方式及实现分析">
+                <i class="fa fa-chevron-left"></i> Android中VR播放方式及实现分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/20/2016-10-20-下载进度最流畅单项刷新/" rel="prev" title="下载进度最流畅单项刷新">
+                下载进度最流畅单项刷新 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#分析"><span class="nav-number">1.</span> <span class="nav-text">分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#VrVideoView"><span class="nav-number">1.1.</span> <span class="nav-text">VrVideoView</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#播放器VrVideoPlayerInternal"><span class="nav-number">1.2.</span> <span class="nav-text">播放器VrVideoPlayerInternal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染器VrVideoRenderer"><span class="nav-number">1.3.</span> <span class="nav-text">渲染器VrVideoRenderer</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">2.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

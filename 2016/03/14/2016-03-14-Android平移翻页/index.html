@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="自定义控件及滑动冲突的解决">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android平移翻页">
+<meta property="og:url" content="http://anddymao.com/2016/03/14/2016-03-14-Android平移翻页/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="自定义控件及滑动冲突的解决">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://anddymao.com/img/post-img-3-14.jpg">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.879Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android平移翻页">
+<meta name="twitter:description" content="自定义控件及滑动冲突的解决">
+<meta name="twitter:image" content="http://anddymao.com/img/post-img-3-14.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2016/03/14/2016-03-14-Android平移翻页/">
+
+
+
+
+
+  <title>Android平移翻页 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2016/03/14/2016-03-14-Android平移翻页/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android平移翻页</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-03-14T12:00:00+08:00">
+                2016-03-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  自定义控件及滑动冲突的解决
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="实现效果"><a href="#实现效果" class="headerlink" title="实现效果"></a>实现效果</h2><p>这篇是整理一年前做的一个诗Shi应用里面的一个翻页控件，效果是这样的（简单截了个翻页时的图）：</p>
+<p><img src="/img/post-img-3-14.jpg" alt="Alt text"></p>
+<p>实现的一个向右翻页的一个效果，每一页还能上下滑。</p>
+<h2 id="翻页的实现"><a href="#翻页的实现" class="headerlink" title="翻页的实现"></a>翻页的实现</h2><p>翻页其实只需要三张页面就足够了，分别是当前页，上一页和下一页，每一页都是一个View，用一个自定义布局管理，数据用一个PagerAdapter进行管理。</p>
+<p>设置adapter代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAdapter</span><span class="params">(PagerAdapter adapter, <span class="keyword">int</span> index)</span></span></span><br><span class="line"><span class="function">   </span>&#123;</span><br><span class="line">       removeAllViews();</span><br><span class="line">       <span class="keyword">this</span>.index = index;</span><br><span class="line">       <span class="keyword">this</span>.adapter = adapter;</span><br><span class="line">       prePage = (View) adapter.instantiateItem(<span class="keyword">this</span>, index - <span class="number">1</span>);</span><br><span class="line">       addView(prePage, <span class="number">0</span>, <span class="keyword">new</span> LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));</span><br><span class="line"></span><br><span class="line">       currPage = (View) adapter.instantiateItem(<span class="keyword">this</span>, index);</span><br><span class="line">       addView(currPage, <span class="number">0</span>, <span class="keyword">new</span> LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));</span><br><span class="line"></span><br><span class="line">       nextPage = (View) adapter.instantiateItem(<span class="keyword">this</span>, index + <span class="number">1</span>);</span><br><span class="line">       addView(nextPage, <span class="number">0</span>, <span class="keyword">new</span> LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));</span><br><span class="line"></span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>计算大小和处理view位置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onMeasure</span><span class="params">(<span class="keyword">int</span> widthMeasureSpec, <span class="keyword">int</span> heightMeasureSpec)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">      <span class="keyword">super</span>.onMeasure(widthMeasureSpec, heightMeasureSpec);</span><br><span class="line">      mWidth = getMeasuredWidth();</span><br><span class="line">      mHeight = getMeasuredHeight();</span><br><span class="line">      <span class="keyword">if</span> (isInit)</span><br><span class="line">      &#123;</span><br><span class="line">          <span class="comment">// 初始状态，一页放在左边隐藏起来，两页叠在一块</span></span><br><span class="line">          prePageLeft = mWidth;</span><br><span class="line">          currPageLeft = <span class="number">0</span>;</span><br><span class="line">          nextPageLeft = <span class="number">0</span>;</span><br><span class="line">          isInit = <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onLayout</span><span class="params">(<span class="keyword">boolean</span> changed, <span class="keyword">int</span> l, <span class="keyword">int</span> t, <span class="keyword">int</span> r, <span class="keyword">int</span> b)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (adapter == <span class="keyword">null</span>)</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">      prePage.layout(prePageLeft, <span class="number">0</span>, prePageLeft + prePage.getMeasuredWidth(), prePage.getMeasuredHeight());</span><br><span class="line">      currPage.layout(currPageLeft, <span class="number">0</span>, currPageLeft + currPage.getMeasuredWidth(), currPage.getMeasuredHeight());</span><br><span class="line">      nextPage.layout(nextPageLeft, <span class="number">0</span>, nextPageLeft + nextPage.getMeasuredWidth(), nextPage.getMeasuredHeight());</span><br><span class="line">      invalidate();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>这里都很清晰，按每一页的位置进行绘制，关键是位置如何计算了，在onTouchEvent里面：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTouchEvent</span><span class="params">(MotionEvent event)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (event.getAction() == MotionEvent.ACTION_DOWN &amp;&amp; event.getEdgeFlags() != <span class="number">0</span>)</span><br><span class="line">      &#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (adapter != <span class="keyword">null</span>)</span><br><span class="line">          <span class="keyword">switch</span> (event.getActionMasked())</span><br><span class="line">          &#123;</span><br><span class="line">              <span class="keyword">case</span> MotionEvent.ACTION_DOWN:</span><br><span class="line">                  lastX = event.getX();</span><br><span class="line">                  <span class="keyword">try</span></span><br><span class="line">                  &#123;</span><br><span class="line">                      <span class="keyword">if</span> (vt == <span class="keyword">null</span>)</span><br><span class="line">                      &#123;</span><br><span class="line">                          vt = VelocityTracker.obtain();</span><br><span class="line">                      &#125;</span><br><span class="line">                      <span class="keyword">else</span></span><br><span class="line">                      &#123;</span><br><span class="line">                          vt.clear();</span><br><span class="line">                      &#125;</span><br><span class="line">                  &#125;</span><br><span class="line">                  <span class="keyword">catch</span> (Exception e)</span><br><span class="line">                  &#123;</span><br><span class="line">                      e.printStackTrace();</span><br><span class="line">                  &#125;</span><br><span class="line">                  vt.addMovement(event);</span><br><span class="line">                  mEvents = <span class="number">0</span>;</span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              <span class="keyword">case</span> MotionEvent.ACTION_POINTER_DOWN:</span><br><span class="line">              <span class="keyword">case</span> MotionEvent.ACTION_POINTER_UP:</span><br><span class="line">                  mEvents = -<span class="number">1</span>;</span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              <span class="keyword">case</span> MotionEvent.ACTION_MOVE:</span><br><span class="line">                  <span class="comment">// 取消动画</span></span><br><span class="line">                  quitMove();</span><br><span class="line">                  vt.addMovement(event);</span><br><span class="line">                  vt.computeCurrentVelocity(<span class="number">500</span>);</span><br><span class="line">                  speed = vt.getXVelocity();</span><br><span class="line">                  moveLenght = event.getX() - lastX;</span><br><span class="line">                  <span class="keyword">if</span> ((moveLenght &gt; <span class="number">0</span> || !isPreMoving) &amp;&amp; isCurrMoving &amp;&amp; mEvents == <span class="number">0</span>)</span><br><span class="line">                  &#123;</span><br><span class="line">                      isPreMoving = <span class="keyword">false</span>;</span><br><span class="line">                      isCurrMoving = <span class="keyword">true</span>;</span><br><span class="line">                      <span class="keyword">if</span> (index == adapter.getCount())</span><br><span class="line">                      &#123;</span><br><span class="line">                          <span class="comment">// 最后一页不能再往左翻</span></span><br><span class="line">                          state = STATE_STOP;</span><br><span class="line">                          releaseMoving();</span><br><span class="line">                      &#125;</span><br><span class="line">                      <span class="keyword">else</span></span><br><span class="line">                      &#123;</span><br><span class="line">                          currPageLeft += (<span class="keyword">int</span>) moveLenght;</span><br><span class="line">                          <span class="comment">// 防止滑过边界</span></span><br><span class="line">                          <span class="keyword">if</span> (currPageLeft &gt; mWidth)</span><br><span class="line">                              currPageLeft = mWidth;</span><br><span class="line">                          <span class="keyword">else</span> <span class="keyword">if</span> (currPageLeft &lt; <span class="number">0</span>)</span><br><span class="line">                          &#123;</span><br><span class="line">                              <span class="comment">// 边界判断，释放动作，防止来回滑动导致滑动前一页时当前页无法滑动</span></span><br><span class="line">                              currPageLeft = <span class="number">0</span>;</span><br><span class="line">                              releaseMoving();</span><br><span class="line">                          &#125;</span><br><span class="line"></span><br><span class="line">                          right = mWidth + currPageLeft;</span><br><span class="line">                          state = STATE_MOVE;</span><br><span class="line">                      &#125;</span><br><span class="line">                  &#125;</span><br><span class="line">                  <span class="keyword">else</span> <span class="keyword">if</span> ((moveLenght &lt; <span class="number">0</span> || !isCurrMoving) &amp;&amp; isPreMoving &amp;&amp; mEvents == <span class="number">0</span>)</span><br><span class="line">                  &#123;</span><br><span class="line"></span><br><span class="line">                      isPreMoving = <span class="keyword">true</span>;</span><br><span class="line">                      isCurrMoving = <span class="keyword">false</span>;</span><br><span class="line">                      <span class="keyword">if</span> (index == <span class="number">1</span>)</span><br><span class="line">                      &#123;</span><br><span class="line">                          <span class="comment">// 第一页不能再往右翻，跳转到前一个activity</span></span><br><span class="line">                          state = STATE_MOVE;</span><br><span class="line">                          releaseMoving();</span><br><span class="line">                      &#125;</span><br><span class="line">                      <span class="keyword">else</span></span><br><span class="line">                      &#123;</span><br><span class="line">                          <span class="comment">// 非第一页</span></span><br><span class="line">                          prePageLeft += (<span class="keyword">int</span>) moveLenght;</span><br><span class="line">                          <span class="comment">// 防止滑过边界</span></span><br><span class="line">                          <span class="keyword">if</span> (prePageLeft &lt; <span class="number">0</span>)</span><br><span class="line">                              prePageLeft = <span class="number">0</span>;</span><br><span class="line">                          <span class="keyword">else</span> <span class="keyword">if</span> (prePageLeft &gt; mWidth)</span><br><span class="line">                          &#123;</span><br><span class="line">                              <span class="comment">// 边界判断，释放动作，防止来回滑动导致滑动当前页是前一页无法滑动</span></span><br><span class="line">                              prePageLeft = mWidth;</span><br><span class="line">                              releaseMoving();</span><br><span class="line">                          &#125;</span><br><span class="line">                          right = mWidth + prePageLeft;</span><br><span class="line">                          state = STATE_MOVE;</span><br><span class="line">                      &#125;</span><br><span class="line"></span><br><span class="line">                  &#125;</span><br><span class="line">                  <span class="keyword">else</span></span><br><span class="line">                      mEvents = <span class="number">0</span>;</span><br><span class="line">                  lastX = event.getX();</span><br><span class="line">                  requestLayout();</span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              <span class="keyword">case</span> MotionEvent.ACTION_UP:</span><br><span class="line">                  <span class="keyword">if</span> (Math.abs(speed) &lt; speed_shake)</span><br><span class="line">                      speed = <span class="number">0</span>;</span><br><span class="line">                  quitMove();</span><br><span class="line">                  mTask = <span class="keyword">new</span> MyTimerTask(updateHandler);</span><br><span class="line">                  timer.schedule(mTask, <span class="number">0</span>, <span class="number">5</span>);</span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              <span class="keyword">default</span>:</span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>这里比较长，还是很多其它处理，比如边界，速度还有停止滑动等，这些都不用管，只看移动位置就行了，只有MotionEvent.ACTION_MOVE里的一些代码。<br>先判断是当前页滑动还是上一页滑动，然后记录移动距离及移动状态，最后requestLayout重新布局。</p>
+<p>明显上面还少了页面位置的计算，还有一个是页面的切换过程。<br>上面事件处理中有个timer：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyTimerTask</span> <span class="keyword">extends</span> <span class="title">TimerTask</span></span></span><br><span class="line"><span class="class">  </span>&#123;</span><br><span class="line">      Handler handler;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="title">MyTimerTask</span><span class="params">(Handler handler)</span></span></span><br><span class="line"><span class="function">      </span>&#123;</span><br><span class="line">          <span class="keyword">this</span>.handler = handler;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="meta">@Override</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span></span><br><span class="line"><span class="function">      </span>&#123;</span><br><span class="line">          handler.sendMessage(handler.obtainMessage());</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>一直在发送消息处理到handler中，hander代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">Handler updateHandler = <span class="keyword">new</span> Handler()</span><br><span class="line">  &#123;</span><br><span class="line"></span><br><span class="line">      <span class="meta">@Override</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span></span></span><br><span class="line"><span class="function">      </span>&#123;</span><br><span class="line">          <span class="keyword">if</span> (state != STATE_MOVE)</span><br><span class="line">              <span class="keyword">return</span>;</span><br><span class="line">          <span class="comment">// 移动页面</span></span><br><span class="line">          <span class="comment">// 翻回，先判断当前哪一页处于未返回状态</span></span><br><span class="line">          <span class="keyword">if</span> (prePageLeft &lt; mWidth &amp;&amp; speed &gt;= <span class="number">0</span>)</span><br><span class="line">          &#123;</span><br><span class="line">              <span class="comment">// 当前页处于未返回状态</span></span><br><span class="line">              moveRight(PRE);</span><br><span class="line"></span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (currPageLeft &gt; <span class="number">0</span> &amp;&amp; speed &lt;= <span class="number">0</span>)</span><br><span class="line">          &#123;</span><br><span class="line">              <span class="comment">// 前一页处于未返回状态</span></span><br><span class="line">              moveLeft(CURR);</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (speed &lt; <span class="number">0</span> &amp;&amp; index &gt; <span class="number">1</span>)</span><br><span class="line">          &#123;</span><br><span class="line">              <span class="comment">// 向左翻，翻动的是当前页</span></span><br><span class="line">              moveLeft(PRE);</span><br><span class="line">              <span class="keyword">if</span> (prePageLeft == <span class="number">0</span>)</span><br><span class="line">              &#123;</span><br><span class="line">                  index--;</span><br><span class="line">                  <span class="comment">// 翻回一页，添加一页在最上层，隐藏在最左边</span></span><br><span class="line">                  addPrePage();</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (speed &gt; <span class="number">0</span> &amp;&amp; index &lt; adapter.getCount())</span><br><span class="line">          &#123;</span><br><span class="line">              <span class="comment">// 向右翻，翻动的是前一页</span></span><br><span class="line">              moveRight(CURR);</span><br><span class="line">              <span class="keyword">if</span> (currPageLeft == mWidth)</span><br><span class="line">              &#123;</span><br><span class="line">                  index++;</span><br><span class="line">                  <span class="comment">// 翻过一页，在底下添加一页，把最上层页面移除</span></span><br><span class="line">                  addNextPage();</span><br><span class="line">              &#125;</span><br><span class="line"></span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">if</span> (right == mWidth || right == <span class="number">2</span> * mWidth)</span><br><span class="line">          &#123;</span><br><span class="line">              releaseMoving();</span><br><span class="line">              state = STATE_STOP;</span><br><span class="line">              quitMove();</span><br><span class="line">          &#125;</span><br><span class="line">          ScanView.<span class="keyword">this</span>.requestLayout();</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure></p>
+<p>如果在移动状态才进行判断处理，根据当前页和或前一页的位置及移动的速度，计算页面位置及是否切换完成。</p>
+<p>右滑当前页过程就是计算页面位置，判断是否滑动底，是就加一页：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">moveRight(CURR);</span><br><span class="line"><span class="keyword">if</span> (currPageLeft == mWidth)</span><br><span class="line">&#123;</span><br><span class="line">    index++;</span><br><span class="line">    <span class="comment">// 翻过一页，在底下添加一页，把最上层页面移除</span></span><br><span class="line">    addNextPage();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>向右滑动位置的计算，根据速度计算出左右位置：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 向右滑。注意可以滑动的页面只有当前页和前一页</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> which</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">moveRight</span><span class="params">(<span class="keyword">int</span> which)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (which)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> PRE:</span><br><span class="line">            prePageLeft += MOVE_SPEED;</span><br><span class="line">            <span class="keyword">if</span> (prePageLeft &gt; mWidth)</span><br><span class="line">                prePageLeft = mWidth;</span><br><span class="line">            right = mWidth + prePageLeft;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> CURR:</span><br><span class="line">            currPageLeft += MOVE_SPEED;</span><br><span class="line">            <span class="keyword">if</span> (currPageLeft &gt; mWidth)</span><br><span class="line">                currPageLeft = mWidth;</span><br><span class="line">            right = mWidth + currPageLeft;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其它位置滑动也如此。翻页的基本逻辑过程都介绍完成了。</p>
+<h2 id="事件冲突处理"><a href="#事件冲突处理" class="headerlink" title="事件冲突处理"></a>事件冲突处理</h2><p>这里就简单很多了，因为这里页面要同时上下滑和左右滑。就在onInterceptTouchEvent做方向上的判断，左右滑动时才去拦截事件就行了。关键点在ACTION_DOWN时的处理，只有在ACTION_MOVE时才去拦截，所以父控件自己的onTouchEvent的down事件是接受不到的，必须在onInterceptTouchEvent中就处理，这里是需要按下时的x坐标，必须此时就记录下来。</p>
+<p>代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onInterceptTouchEvent</span><span class="params">(MotionEvent ev)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">      <span class="keyword">boolean</span> handled = <span class="keyword">false</span>;</span><br><span class="line">      <span class="keyword">float</span> xDistance = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">float</span> yDistance = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">switch</span> (ev.getAction())</span><br><span class="line">      &#123;</span><br><span class="line">          <span class="keyword">case</span> MotionEvent.ACTION_DOWN:</span><br><span class="line">              xLast = ev.getX();</span><br><span class="line">              yLast = ev.getY();</span><br><span class="line"></span><br><span class="line">              lastX = ev.getX();</span><br><span class="line">              <span class="keyword">try</span></span><br><span class="line">              &#123;</span><br><span class="line">                  <span class="keyword">if</span> (vt == <span class="keyword">null</span>)</span><br><span class="line">                  &#123;</span><br><span class="line">                      vt = VelocityTracker.obtain();</span><br><span class="line">                  &#125;</span><br><span class="line">                  <span class="keyword">else</span></span><br><span class="line">                  &#123;</span><br><span class="line">                      vt.clear();</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">              <span class="keyword">catch</span> (Exception e)</span><br><span class="line">              &#123;</span><br><span class="line">                  e.printStackTrace();</span><br><span class="line">              &#125;</span><br><span class="line">              vt.addMovement(ev);</span><br><span class="line">              mEvents = <span class="number">0</span>;</span><br><span class="line">              <span class="keyword">break</span>;</span><br><span class="line">          <span class="keyword">case</span> MotionEvent.ACTION_MOVE:</span><br><span class="line">              <span class="keyword">final</span> <span class="keyword">float</span> curX = ev.getX();</span><br><span class="line">              <span class="keyword">final</span> <span class="keyword">float</span> curY = ev.getY();</span><br><span class="line"></span><br><span class="line">              xDistance += Math.abs(curX - xLast);</span><br><span class="line">              yDistance += Math.abs(curY - yLast);</span><br><span class="line"></span><br><span class="line">              <span class="keyword">if</span> (xDistance &gt; yDistance)</span><br><span class="line">              &#123;</span><br><span class="line">                  handled = <span class="keyword">true</span>;</span><br><span class="line">              &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> handled;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>主要过程都介绍完毕，当然有一些细节过程没有介绍，代码上也有很多可以优化的地方。但这是一年前写的东西了，当时也是很费了点心。源码比较多就不贴出来了。可以到github上看源码：<br><a href="https://github.com/myandy/shishi/blob/master/shishi/src/main/java/com/myth/shishi/wiget/ScanView.java" target="_blank" rel="noopener">https://github.com/myandy/shishi/blob/master/shishi/src/main/java/com/myth/shishi/wiget/ScanView.java</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/11/2016-01-11-思考死亡/" rel="next" title="思考死亡">
+                <i class="fa fa-chevron-left"></i> 思考死亡
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/01/2016-07-01-Unity网络请求委托的使用/" rel="prev" title="Unity网络请求中委托的使用">
+                Unity网络请求中委托的使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#实现效果"><span class="nav-number">1.</span> <span class="nav-text">实现效果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#翻页的实现"><span class="nav-number">2.</span> <span class="nav-text">翻页的实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#事件冲突处理"><span class="nav-number">3.</span> <span class="nav-text">事件冲突处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">4.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

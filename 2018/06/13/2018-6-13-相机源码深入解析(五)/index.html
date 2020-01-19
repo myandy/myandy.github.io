@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,Camera,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="相机流程深入解析:API2打开相机">
+<meta name="keywords" content="Android,Camera">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android8.0相机源码深入解析(五)">
+<meta property="og:url" content="http://anddymao.com/2018/06/13/2018-6-13-相机源码深入解析(五)/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="相机流程深入解析:API2打开相机">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.887Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android8.0相机源码深入解析(五)">
+<meta name="twitter:description" content="相机流程深入解析:API2打开相机">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2018/06/13/2018-6-13-相机源码深入解析(五)/">
+
+
+
+
+
+  <title>Android8.0相机源码深入解析(五) | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2018/06/13/2018-6-13-相机源码深入解析(五)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android8.0相机源码深入解析(五)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-13T12:00:00+08:00">
+                2018-06-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  相机流程深入解析:API2打开相机
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>之前四篇介绍了相机流程,但都是基于api1的,在api2下相机整个重写了,虽然还有一部分流程相同,我们从打开相机来分析相机流程</p>
+<h2 id="app层"><a href="#app层" class="headerlink" title="app层"></a>app层</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!mCameraOpenCloseLock.tryAcquire(<span class="number">2500</span>, TimeUnit.MILLISECONDS)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Time out waiting to lock camera opening."</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    manager.openCamera(String.valueOf(mCameraId), mStateCallback, mBackgroundHandler);</span><br><span class="line">&#125; <span class="keyword">catch</span> (CameraAccessException e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Interrupted while trying to lock camera opening."</span>, e);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先获取相机服务,然后通过CameraManager打开相机,相机api1多了状态回调</p>
+<h2 id="framework层"><a href="#framework层" class="headerlink" title="framework层"></a>framework层</h2><p>相机api2framework的java代码在framework/base/code/java/android/hardware/camera2中,api1基本只有Camera.java一个类,新api有好几十个类.</p>
+<h3 id="Camera2模块"><a href="#Camera2模块" class="headerlink" title="Camera2模块"></a>Camera2模块</h3><p>CameraManager中openCamera调用openCameraForUid,再调用openCameraDeviceUserAsync,这里是实际实现:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> CameraDevice <span class="title">openCameraDeviceUserAsync</span><span class="params">(String cameraId,</span></span></span><br><span class="line"><span class="function"><span class="params">        CameraDevice.StateCallback callback, Handler handler, <span class="keyword">final</span> <span class="keyword">int</span> uid)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> CameraAccessException </span>&#123;</span><br><span class="line">    CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);</span><br><span class="line">    CameraDevice device = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">synchronized</span> (mLock) &#123;</span><br><span class="line"></span><br><span class="line">        ICameraDeviceUser cameraUser = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        android.hardware.camera2.impl.CameraDeviceImpl deviceImpl =</span><br><span class="line">                <span class="keyword">new</span> android.hardware.camera2.impl.CameraDeviceImpl(</span><br><span class="line">                    cameraId,</span><br><span class="line">                    callback,</span><br><span class="line">                    handler,</span><br><span class="line">                    characteristics,</span><br><span class="line">                    mContext.getApplicationInfo().targetSdkVersion);</span><br><span class="line"></span><br><span class="line">        ICameraDeviceCallbacks callbacks = deviceImpl.getCallbacks();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (supportsCamera2ApiLocked(cameraId)) &#123;</span><br><span class="line">                <span class="comment">// Use cameraservice's cameradeviceclient implementation for HAL3.2+ devices</span></span><br><span class="line">                ICameraService cameraService = CameraManagerGlobal.get().getCameraService();</span><br><span class="line">                <span class="keyword">if</span> (cameraService == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> ServiceSpecificException(</span><br><span class="line">                        ICameraService.ERROR_DISCONNECTED,</span><br><span class="line">                        <span class="string">"Camera service is currently unavailable"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                cameraUser = cameraService.connectDevice(callbacks, cameraId,</span><br><span class="line">                        mContext.getOpPackageName(), uid);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// Use legacy camera implementation for HAL1 devices</span></span><br><span class="line">                <span class="keyword">int</span> id;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    id = Integer.parseInt(cameraId);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Expected cameraId to be numeric, but it was: "</span></span><br><span class="line">                            + cameraId);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                Log.i(TAG, <span class="string">"Using legacy camera HAL."</span>);</span><br><span class="line">                cameraUser = CameraDeviceUserShim.connectBinderShim(callbacks, id);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ServiceSpecificException e) &#123;</span><br><span class="line">            <span class="keyword">if</span> (e.errorCode == ICameraService.ERROR_DEPRECATED_HAL) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> AssertionError(<span class="string">"Should've gone down the shim path"</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (e.errorCode == ICameraService.ERROR_CAMERA_IN_USE ||</span><br><span class="line">                    e.errorCode == ICameraService.ERROR_MAX_CAMERAS_IN_USE ||</span><br><span class="line">                    e.errorCode == ICameraService.ERROR_DISABLED ||</span><br><span class="line">                    e.errorCode == ICameraService.ERROR_DISCONNECTED ||</span><br><span class="line">                    e.errorCode == ICameraService.ERROR_INVALID_OPERATION) &#123;</span><br><span class="line">                <span class="comment">// Received one of the known connection errors</span></span><br><span class="line">                <span class="comment">// The remote camera device cannot be connected to, so</span></span><br><span class="line">                <span class="comment">// set the local camera to the startup error state</span></span><br><span class="line">                deviceImpl.setRemoteFailure(e);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (e.errorCode == ICameraService.ERROR_DISABLED ||</span><br><span class="line">                        e.errorCode == ICameraService.ERROR_DISCONNECTED ||</span><br><span class="line">                        e.errorCode == ICameraService.ERROR_CAMERA_IN_USE) &#123;</span><br><span class="line">                    <span class="comment">// Per API docs, these failures call onError and throw</span></span><br><span class="line">                    throwAsPublicException(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// Unexpected failure - rethrow</span></span><br><span class="line">                throwAsPublicException(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">            <span class="comment">// Camera service died - act as if it's a CAMERA_DISCONNECTED case</span></span><br><span class="line">            ServiceSpecificException sse = <span class="keyword">new</span> ServiceSpecificException(</span><br><span class="line">                ICameraService.ERROR_DISCONNECTED,</span><br><span class="line">                <span class="string">"Camera service is currently unavailable"</span>);</span><br><span class="line">            deviceImpl.setRemoteFailure(sse);</span><br><span class="line">            throwAsPublicException(sse);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> factor out callback to be non-nested, then move setter to constructor</span></span><br><span class="line">        <span class="comment">// For now, calling setRemoteDevice will fire initial</span></span><br><span class="line">        <span class="comment">// onOpened/onUnconfigured callbacks.</span></span><br><span class="line">        <span class="comment">// This function call may post onDisconnected and throw CAMERA_DISCONNECTED if</span></span><br><span class="line">        <span class="comment">// cameraUser dies during setup.</span></span><br><span class="line">        deviceImpl.setRemoteDevice(cameraUser);</span><br><span class="line">        device = deviceImpl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> device;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用CameraManagerGlobal获取到了一个cameraService,cameraService是一个binder代理,通过它调用到服务端的方法,然后connectDeices连接相机设备.</p>
+<h3 id="cameraclient"><a href="#cameraclient" class="headerlink" title="cameraclient"></a>cameraclient</h3><p>connectDevice方法定义在ICameraService.aidl里:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ICameraDeviceUser <span class="title">connectDevice</span><span class="params">(ICameraDeviceCallbacks callbacks,</span></span></span><br><span class="line"><span class="function"><span class="params">        String cameraId,</span></span></span><br><span class="line"><span class="function"><span class="params">        String opPackageName,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">int</span> clientUid)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="cameraservice"><a href="#cameraservice" class="headerlink" title="cameraservice"></a>cameraservice</h3><p>CameraService.cpp实现了connectDevice方法,这样就调用到了相机服务的方法,<br>connectDevice调用connectHelper方法,connectHelper调用了makeClient方法.这些流程在上一篇都有介绍到,这部分api1和api2是一致的.但makeClient在api1和api2返回的client不一样:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">Status CameraService::makeClient(<span class="keyword">const</span> sp&lt;CameraService&gt;&amp; cameraService,</span><br><span class="line">        <span class="keyword">const</span> sp&lt;IInterface&gt;&amp; cameraCb, <span class="keyword">const</span> String16&amp; packageName, <span class="keyword">const</span> String8&amp; cameraId,</span><br><span class="line">        <span class="keyword">int</span> facing, <span class="keyword">int</span> clientPid, <span class="keyword">uid_t</span> clientUid, <span class="keyword">int</span> servicePid, <span class="keyword">bool</span> legacyMode,</span><br><span class="line">        <span class="keyword">int</span> halVersion, <span class="keyword">int</span> deviceVersion, apiLevel effectiveApiLevel,</span><br><span class="line">        <span class="comment">/*out*/</span>sp&lt;BasicClient&gt;* client) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (halVersion &lt; <span class="number">0</span> || halVersion == deviceVersion) &#123;</span><br><span class="line">        <span class="comment">// Default path: HAL version is unspecified by caller, create CameraClient</span></span><br><span class="line">        <span class="comment">// based on device version reported by the HAL.</span></span><br><span class="line">        <span class="keyword">switch</span>(deviceVersion) &#123;</span><br><span class="line">          <span class="keyword">case</span> CAMERA_DEVICE_API_VERSION_1_0:</span><br><span class="line">            <span class="keyword">if</span> (effectiveApiLevel == API_1) &#123;  <span class="comment">// Camera1 API route</span></span><br><span class="line">                sp&lt;ICameraClient&gt; tmp = <span class="keyword">static_cast</span>&lt;ICameraClient*&gt;(cameraCb.get());</span><br><span class="line">                *client = <span class="keyword">new</span> CameraClient(cameraService, tmp, packageName, cameraIdToInt(cameraId),</span><br><span class="line">                        facing, clientPid, clientUid, getpid(), legacyMode);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// Camera2 API route</span></span><br><span class="line">                ALOGW(<span class="string">"Camera using old HAL version: %d"</span>, deviceVersion);</span><br><span class="line">                <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_DEPRECATED_HAL,</span><br><span class="line">                        <span class="string">"Camera device \"%s\" HAL version %d does not support camera2 API"</span>,</span><br><span class="line">                        cameraId.<span class="built_in">string</span>(), deviceVersion);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">          <span class="keyword">case</span> CAMERA_DEVICE_API_VERSION_3_0:</span><br><span class="line">          <span class="keyword">case</span> CAMERA_DEVICE_API_VERSION_3_1:</span><br><span class="line">          <span class="keyword">case</span> CAMERA_DEVICE_API_VERSION_3_2:</span><br><span class="line">          <span class="keyword">case</span> CAMERA_DEVICE_API_VERSION_3_3:</span><br><span class="line">          <span class="keyword">case</span> CAMERA_DEVICE_API_VERSION_3_4:</span><br><span class="line">            <span class="keyword">if</span> (effectiveApiLevel == API_1) &#123; <span class="comment">// Camera1 API route</span></span><br><span class="line">                sp&lt;ICameraClient&gt; tmp = <span class="keyword">static_cast</span>&lt;ICameraClient*&gt;(cameraCb.get());</span><br><span class="line">                *client = <span class="keyword">new</span> Camera2Client(cameraService, tmp, packageName, cameraIdToInt(cameraId),</span><br><span class="line">                        facing, clientPid, clientUid, servicePid, legacyMode);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123; <span class="comment">// Camera2 API route</span></span><br><span class="line">                sp&lt;hardware::camera2::ICameraDeviceCallbacks&gt; tmp =</span><br><span class="line">                        <span class="keyword">static_cast</span>&lt;hardware::camera2::ICameraDeviceCallbacks*&gt;(cameraCb.get());</span><br><span class="line">                *client = <span class="keyword">new</span> CameraDeviceClient(cameraService, tmp, packageName, cameraId,</span><br><span class="line">                        facing, clientPid, clientUid, servicePid);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">          <span class="keyword">default</span>:</span><br><span class="line">            <span class="comment">// Should not be reachable</span></span><br><span class="line">            ALOGE(<span class="string">"Unknown camera device HAL version: %d"</span>, deviceVersion);</span><br><span class="line">            <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_INVALID_OPERATION,</span><br><span class="line">                    <span class="string">"Camera device \"%s\" has unknown HAL version %d"</span>,</span><br><span class="line">                    cameraId.<span class="built_in">string</span>(), deviceVersion);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// A particular HAL version is requested by caller. Create CameraClient</span></span><br><span class="line">        <span class="comment">// based on the requested HAL version.</span></span><br><span class="line">        <span class="keyword">if</span> (deviceVersion &gt; CAMERA_DEVICE_API_VERSION_1_0 &amp;&amp;</span><br><span class="line">            halVersion == CAMERA_DEVICE_API_VERSION_1_0) &#123;</span><br><span class="line">            <span class="comment">// Only support higher HAL version device opened as HAL1.0 device.</span></span><br><span class="line">            sp&lt;ICameraClient&gt; tmp = <span class="keyword">static_cast</span>&lt;ICameraClient*&gt;(cameraCb.get());</span><br><span class="line">            *client = <span class="keyword">new</span> CameraClient(cameraService, tmp, packageName, cameraIdToInt(cameraId),</span><br><span class="line">                    facing, clientPid, clientUid, servicePid, legacyMode);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// Other combinations (e.g. HAL3.x open as HAL2.x) are not supported yet.</span></span><br><span class="line">            ALOGE(<span class="string">"Invalid camera HAL version %x: HAL %x device can only be"</span></span><br><span class="line">                    <span class="string">" opened as HAL %x device"</span>, halVersion, deviceVersion,</span><br><span class="line">                    CAMERA_DEVICE_API_VERSION_1_0);</span><br><span class="line">            <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_ILLEGAL_ARGUMENT,</span><br><span class="line">                    <span class="string">"Camera device \"%s\" (HAL version %d) cannot be opened as HAL version %d"</span>,</span><br><span class="line">                    cameraId.<span class="built_in">string</span>(), deviceVersion, halVersion);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Status::ok();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>api2下调用的是CameraDeviceClient,继承了Camera2ClientBase:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> TClientBase&gt;</span><br><span class="line">Camera2ClientBase&lt;TClientBase&gt;::Camera2ClientBase(</span><br><span class="line">        <span class="keyword">const</span> sp&lt;CameraService&gt;&amp; cameraService,</span><br><span class="line">        <span class="keyword">const</span> sp&lt;TCamCallbacks&gt;&amp; remoteCallback,</span><br><span class="line">        <span class="keyword">const</span> String16&amp; clientPackageName,</span><br><span class="line">        <span class="keyword">const</span> String8&amp; cameraId,</span><br><span class="line">        <span class="keyword">int</span> cameraFacing,</span><br><span class="line">        <span class="keyword">int</span> clientPid,</span><br><span class="line">        <span class="keyword">uid_t</span> clientUid,</span><br><span class="line">        <span class="keyword">int</span> servicePid):</span><br><span class="line">        TClientBase(cameraService, remoteCallback, clientPackageName,</span><br><span class="line">                cameraId, cameraFacing, clientPid, clientUid, servicePid),</span><br><span class="line">        mSharedCameraCallbacks(remoteCallback),</span><br><span class="line">        mDeviceVersion(cameraService-&gt;getDeviceVersion(TClientBase::mCameraIdStr)),</span><br><span class="line">        mDeviceActive(<span class="literal">false</span>)</span><br><span class="line">&#123;</span><br><span class="line">    ALOGI(<span class="string">"Camera %s: Opened. Client: %s (PID %d, UID %d)"</span>, cameraId.<span class="built_in">string</span>(),</span><br><span class="line">            String8(clientPackageName).<span class="built_in">string</span>(), clientPid, clientUid);</span><br><span class="line"></span><br><span class="line">    mInitialClientPid = clientPid;</span><br><span class="line">    mDevice = <span class="keyword">new</span> Camera3Device(cameraId);</span><br><span class="line">    LOG_ALWAYS_FATAL_IF(mDevice == <span class="number">0</span>, <span class="string">"Device should never be NULL here."</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Camera2ClientBase创建了一个Camera3Device,作为hal层代理,调用到hal方法.继续看到Camera2ClientBase的初始化方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> TClientBase&gt;</span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> TProviderPtr&gt;</span><br><span class="line"><span class="keyword">status_t</span> Camera2ClientBase&lt;TClientBase&gt;::initializeImpl(TProviderPtr providerPtr) &#123;</span><br><span class="line">    ATRACE_CALL();</span><br><span class="line">    ALOGV(<span class="string">"%s: Initializing client for camera %s"</span>, __FUNCTION__,</span><br><span class="line">          TClientBase::mCameraIdStr.<span class="built_in">string</span>());</span><br><span class="line">    <span class="keyword">status_t</span> res;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Verify ops permissions</span></span><br><span class="line">    res = TClientBase::startCameraOps();</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mDevice == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Camera %s: No device connected"</span>,</span><br><span class="line">                __FUNCTION__, TClientBase::mCameraIdStr.<span class="built_in">string</span>());</span><br><span class="line">        <span class="keyword">return</span> NO_INIT;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    res = mDevice-&gt;initialize(providerPtr);</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Camera %s: unable to initialize device: %s (%d)"</span>,</span><br><span class="line">                __FUNCTION__, TClientBase::mCameraIdStr.<span class="built_in">string</span>(), strerror(-res), res);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    wp&lt;CameraDeviceBase::NotificationListener&gt; weakThis(<span class="keyword">this</span>);</span><br><span class="line">    res = mDevice-&gt;setNotifyCallback(weakThis);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再看Camera3Device的initialize方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> Camera3Device::initialize(sp&lt;CameraProviderManager&gt; manager) &#123;</span><br><span class="line">    ATRACE_CALL();</span><br><span class="line">    Mutex::<span class="function">Autolock <span class="title">il</span><span class="params">(mInterfaceLock)</span></span>;</span><br><span class="line">    Mutex::<span class="function">Autolock <span class="title">l</span><span class="params">(mLock)</span></span>;</span><br><span class="line"></span><br><span class="line">    ALOGV(<span class="string">"%s: Initializing HIDL device for camera %s"</span>, __FUNCTION__, mId.<span class="built_in">string</span>());</span><br><span class="line">    <span class="keyword">if</span> (mStatus != STATUS_UNINITIALIZED) &#123;</span><br><span class="line">        CLOGE(<span class="string">"Already initialized!"</span>);</span><br><span class="line">        <span class="keyword">return</span> INVALID_OPERATION;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (manager == <span class="literal">nullptr</span>) <span class="keyword">return</span> INVALID_OPERATION;</span><br><span class="line"></span><br><span class="line">    sp&lt;ICameraDeviceSession&gt; session;</span><br><span class="line">    ATRACE_BEGIN(<span class="string">"CameraHal::openSession"</span>);</span><br><span class="line">    <span class="keyword">status_t</span> res = manager-&gt;openSession(mId.<span class="built_in">string</span>(), <span class="keyword">this</span>,</span><br><span class="line">            <span class="comment">/*out*/</span> &amp;session);</span><br><span class="line">    ATRACE_END();</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        SET_ERR_L(<span class="string">"Could not open camera session: %s (%d)"</span>, strerror(-res), res);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    res = manager-&gt;getCameraCharacteristics(mId.<span class="built_in">string</span>(), &amp;mDeviceInfo);</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        SET_ERR_L(<span class="string">"Could not retrive camera characteristics: %s (%d)"</span>, strerror(-res), res);</span><br><span class="line">        session-&gt;close();</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;RequestMetadataQueue&gt; <span class="built_in">queue</span>;</span><br><span class="line">    <span class="keyword">auto</span> requestQueueRet = session-&gt;getCaptureRequestMetadataQueue(</span><br><span class="line">        [&amp;<span class="built_in">queue</span>](<span class="keyword">const</span> <span class="keyword">auto</span>&amp; descriptor) &#123;</span><br><span class="line">            <span class="built_in">queue</span> = <span class="built_in">std</span>::make_shared&lt;RequestMetadataQueue&gt;(descriptor);</span><br><span class="line">            <span class="keyword">if</span> (!<span class="built_in">queue</span>-&gt;isValid() || <span class="built_in">queue</span>-&gt;availableToWrite() &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                ALOGE(<span class="string">"HAL returns empty request metadata fmq, not use it"</span>);</span><br><span class="line">                <span class="built_in">queue</span> = <span class="literal">nullptr</span>;</span><br><span class="line">                <span class="comment">// don't use the queue onwards.</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    <span class="keyword">if</span> (!requestQueueRet.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"Transaction error when getting request metadata fmq: %s, not use it"</span>,</span><br><span class="line">                requestQueueRet.description().c_str());</span><br><span class="line">        <span class="keyword">return</span> DEAD_OBJECT;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> resultQueueRet = session-&gt;getCaptureResultMetadataQueue(</span><br><span class="line">        [&amp;<span class="built_in">queue</span> = mResultMetadataQueue](<span class="keyword">const</span> <span class="keyword">auto</span>&amp; descriptor) &#123;</span><br><span class="line">            <span class="built_in">queue</span> = <span class="built_in">std</span>::make_unique&lt;ResultMetadataQueue&gt;(descriptor);</span><br><span class="line">            <span class="keyword">if</span> (!<span class="built_in">queue</span>-&gt;isValid() ||  <span class="built_in">queue</span>-&gt;availableToWrite() &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                ALOGE(<span class="string">"HAL returns empty result metadata fmq, not use it"</span>);</span><br><span class="line">                <span class="built_in">queue</span> = <span class="literal">nullptr</span>;</span><br><span class="line">                <span class="comment">// Don't use the queue onwards.</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    <span class="keyword">if</span> (!resultQueueRet.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"Transaction error when getting result metadata queue from camera session: %s"</span>,</span><br><span class="line">                resultQueueRet.description().c_str());</span><br><span class="line">        <span class="keyword">return</span> DEAD_OBJECT;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mInterface = <span class="built_in">std</span>::make_unique&lt;HalInterface&gt;(session, <span class="built_in">queue</span>);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> providerType;</span><br><span class="line">    mVendorTagId = manager-&gt;getProviderTagIdLocked(mId.<span class="built_in">string</span>());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> initializeCommonLocked();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里通过CameraProviderManager的openSession获得一个ICameraDeviceSession,看下openSession方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> CameraProviderManager::openSession(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;id,</span><br><span class="line">        <span class="keyword">const</span> sp&lt;hardware::camera::device::V3_2::ICameraDeviceCallback&gt;&amp; callback,</span><br><span class="line">        <span class="comment">/*out*/</span></span><br><span class="line">        sp&lt;hardware::camera::device::V3_2::ICameraDeviceSession&gt; *session) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(mInterfaceMutex);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> deviceInfo = findDeviceInfoLocked(id,</span><br><span class="line">            <span class="comment">/*minVersion*/</span> &#123;<span class="number">3</span>,<span class="number">0</span>&#125;, <span class="comment">/*maxVersion*/</span> &#123;<span class="number">4</span>,<span class="number">0</span>&#125;);</span><br><span class="line">    <span class="keyword">if</span> (deviceInfo == <span class="literal">nullptr</span>) <span class="keyword">return</span> NAME_NOT_FOUND;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> *deviceInfo3 = <span class="keyword">static_cast</span>&lt;ProviderInfo::DeviceInfo3*&gt;(deviceInfo);</span><br><span class="line"></span><br><span class="line">    Status status;</span><br><span class="line">    hardware::Return&lt;<span class="keyword">void</span>&gt; ret;</span><br><span class="line">    ret = deviceInfo3-&gt;mInterface-&gt;open(callback, [&amp;status, &amp;session]</span><br><span class="line">            (Status s, <span class="keyword">const</span> sp&lt;device::V3_2::ICameraDeviceSession&gt;&amp; cameraSession) &#123;</span><br><span class="line">                status = s;</span><br><span class="line">                <span class="keyword">if</span> (status == Status::OK) &#123;</span><br><span class="line">                    *session = cameraSession;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">    <span class="keyword">if</span> (!ret.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Transaction error opening a session for camera device %s: %s"</span>,</span><br><span class="line">                __FUNCTION__, id.c_str(), ret.description().c_str());</span><br><span class="line">        <span class="keyword">return</span> DEAD_OBJECT;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> mapToStatusT(status);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里是通过一个DeviceInfo获取HardwareInterface,再调用open方法获得一个ICameraDeviceSession,open方法在ICameraDevices.hal中定义,在在hal中实现,session是会话的意思,打开了一个会话,通过这个hidlSession可以直接获得hal的信息.</p>
+<h2 id="hal层"><a href="#hal层" class="headerlink" title="hal层"></a>hal层</h2><p>getCaptureResultMetadataQueue定义在ICameraDeviceSession.hal里,实现在CameraDeviceSession.cpp里,看下实现:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Return&lt;<span class="keyword">void</span>&gt; CameraDeviceSession::getCaptureResultMetadataQueue(</span><br><span class="line">    getCaptureResultMetadataQueue_cb _hidl_cb) &#123;</span><br><span class="line">    _hidl_cb(*mResultMetadataQueue-&gt;getDesc());</span><br><span class="line">    <span class="keyword">return</span> Void();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>hal层方法,通过mResultMetadataQueue获取到result结果.</p>
+<h2 id="流程总结"><a href="#流程总结" class="headerlink" title="流程总结"></a>流程总结</h2><p>总结一下api2打开相机整体流程:</p>
+<ol>
+<li>app层获得相机服务,通过CameraManager打开相机</li>
+<li>CameraManager获取相机服务(CameraService),调用其连接设备方法(connectDevice)</li>
+<li>CameraService生成一个Camera2的相机代理(CameraDeviceClient,继承自Camera2ClientBase)</li>
+<li>Camera2ClientBase创建一个相机设备(Camera3Device)</li>
+<li>Camera3Device初始化时通过CameraProviderManager的open方法获得一个hidl代理会话(ICameraDeviceSession)</li>
+<li>通过ICameraDeviceSession调用到hal层方法获取返回结果(getCaptureResultMetadataQueue)</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/Camera/" rel="tag"># Camera</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/13/2018-6-13-相机源码深入解析(六)/" rel="next" title="Android8.0相机源码深入解析(六)">
+                <i class="fa fa-chevron-left"></i> Android8.0相机源码深入解析(六)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/07/2019-1-7-Ubuntu下编译FFmpeg到Android使用/" rel="prev" title="Ubuntu下编译FFmpeg到Android使用">
+                Ubuntu下编译FFmpeg到Android使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#正文"><span class="nav-number">1.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#app层"><span class="nav-number">1.1.</span> <span class="nav-text">app层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#framework层"><span class="nav-number">1.2.</span> <span class="nav-text">framework层</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Camera2模块"><span class="nav-number">1.2.1.</span> <span class="nav-text">Camera2模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cameraclient"><span class="nav-number">1.2.2.</span> <span class="nav-text">cameraclient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cameraservice"><span class="nav-number">1.2.3.</span> <span class="nav-text">cameraservice</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hal层"><span class="nav-number">1.3.</span> <span class="nav-text">hal层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流程总结"><span class="nav-number">1.4.</span> <span class="nav-text">流程总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

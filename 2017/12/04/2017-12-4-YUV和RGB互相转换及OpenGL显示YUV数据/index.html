@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,OpenGL,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="人眼对亮度信息更敏感,所以显示器都是直接使用的YUV数据,Android从相机拿到的原始数据就是YUV格式,所以底层图像处理的算法都是基于YUV. Android上层Bitmap使用的是RGBA格式,OpenGL也是用的RGBA数据,这就需要灵活转换">
+<meta name="keywords" content="Android,OpenGL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="YUV和RGB互相转换及OpenGL显示YUV数据">
+<meta property="og:url" content="http://anddymao.com/2017/12/04/2017-12-4-YUV和RGB互相转换及OpenGL显示YUV数据/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="人眼对亮度信息更敏感,所以显示器都是直接使用的YUV数据,Android从相机拿到的原始数据就是YUV格式,所以底层图像处理的算法都是基于YUV. Android上层Bitmap使用的是RGBA格式,OpenGL也是用的RGBA数据,这就需要灵活转换">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.883Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="YUV和RGB互相转换及OpenGL显示YUV数据">
+<meta name="twitter:description" content="人眼对亮度信息更敏感,所以显示器都是直接使用的YUV数据,Android从相机拿到的原始数据就是YUV格式,所以底层图像处理的算法都是基于YUV. Android上层Bitmap使用的是RGBA格式,OpenGL也是用的RGBA数据,这就需要灵活转换">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2017/12/04/2017-12-4-YUV和RGB互相转换及OpenGL显示YUV数据/">
+
+
+
+
+
+  <title>YUV和RGB互相转换及OpenGL显示YUV数据 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2017/12/04/2017-12-4-YUV和RGB互相转换及OpenGL显示YUV数据/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">YUV和RGB互相转换及OpenGL显示YUV数据</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-04T12:00:00+08:00">
+                2017-12-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  人眼对亮度信息更敏感,所以显示器都是直接使用的YUV数据,Android从相机拿到的原始数据就是YUV格式,所以底层图像处理的算法都是基于YUV. Android上层Bitmap使用的是RGBA格式,OpenGL也是用的RGBA数据,这就需要灵活转换
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>人眼对亮度信息更敏感,所以显示器都是直接使用的YUV数据,Android从相机拿到的原始数据就是YUV格式,所以底层图像处理的算法都是基于YUV.<br>Android上层Bitmap使用的是RGBA格式,OpenGL也是用的RGBA数据,这就需要灵活转换.</p>
+<h2 id="转换公式"><a href="#转换公式" class="headerlink" title="转换公式"></a>转换公式</h2><p>RGB转YUV</p>
+<pre><code>Y = 0.299 R + 0.587 G + 0.114 B
+
+U = - 0.1687 R - 0.3313 G + 0.5 B + 128
+
+V = 0.5 R - 0.4187 G - 0.0813 B + 128
+</code></pre><p>YUV转RGB</p>
+<pre><code>R = Y + 1.402 (V-128)
+
+G = Y - 0.34414 (U-128) - 0.71414 (V-128)
+
+B = Y + 1.772 (U-128)
+</code></pre><h2 id="YUV格式"><a href="#YUV格式" class="headerlink" title="YUV格式"></a>YUV格式</h2><p>YUV有很多种格式,android常用的YUV420sp.YUV的主要信息是亮度Y,YUV420sp格式也即NV21,Y会占4位,UV一共占2位,交替出现,就是一个UV数据要对应4个Y数据,这样YUV数据的size就是RGB数据的1.5倍,<br>虽然size增大了,但每一位是一个字节,RGBA的话每一位是int型,占4个字节,所以整体大小是减小了,且丢失了一部分UV信息,但这些肉眼也基本感觉不出来.</p>
+<p>RGB转YUV420sp算法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">encodeyuv420sp</span><span class="params">(<span class="keyword">int</span> *rgbData, MUInt8 *yuv, <span class="keyword">int</span> width, <span class="keyword">int</span> height)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> frameSize = width * height;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> yIndex = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> uvIndex = frameSize;</span><br><span class="line">    <span class="keyword">int</span> R, G, B, Y, U, V;</span><br><span class="line">    <span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; height; j++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; width; i++) &#123;</span><br><span class="line"></span><br><span class="line">            B = (rgbData[index] &amp; <span class="number">0xff0000</span>) &gt;&gt; <span class="number">16</span> ;</span><br><span class="line">            G = (rgbData[index] &amp; <span class="number">0xff00</span>) &gt;&gt; <span class="number">8</span> ;</span><br><span class="line">            R = (rgbData[index] &amp; <span class="number">0xff</span>) ;</span><br><span class="line"></span><br><span class="line">            Y = (<span class="keyword">int</span>)((<span class="number">0.299</span> * R + <span class="number">0.587</span> * G + <span class="number">0.114</span> * B ) + <span class="number">0.5</span> ) ;</span><br><span class="line">            U = (<span class="keyword">int</span>)((<span class="number">-0.147</span> * R - <span class="number">0.289</span> * G + <span class="number">0.436</span> * B ) + <span class="number">0.5</span> + <span class="number">128</span>);</span><br><span class="line">            V = (<span class="keyword">int</span>)((<span class="number">0.615</span> * R - <span class="number">0.515</span> * G - <span class="number">0.100</span> * B ) + <span class="number">0.5</span>  + <span class="number">128</span>);</span><br><span class="line"></span><br><span class="line">            yuv[yIndex++] = (Y &lt; <span class="number">0</span>) ? <span class="number">0</span> : ((Y &gt; <span class="number">255</span>) ? <span class="number">255</span> : Y);</span><br><span class="line">            <span class="keyword">if</span> (j % <span class="number">2</span> == <span class="number">0</span> &amp;&amp; index % <span class="number">2</span> == <span class="number">0</span>) &#123;</span><br><span class="line">                yuv[uvIndex++] = (V&lt;<span class="number">0</span>) ? <span class="number">0</span> : ((V &gt; <span class="number">255</span>) ? <span class="number">255</span> : V);</span><br><span class="line">                yuv[uvIndex++] = (U&lt;<span class="number">0</span>) ? <span class="number">0</span> : ((U &gt; <span class="number">255</span>) ? <span class="number">255</span> : U);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            index ++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="OpenGL中加载NV21数据"><a href="#OpenGL中加载NV21数据" class="headerlink" title="OpenGL中加载NV21数据"></a>OpenGL中加载NV21数据</h2><p>先加载YUV数据,分割成YBuffer和uvBuffer,再在OpenGL线程加载成纹理.这里要非常注意宽度必须是4的倍数,否则显示会形变.<br>因为OpenGL纹理加载必须是2的倍数,YUVFilter需要传入UV的纹理,UV的纹理的宽度是原图宽度的一半.这个问题找了非常久,后面发现是和大小有关,才一步步找到原因.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * OpenGL纹理加载必须是2的倍数,YUVFilter需要传入UV的纹理,所以宽度必须是4的倍数</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> data</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> width  必须是4的倍数</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> height</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genYUVTextures</span><span class="params">(<span class="keyword">final</span> <span class="keyword">byte</span>[] data, <span class="keyword">final</span> <span class="keyword">int</span> width, <span class="keyword">final</span> <span class="keyword">int</span> height)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> bufferSize = width * height;</span><br><span class="line">    <span class="keyword">if</span> (mYBuffer == <span class="keyword">null</span>) &#123;</span><br><span class="line">        mYBuffer = ByteBuffer.allocateDirect(bufferSize);</span><br><span class="line">        mYBuffer.order(ByteOrder.nativeOrder());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mUVBuffer == <span class="keyword">null</span>) &#123;</span><br><span class="line">        mUVBuffer = ByteBuffer.allocateDirect(bufferSize / <span class="number">2</span>);</span><br><span class="line">        mUVBuffer.order(ByteOrder.nativeOrder());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mYBuffer.put(data, <span class="number">0</span>, bufferSize).position(<span class="number">0</span>);</span><br><span class="line">    mUVBuffer.put(data, bufferSize, bufferSize &gt;&gt; <span class="number">1</span>).position(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    runOnDraw(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            OpenGlUtils.loadYuvToTvextures(mYBuffer, mUVBuffer, width, height, yuvTextureIds);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> yBuffer是原图片大小的纹理,uvBuffer的宽高都为原图片的1/2,正好1/4大小,然后按位置即可对应到图片的RGB数据了.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">loadYuvToTextures</span><span class="params">(<span class="keyword">final</span> Buffer channelY, <span class="keyword">final</span> Buffer channelUV, <span class="keyword">final</span> <span class="keyword">int</span> width, <span class="keyword">final</span> <span class="keyword">int</span> height, <span class="keyword">int</span>[] yuvTextures)</span> </span>&#123;</span><br><span class="line">       <span class="keyword">if</span> (channelY == <span class="keyword">null</span> || channelUV == <span class="keyword">null</span>) &#123;</span><br><span class="line">           <span class="keyword">return</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">if</span> (yuvTextures == <span class="keyword">null</span> || yuvTextures.length &lt; <span class="number">2</span>) &#123;</span><br><span class="line">           <span class="keyword">return</span>;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> (yuvTextures[<span class="number">0</span>] == NO_TEXTURE) &#123;</span><br><span class="line">           GLES20.glGenTextures(<span class="number">1</span>, yuvTextures, <span class="number">0</span>);</span><br><span class="line">           GLES20.glActiveTexture(GLES20.GL_TEXTURE0);</span><br><span class="line">           GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yuvTextures[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">           GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, <span class="number">0</span>, GLES20.GL_LUMINANCE, width, height, <span class="number">0</span>,</span><br><span class="line">                   GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, channelY);</span><br><span class="line">           GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,</span><br><span class="line">                   GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);</span><br><span class="line">           GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,</span><br><span class="line">                   GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);</span><br><span class="line">           GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,</span><br><span class="line">                   GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);</span><br><span class="line">           GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,</span><br><span class="line">                   GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);</span><br><span class="line">       &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">           GLES20.glActiveTexture(GLES20.GL_TEXTURE0);</span><br><span class="line">           GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yuvTextures[<span class="number">0</span>]);</span><br><span class="line">           GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, <span class="number">0</span>, GLES20.GL_LUMINANCE, width, height, <span class="number">0</span>,</span><br><span class="line">                   GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, channelY);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> (yuvTextures[<span class="number">1</span>] == NO_TEXTURE) &#123;</span><br><span class="line">           GLES20.glGenTextures(<span class="number">1</span>, yuvTextures, <span class="number">1</span>);</span><br><span class="line">           GLES20.glActiveTexture(GLES20.GL_TEXTURE1);</span><br><span class="line">           GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yuvTextures[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">           GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, <span class="number">0</span>, GLES20.GL_LUMINANCE_ALPHA, width / <span class="number">2</span>,</span><br><span class="line">                   height / <span class="number">2</span>, <span class="number">0</span>,</span><br><span class="line">                   GLES20.GL_LUMINANCE_ALPHA, GLES20.GL_UNSIGNED_BYTE, channelUV);</span><br><span class="line">           GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,</span><br><span class="line">                   GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);</span><br><span class="line">           GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,</span><br><span class="line">                   GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);</span><br><span class="line">           GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,</span><br><span class="line">                   GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);</span><br><span class="line">           GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,</span><br><span class="line">                   GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);</span><br><span class="line">       &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">           GLES20.glActiveTexture(GLES20.GL_TEXTURE1);</span><br><span class="line">           GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yuvTextures[<span class="number">1</span>]);</span><br><span class="line">           GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, <span class="number">0</span>, GLES20.GL_LUMINANCE_ALPHA, width / <span class="number">2</span>,</span><br><span class="line">                   height / <span class="number">2</span>, <span class="number">0</span>,</span><br><span class="line">                   GLES20.GL_LUMINANCE_ALPHA, GLES20.GL_UNSIGNED_BYTE, channelUV);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>片段着色器代码,从对应位置加载到YUV数据,然后转换成RGB,即可显示出来了.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String fragmentShader =</span><br><span class="line">        <span class="string">"precision highp float;                             \n"</span> +</span><br><span class="line"></span><br><span class="line">                <span class="string">"varying vec2 v_texCoord;                           \n"</span> +</span><br><span class="line">                <span class="string">"uniform sampler2D y_texture;                       \n"</span> +</span><br><span class="line">                <span class="string">"uniform sampler2D uv_texture;                      \n"</span> +</span><br><span class="line"></span><br><span class="line">                <span class="string">"void main (void)&#123;                                  \n"</span> +</span><br><span class="line">                <span class="string">"   float r, g, b, y, u, v;                         \n"</span> +</span><br><span class="line"></span><br><span class="line">                <span class="comment">//We had put the Y values of each pixel to the R,G,B components by GL_LUMINANCE,</span></span><br><span class="line">                <span class="comment">//that's why we're pulling it from the R component, we could also use G or B</span></span><br><span class="line">                <span class="string">"   y = texture2D(y_texture, v_texCoord).r;         \n"</span> +</span><br><span class="line"></span><br><span class="line">                <span class="comment">//We had put the U and V values of each pixel to the A and R,G,B components of the</span></span><br><span class="line">                <span class="comment">//texture respectively using GL_LUMINANCE_ALPHA. Since U,V bytes are interspread</span></span><br><span class="line">                <span class="comment">//in the texture, this is probably the fastest way to use them in the shader</span></span><br><span class="line">                <span class="string">"   u = texture2D(uv_texture, v_texCoord).a - 0.5;  \n"</span> +</span><br><span class="line">                <span class="string">"   v = texture2D(uv_texture, v_texCoord).r - 0.5;  \n"</span> +</span><br><span class="line"></span><br><span class="line">                <span class="comment">//The numbers are just YUV to RGB conversion constants</span></span><br><span class="line">                <span class="string">"   r = y + 1.402 * v;\n"</span> +</span><br><span class="line">                <span class="string">"   g = y - 0.34414 * u - 0.71414 * v;\n"</span> +</span><br><span class="line">                <span class="string">"   b = y + 1.772 * u;\n"</span> +</span><br><span class="line"></span><br><span class="line">                <span class="comment">//We finally set the RGB color of our pixel</span></span><br><span class="line">                <span class="string">"   gl_FragColor = vec4(r, g, b, 1.0);              \n"</span> +</span><br><span class="line">                <span class="string">"&#125;                                                  \n"</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在处理算法是YUV格式的,且需要频繁调用时,用OpenGL直接加载YUV数据效率是非常高的,用OpenGL作为显示,最后保存时再处理一遍就行了.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/OpenGL/" rel="tag"># OpenGL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/01/2017-12-1-Android跨进程传输数据/" rel="next" title="Android跨进程传输数据">
+                <i class="fa fa-chevron-left"></i> Android跨进程传输数据
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/04/2018-5-4-相机源码深入解析(一)/" rel="prev" title="Android8.0相机源码深入解析(一)">
+                Android8.0相机源码深入解析(一) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#转换公式"><span class="nav-number">2.</span> <span class="nav-text">转换公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YUV格式"><span class="nav-number">3.</span> <span class="nav-text">YUV格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenGL中加载NV21数据"><span class="nav-number">4.</span> <span class="nav-text">OpenGL中加载NV21数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

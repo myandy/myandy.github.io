@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,音视频,C,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="MediaCodec使用详解">
+<meta name="keywords" content="Android,音视频,C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NDK中使用MediaCodec编解码视频">
+<meta property="og:url" content="http://anddymao.com/2019/10/16/2019-10-16-ndk-MediaCodec/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="MediaCodec使用详解">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-01-18T02:16:08.249Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NDK中使用MediaCodec编解码视频">
+<meta name="twitter:description" content="MediaCodec使用详解">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2019/10/16/2019-10-16-ndk-MediaCodec/">
+
+
+
+
+
+  <title>NDK中使用MediaCodec编解码视频 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2019/10/16/2019-10-16-ndk-MediaCodec/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">NDK中使用MediaCodec编解码视频</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-16T12:00:00+08:00">
+                2019-10-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  MediaCodec使用详解
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>MediaCodec 作为Android自带的视频编解码工具，可以直接利用底层硬件编解码能力，现在已经逐渐成为主流了。API21已经支持NDK方法了，MediaCodec api设计得非常精妙,另一个方面也是很多人觉得不好懂。</p>
+<h2 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h2><h3 id="MediaCodec的两个Buffer和三板斧"><a href="#MediaCodec的两个Buffer和三板斧" class="headerlink" title="MediaCodec的两个Buffer和三板斧"></a>MediaCodec的两个Buffer和三板斧</h3><p>MediaCodec内部包含InputBuffer和OutputBuffer，内部有一个自启线程，不断去查询两个Buffer，是一个生产者消费者模型。</p>
+<p>进行数据处理时主要靠三板斧</p>
+<p>第一步：取buffer地址<br>AMediaCodec_dequeueInputBuffer</p>
+<p>第二步：获取buffer数据<br>AMediaCodec_getInputBuffer</p>
+<p>第三步：buffer入队<br>AMediaCodec_queueInputBuffer</p>
+<p>InputBuffer和OutputBuffer基本是对称的：</p>
+<p>第一步：取buffer地址<br>AMediaCodec_dequeueOutputBuffer</p>
+<p>第二步：获取buffer数据<br>AMediaCodec_getOutputBuffer</p>
+<p>第三步：buffer释放<br>AMediaCodec_releaseOutputBuffer</p>
+<p>只有第三步不同，AMediaCodec_queueInputBuffer是数据入队等待消费，AMediaCodec_releaseOutputBuffer是释放数据。<br>编码和解码过程，InputBuffer和OutputBuffer就互相置换下。<br>解码： 原始数据（视频流）-&gt; 提取器AMediaExtractor-&gt;InputBuffer-&gt;OutputBuffer-&gt;帧数据(YUV420sp，PCM)<br>编码： 帧数据（视频流）-&gt;InputBuffer-&gt;OutputBuffer-&gt;合成器AMediaMuxer</p>
+<h3 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h3><h4 id="解码配置"><a href="#解码配置" class="headerlink" title="解码配置"></a>解码配置</h4><p>解码开始需要配置AMediaCodec和AMediaExtractor,MediaCodec start后就可以开始解码，</p>
+<p>AMediaExtractor需要设置文件描述符，通过AAssetManager_open或者fopen就可以得到。起始点和长度也同样。然后设置进提取器。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AMediaExtractor_setDataSourceFd(mExtractor, virtualFile.fd,</span><br><span class="line">                                                         virtualFile.start,</span><br><span class="line">                                                         virtualFile.length);</span><br></pre></td></tr></table></figure>
+<p>AMediaCodec创建需要设置数据格式，通过AMediaExtractor获取到的AMediaFormat可以得到mime和format。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mCodec = AMediaCodec_createDecoderByType(mime);</span><br><span class="line">AMediaCodec_configure(mCodec, format, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">AMediaCodec_start(mCodec);</span><br></pre></td></tr></table></figure>
+<p>解码配置第三个参数为NativeWindow，加了后解码后可以直接吐到surface上，GPU数据直接渲软，效率高但不够灵活。不加的话解码数据就需要输出拷贝。</p>
+<h4 id="解码流程"><a href="#解码流程" class="headerlink" title="解码流程"></a>解码流程</h4><p>解码也就是操作两个Buffer的过程，执行玩三板斧就可以，然后有一些状态需要处理。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!mInputEof) &#123;</span><br><span class="line">    <span class="keyword">ssize_t</span> bufidx = AMediaCodec_dequeueInputBuffer(mCodec, <span class="number">1</span>);</span><br><span class="line">    log_info(<span class="literal">NULL</span>, <span class="string">"input buffer %zd"</span>, bufidx);</span><br><span class="line">    <span class="keyword">if</span> (bufidx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">size_t</span> bufsize;</span><br><span class="line">        <span class="keyword">uint8_t</span> *buf = AMediaCodec_getInputBuffer(mCodec, bufidx, &amp;bufsize);</span><br><span class="line">        <span class="keyword">int</span> sampleSize = AMediaExtractor_readSampleData(mExtractor, buf, bufsize);</span><br><span class="line">        <span class="keyword">if</span> (sampleSize &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            sampleSize = <span class="number">0</span>;</span><br><span class="line">            mInputEof = <span class="literal">true</span>;</span><br><span class="line">            log_info(<span class="literal">NULL</span>, <span class="string">"video producer input EOS"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int64_t</span> presentationTimeUs = AMediaExtractor_getSampleTime(mExtractor);</span><br><span class="line"></span><br><span class="line">        AMediaCodec_queueInputBuffer(mCodec, bufidx, <span class="number">0</span>, sampleSize, presentationTimeUs,</span><br><span class="line">                                     mInputEof ? AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM</span><br><span class="line">                                               : <span class="number">0</span>);</span><br><span class="line">        AMediaExtractor_advance(mExtractor);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!mOutputEof) &#123;</span><br><span class="line">    AMediaCodecBufferInfo info;</span><br><span class="line">    <span class="keyword">ssize_t</span> status = AMediaCodec_dequeueOutputBuffer(mCodec, &amp;info, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (status &gt;= <span class="number">0</span>) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (info.flags &amp; AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM) &#123;</span><br><span class="line">            log_info(<span class="literal">NULL</span>, <span class="string">"video producer output EOS"</span>);</span><br><span class="line"></span><br><span class="line">            eof = <span class="literal">true</span>;</span><br><span class="line">            mOutputEof = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">uint8_t</span> *outputBuf = AMediaCodec_getOutputBuffer(mCodec, status, <span class="literal">NULL</span><span class="comment">/* out_size */</span>);</span><br><span class="line">        <span class="keyword">size_t</span> dataSize = info.size;</span><br><span class="line">        <span class="keyword">if</span> (outputBuf != <span class="literal">nullptr</span> &amp;&amp; dataSize != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">long</span> pts = info.presentationTimeUs;</span><br><span class="line">            <span class="keyword">int32_t</span> pts32 = (<span class="keyword">int32_t</span>) pts;</span><br><span class="line"></span><br><span class="line">            *buffer = (<span class="keyword">uint8_t</span> *) mlt_pool_alloc(dataSize);</span><br><span class="line">            <span class="built_in">memcpy</span>(*buffer, outputBuf + info.offset, dataSize);</span><br><span class="line">            *buffersize = dataSize;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int64_t</span> presentationNano = info.presentationTimeUs * <span class="number">1000</span>;</span><br><span class="line">        log_info(<span class="literal">NULL</span>, <span class="string">"video pts %lld outsize %d"</span>, info.presentationTimeUs, dataSize);</span><br><span class="line">        <span class="comment">/*if (delay &gt; 0) &#123;</span></span><br><span class="line"><span class="comment">            usleep(delay / 1000);</span></span><br><span class="line"><span class="comment">        &#125;*/</span></span><br><span class="line">        AMediaCodec_releaseOutputBuffer(mCodec, status, info.size != <span class="number">0</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (status == AMEDIACODEC_INFO_OUTPUT_BUFFERS_CHANGED) &#123;</span><br><span class="line">        log_info(<span class="literal">NULL</span>, <span class="string">"output buffers changed"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (status == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED) &#123;</span><br><span class="line">        AMediaFormat_delete(format);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (status == AMEDIACODEC_INFO_TRY_AGAIN_LATER) &#123;</span><br><span class="line">        log_info(<span class="literal">NULL</span>, <span class="string">"video no output buffer right now"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        log_info(<span class="literal">NULL</span>, <span class="string">"unexpected info code: %zd"</span>, status);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AMediaCodec和AMediaExtractor是没有直接交流的，AMediaCodec取到InputBuffer后实际数据为空，需要从AMediaExtractor_readSampleData获取到buffer数据。<br>AMediaCodec数据入队后，AMediaExtractor调用AMediaExtractor_advance前进到下一个数据位置。</p>
+<p>OutputBuffer操作时有些不一样，AMediaCodec_dequeueOutputBuffer获取的是解码好的帧，AMediaCodec_getOutputBuffer取到的就已经是解码好的数据了，可以直接拷贝使用。<br>AMediaCodec_releaseOutputBuffer是释放buffer，如果配置了surface，就会渲软到surface上。</p>
+<h3 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h3><h4 id="编码配置"><a href="#编码配置" class="headerlink" title="编码配置"></a>编码配置</h4><p>编码是解码的逆过程，首先设置格式,然后根据格式创建编码器MediaCodec，再根据文件创建合成器MediaMuxer。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> NativeEncoder::prepareEncoder(<span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> fps, <span class="built_in">std</span>::<span class="built_in">string</span> strPath) &#123;</span><br><span class="line"></span><br><span class="line">    mWidth = width;</span><br><span class="line">    mHeight = height;</span><br><span class="line">    mFps = fps;</span><br><span class="line"></span><br><span class="line">    AMediaFormat *format = AMediaFormat_new();</span><br><span class="line">    AMediaFormat_setString(format, AMEDIAFORMAT_KEY_MIME, mStrMime.c_str());</span><br><span class="line">    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_WIDTH, mWidth);</span><br><span class="line">    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_HEIGHT, mHeight);</span><br><span class="line"></span><br><span class="line">    AMediaFormat_setInt32(format,AMEDIAFORMAT_KEY_COLOR_FORMAT, COLOR_FORMAT_SURFACE);</span><br><span class="line">    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_BIT_RATE, mBitRate);</span><br><span class="line">    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, mFps);</span><br><span class="line">    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, mIFrameInternal);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *s = AMediaFormat_toString(format);</span><br><span class="line">    log_info(<span class="literal">NULL</span>, <span class="string">"encoder video format: %s"</span>, s);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    mCodec = AMediaCodec_createEncoderByType(mStrMime);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">media_status_t</span> status = AMediaCodec_configure(mCodec, format, <span class="literal">NULL</span>, <span class="literal">NULL</span>,</span><br><span class="line">                                                  AMEDIACODEC_CONFIGURE_FLAG_ENCODE);</span><br><span class="line">    <span class="keyword">if</span> (status != <span class="number">0</span>) &#123;</span><br><span class="line">        log_error(<span class="literal">NULL</span>, <span class="string">"AMediaCodec_configure() failed with error %i for format %u"</span>,</span><br><span class="line">                      (<span class="keyword">int</span>) status, <span class="number">21</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    AMediaFormat_delete(format);</span><br><span class="line"></span><br><span class="line">    FILE *fp = fopen(strPath.c_str(), <span class="string">"wb"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (fp != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        mFd = fileno(fp);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        mFd = <span class="number">-1</span>;</span><br><span class="line">        log_error(<span class="literal">NULL</span>, <span class="string">"create file %s fail"</span>, strPath.c_str());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(mMuxer == <span class="literal">NULL</span>)</span><br><span class="line">        mMuxer = AMediaMuxer_new(mFd, AMEDIAMUXER_OUTPUT_FORMAT_MPEG_4);</span><br><span class="line"></span><br><span class="line">    mMuxerStarted = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    fclose(fp);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里注意下配置类型是 “video/avc”，基本视频都是这个格式，可以看官网格式支持信息，比特率mBitRate是6000000，这个要根据需求对应配置，I帧间隔mIFrameInternal是1秒，间隔长获取关键帧信息会有问题。</p>
+<h4 id="编码准备"><a href="#编码准备" class="headerlink" title="编码准备"></a>编码准备</h4><p>编码视频流需要创建一个surface，再把这个surface绑定到共享的EGLContext上。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">void</span> NativeEncoder::prepareEncoderWithShareCtx(<span class="keyword">int</span> width, <span class="keyword">int</span> height, <span class="keyword">int</span> fps, <span class="built_in">std</span>::<span class="built_in">string</span> strPath,</span><br><span class="line">                                   EGLContext shareCtx) &#123;</span><br><span class="line"></span><br><span class="line">    prepareEncoder(width,height,fps,strPath);</span><br><span class="line">    ANativeWindow *surface;</span><br><span class="line">    AMediaCodec_createInputSurface(mCodec, &amp;surface);</span><br><span class="line">    <span class="keyword">media_status_t</span> status;</span><br><span class="line">    <span class="keyword">if</span> ((status = AMediaCodec_start(mCodec)) != AMEDIA_OK) &#123;</span><br><span class="line">        log_error(<span class="literal">NULL</span>, <span class="string">"AMediaCodec_start: Could not start encoder."</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        log_info(<span class="literal">NULL</span>, <span class="string">"AMediaCodec_start: encoder successfully started"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    mCodecInputSurface = <span class="keyword">new</span> CodecInputSurface(surface);</span><br><span class="line">    mCodecInputSurface-&gt;setupEGL(shareCtx);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="编码流程"><a href="#编码流程" class="headerlink" title="编码流程"></a>编码流程</h4><p>编码需要先进行渲染，从外部共享的EGLContext传入一个纹理，渲软到编码器对应的surface上，再进行编码。</p>
+<p>传入纹理并渲染：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> NativeEncoder::feedFrame(<span class="keyword">uint64_t</span> pts, <span class="keyword">int</span> tex) &#123;</span><br><span class="line">    drainEncoder(<span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">    mCodecInputSurface-&gt;makeCurrent();</span><br><span class="line">    glViewport(<span class="number">0</span>,<span class="number">0</span>,mWidth,mHeight);</span><br><span class="line">    mCodecInputSurface-&gt;renderOnSurface(tex);</span><br><span class="line">    mCodecInputSurface-&gt;setPresentationTime(pts);</span><br><span class="line">    mCodecInputSurface-&gt;swapBuffers();</span><br><span class="line">    mCodecInputSurface-&gt;makeNothingCurrent();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> NativeEncoder::drainEncoder(<span class="keyword">bool</span> eof) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (eof) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">ssize_t</span> ret = AMediaCodec_signalEndOfInputStream(mCodec);</span><br><span class="line">        log_info(<span class="literal">NULL</span>, <span class="string">"drainEncoder eof = %d"</span>,ret);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line"></span><br><span class="line">        AMediaCodecBufferInfo info;</span><br><span class="line">        <span class="comment">//time out usec 1</span></span><br><span class="line">        <span class="keyword">ssize_t</span> status = AMediaCodec_dequeueOutputBuffer(mCodec, &amp;info, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (status == AMEDIACODEC_INFO_TRY_AGAIN_LATER) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!eof) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                log_info(<span class="literal">NULL</span>, <span class="string">"video no output available, spinning to await EOS"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (status == AMEDIACODEC_INFO_OUTPUT_BUFFERS_CHANGED) &#123;</span><br><span class="line">            <span class="comment">// not expected for an encoder</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (status == AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED) &#123;</span><br><span class="line">            <span class="keyword">if</span> (mMuxerStarted) &#123;</span><br><span class="line">                log_warning(<span class="literal">NULL</span>, <span class="string">"format changed twice"</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            AMediaFormat *fmt = AMediaCodec_getOutputFormat(mCodec);</span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">char</span> *s = AMediaFormat_toString(fmt);</span><br><span class="line">            log_info(<span class="literal">NULL</span>, <span class="string">"video output format %s"</span>, s);</span><br><span class="line"></span><br><span class="line">            mTrackIndex = AMediaMuxer_addTrack(mMuxer, fmt);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(mAudioTrackIndex != <span class="number">-1</span> &amp;&amp; mTrackIndex != <span class="number">-1</span>) &#123;</span><br><span class="line"></span><br><span class="line">                log_info(<span class="literal">NULL</span>,<span class="string">"AMediaMuxer_start"</span>);</span><br><span class="line">                AMediaMuxer_start(mMuxer);</span><br><span class="line">                mMuxerStarted = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">uint8_t</span> *encodeData = AMediaCodec_getOutputBuffer(mCodec, status, <span class="literal">NULL</span><span class="comment">/* out_size */</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (encodeData == <span class="literal">NULL</span>) &#123;</span><br><span class="line">                log_error(<span class="literal">NULL</span>, <span class="string">"encoder output buffer was null"</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ((info.flags &amp; AMEDIACODEC_BUFFER_FLAG_CODEC_CONFIG) != <span class="number">0</span>) &#123;</span><br><span class="line">                log_info(<span class="literal">NULL</span>, <span class="string">"ignoring AMEDIACODEC_BUFFER_FLAG_CODEC_CONFIG"</span>);</span><br><span class="line">                info.size = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">size_t</span> dataSize = info.size;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (dataSize != <span class="number">0</span>) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (!mMuxerStarted) &#123;</span><br><span class="line">                    log_error(<span class="literal">NULL</span>, <span class="string">"muxer has't started"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                log_info(<span class="literal">NULL</span>,<span class="string">"AMediaMuxer_writeSampleData video size %d"</span>,dataSize);</span><br><span class="line">                AMediaMuxer_writeSampleData(mMuxer, mTrackIndex, encodeData, &amp;info);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            AMediaCodec_releaseOutputBuffer(mCodec, status, <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> ((info.flags &amp; AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM) != <span class="number">0</span>) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (!eof) &#123;</span><br><span class="line">                    log_warning(<span class="literal">NULL</span>, <span class="string">"reached end of stream unexpectly"</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    log_info(<span class="literal">NULL</span>, <span class="string">"video end of stream reached"</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除了结尾标记，编码时没有操作InputBuffer，因为InputBuffer对应的就是surface的源，所以编码第一步实际是渲软，通过opengl render到surface上再交换缓冲区到surface上；<br>第二步获取到OutputBuffer数据，调用AMediaCodec_getOutputBuffer；<br>第三步合成器写数据，调用AMediaMuxer_writeSampleData然后释放outputBuffer，调用AMediaCodec_releaseOutputBuffer。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总结了下MediaCodec在ndk中的使用，MediaCodec是一个非常灵活的api，编解码音视频都是同一个，掌握双缓冲和三板斧就对流程有了非常清楚的了解，对编解码代码也可以不再畏惧了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/音视频/" rel="tag"># 音视频</a>
+          
+            <a href="/tags/C/" rel="tag"># C</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/02/2019-2-2-如何对一个大型Android项目进行模块化重构/" rel="next" title="如何对一个大型Android项目进行模块化重构">
+                <i class="fa fa-chevron-left"></i> 如何对一个大型Android项目进行模块化重构
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/26/2019-10-26-opencv-安装/" rel="prev" title="ubuntu下载安装OpenCV并在Clion中使用">
+                ubuntu下载安装OpenCV并在Clion中使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内容"><span class="nav-number">2.</span> <span class="nav-text">内容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MediaCodec的两个Buffer和三板斧"><span class="nav-number">2.1.</span> <span class="nav-text">MediaCodec的两个Buffer和三板斧</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解码"><span class="nav-number">2.2.</span> <span class="nav-text">解码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解码配置"><span class="nav-number">2.2.1.</span> <span class="nav-text">解码配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解码流程"><span class="nav-number">2.2.2.</span> <span class="nav-text">解码流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编码"><span class="nav-number">2.3.</span> <span class="nav-text">编码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#编码配置"><span class="nav-number">2.3.1.</span> <span class="nav-text">编码配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编码准备"><span class="nav-number">2.3.2.</span> <span class="nav-text">编码准备</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编码流程"><span class="nav-number">2.3.3.</span> <span class="nav-text">编码流程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

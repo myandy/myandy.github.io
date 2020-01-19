@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="音视频,C,OpenGl,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="高性能的OpenGL特效框架的内部原理">
+<meta name="keywords" content="音视频,C,OpenGl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="视频滤镜框架movit介绍与流程解析">
+<meta property="og:url" content="http://anddymao.com/2019/10/27/2019-10-27-movit/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="高性能的OpenGL特效框架的内部原理">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-01-19T02:36:48.918Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="视频滤镜框架movit介绍与流程解析">
+<meta name="twitter:description" content="高性能的OpenGL特效框架的内部原理">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2019/10/27/2019-10-27-movit/">
+
+
+
+
+
+  <title>视频滤镜框架movit介绍与流程解析 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2019/10/27/2019-10-27-movit/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">视频滤镜框架movit介绍与流程解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-27T14:00:00+08:00">
+                2019-10-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  高性能的OpenGL特效框架的内部原理
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="基础介绍"><a href="#基础介绍" class="headerlink" title="基础介绍"></a>基础介绍</h2><p>官方介绍：A library for high-quality, high-performance video filters。<br>一个高质量高性能的视频滤镜框架，采用GNU2协议。</p>
+<p>源码链接：<br><a href="https://git.sesse.net/?p=movit;a=summary" target="_blank" rel="noopener">https://git.sesse.net/?p=movit;a=summary</a></p>
+<p>采用C++编写，官方讲解基本没有，网上信息很少，只能靠源码了解了。</p>
+<h2 id="类定义和结构"><a href="#类定义和结构" class="headerlink" title="类定义和结构"></a>类定义和结构</h2><p>先看make文件Makefile.in：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HDRS = effect_chain.h effect_util.h effect.h input.h image_format.h init.h util.h defs.h resource_pool.h fp16.h ycbcr.h version.h</span><br><span class="line">HDRS += $(INPUTS:=.h)</span><br><span class="line">HDRS += $(EFFECTS:=.h)</span><br></pre></td></tr></table></figure></p>
+<p>这些就是movit的主要流程代码了.Effect_chain为核心，effect为基础单位，输入工具类为辅助，组合成了一个链式结构框架。</p>
+<p>其余都是effect和input各种类型的实例，还有测试代码和着色器代码，可以先忽略。</p>
+<h3 id="Effect"><a href="#Effect" class="headerlink" title="Effect"></a>Effect</h3><p>特效的基本单位，定义了一些公共的方法，对于一个OpenGL程序，需要顶点着色器，片段着色器，传入参数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">inform_input_size</span><span class="params">(<span class="keyword">unsigned</span> input_num, <span class="keyword">unsigned</span> width, <span class="keyword">unsigned</span> height)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// How many inputs this effect will take (a fixed number).</span></span><br><span class="line"><span class="comment">// If you have only one input, it will be called INPUT() in GLSL;</span></span><br><span class="line"><span class="comment">// if you have several, they will be INPUT1(), INPUT2(), and so on.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">unsigned</span> <span class="title">num_inputs</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> <span class="number">1</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Inform the effect that it has been just added to the EffectChain.</span></span><br><span class="line"><span class="comment">// The primary use for this is to store the ResourcePool uesd by</span></span><br><span class="line"><span class="comment">// the chain; for modifications to it, rewrite_graph() below</span></span><br><span class="line"><span class="comment">// is probably a better fit.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">inform_added</span><span class="params">(EffectChain *chain)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Let the effect rewrite the effect chain as it sees fit.</span></span><br><span class="line"><span class="comment">// Most effects won't need to do this, but this is very useful</span></span><br><span class="line"><span class="comment">// if you have an effect that consists of multiple sub-effects</span></span><br><span class="line"><span class="comment">// (for instance, two passes). The effect is given to its own</span></span><br><span class="line"><span class="comment">// pointer, and it can add new ones (by using add_node()</span></span><br><span class="line"><span class="comment">// and connect_node()) as it sees fit. This is called at</span></span><br><span class="line"><span class="comment">// EffectChain::finalize() time, when the entire graph is known,</span></span><br><span class="line"><span class="comment">// in the order that the effects were originally added.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Note that if the effect wants to take itself entirely out</span></span><br><span class="line"><span class="comment">// of the chain, it must set “disabled” to true and then disconnect</span></span><br><span class="line"><span class="comment">// itself from all other effects.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">rewrite_graph</span><span class="params">(EffectChain *graph, Node *self)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Returns the GLSL fragment shader string for this effect.</span></span><br><span class="line"><span class="keyword">virtual</span> <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">output_fragment_shader</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Set all OpenGL state that this effect needs before rendering.</span></span><br><span class="line"><span class="comment">// The default implementation sets one uniform per registered parameter,</span></span><br><span class="line"><span class="comment">// but no other state.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// &lt;sampler_num&gt; is the first free texture sampler. If you want to use</span></span><br><span class="line"><span class="comment">// textures, you can bind a texture to GL_TEXTURE0 + &lt;sampler_num&gt;,</span></span><br><span class="line"><span class="comment">// and then increment the number (so that the next effect in the chain</span></span><br><span class="line"><span class="comment">// will use a different sampler).</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">set_gl_state</span><span class="params">(GLuint glsl_program_num, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; prefix, <span class="keyword">unsigned</span> *sampler_num)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// If you set any special OpenGL state in set_gl_state(), you can clear it</span></span><br><span class="line"><span class="comment">// after rendering here. The default implementation does nothing.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">clear_gl_state</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Set a parameter; intended to be called from user code.</span></span><br><span class="line"><span class="comment">// Neither of these take ownership of the pointer.</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">set_int</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;key, <span class="keyword">int</span> value)</span> MUST_CHECK_RESULT</span>;</span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">set_ivec2</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;key, <span class="keyword">const</span> <span class="keyword">int</span> *values)</span> MUST_CHECK_RESULT</span>;</span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">set_float</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;key, <span class="keyword">float</span> value)</span> MUST_CHECK_RESULT</span>;</span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">set_vec2</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;key, <span class="keyword">const</span> <span class="keyword">float</span> *values)</span> MUST_CHECK_RESULT</span>;</span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">set_vec3</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;key, <span class="keyword">const</span> <span class="keyword">float</span> *values)</span> MUST_CHECK_RESULT</span>;</span><br><span class="line"><span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">set_vec4</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;key, <span class="keyword">const</span> <span class="keyword">float</span> *values)</span> MUST_CHECK_RESULT</span>;</span><br></pre></td></tr></table></figure>
+<p>rewrite_graph可以重写有向图，num_inputs返回输入节点个数，默认为1，set_gl_state是渲软前设置状态，可以动态设置参数。set_int等就是设置具体类型参数了。</p>
+<h3 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h3><p>Input继承了Effect，num_inputs设置为0，get_color_space返回色彩空间，get_gamma_curve返回伽马曲线，用于色彩校正。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Input</span> :</span> <span class="keyword">public</span> Effect &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="keyword">unsigned</span> <span class="title">num_inputs</span><span class="params">()</span> <span class="keyword">const</span> override </span>&#123; <span class="keyword">return</span> <span class="number">0</span>; &#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Whether this input can deliver linear gamma directly if it's</span></span><br><span class="line">	<span class="comment">// asked to. (If so, set the parameter “output_linear_gamma”</span></span><br><span class="line">	<span class="comment">// to activate it.)</span></span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">can_output_linear_gamma</span><span class="params">()</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Whether this input can supply mipmaps if asked to (by setting</span></span><br><span class="line">	<span class="comment">// the "needs_mipmaps" integer parameter set to 1).</span></span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">can_supply_mipmaps</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> <span class="literal">true</span>; &#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">unsigned</span> <span class="title">get_width</span><span class="params">()</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="keyword">unsigned</span> <span class="title">get_height</span><span class="params">()</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> Colorspace <span class="title">get_color_space</span><span class="params">()</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> GammaCurve <span class="title">get_gamma_curve</span><span class="params">()</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="image-format"><a href="#image-format" class="headerlink" title="image_format"></a>image_format</h3><p>image_format定义了一些结构体，色彩显示相关的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> MovitPixelFormat &#123;</span><br><span class="line">	FORMAT_RGB,</span><br><span class="line">	FORMAT_RGBA_PREMULTIPLIED_ALPHA,</span><br><span class="line">	FORMAT_RGBA_POSTMULTIPLIED_ALPHA,</span><br><span class="line">	FORMAT_BGR,</span><br><span class="line">	FORMAT_BGRA_PREMULTIPLIED_ALPHA,</span><br><span class="line">	FORMAT_BGRA_POSTMULTIPLIED_ALPHA,</span><br><span class="line">	FORMAT_GRAYSCALE,</span><br><span class="line">	FORMAT_RG,</span><br><span class="line">	FORMAT_R</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> Colorspace &#123;</span><br><span class="line">	COLORSPACE_INVALID = <span class="number">-1</span>,  <span class="comment">// For internal use.</span></span><br><span class="line">	COLORSPACE_sRGB = <span class="number">0</span>,</span><br><span class="line">	COLORSPACE_REC_709 = <span class="number">0</span>,  <span class="comment">// Same as sRGB.</span></span><br><span class="line">	COLORSPACE_REC_601_525 = <span class="number">1</span>,</span><br><span class="line">	COLORSPACE_REC_601_625 = <span class="number">2</span>,</span><br><span class="line">	COLORSPACE_XYZ = <span class="number">3</span>,  <span class="comment">// Mostly useful for testing and debugging.</span></span><br><span class="line">	COLORSPACE_REC_2020 = <span class="number">4</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> GammaCurve &#123;</span><br><span class="line">	GAMMA_INVALID = <span class="number">-1</span>,  <span class="comment">// For internal use.</span></span><br><span class="line">	GAMMA_LINEAR = <span class="number">0</span>,</span><br><span class="line">	GAMMA_sRGB = <span class="number">1</span>,</span><br><span class="line">	GAMMA_REC_601 = <span class="number">2</span>,</span><br><span class="line">	GAMMA_REC_709 = <span class="number">2</span>,  <span class="comment">// Same as Rec. 601.</span></span><br><span class="line">	GAMMA_REC_2020_10_BIT = <span class="number">2</span>,  <span class="comment">// Same as Rec. 601.</span></span><br><span class="line">	GAMMA_REC_2020_12_BIT = <span class="number">3</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> YCbCrLumaCoefficients &#123;</span><br><span class="line">	YCBCR_REC_601 = <span class="number">0</span>,</span><br><span class="line">	YCBCR_REC_709 = <span class="number">1</span>,</span><br><span class="line">	YCBCR_REC_2020 = <span class="number">2</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ImageFormat</span> &#123;</span></span><br><span class="line">	Colorspace color_space;</span><br><span class="line">	GammaCurve gamma_curve;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>MovitPixelFormat是像素顺序结构，Colorspace是色彩空间，GammaCurve是伽马值，GAMMA_sRGB为1不校正。YCbCrLumaCoefficients是yuv亮度系数。</p>
+<h3 id="utils"><a href="#utils" class="headerlink" title="utils"></a>utils</h3><p>包含一些工具方法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">read_file</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;filename)</span></span>;</span><br><span class="line"><span class="function">GLuint <span class="title">compile_shader</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;shader_src, GLenum type)</span></span>;</span><br><span class="line"><span class="comment">// Output a GLSL 3x3 matrix declaration.</span></span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">output_glsl_mat3</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, <span class="keyword">const</span> Eigen::Matrix3d &amp;m)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Output GLSL scalar, 2-length and 3-length vector declarations.</span></span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">output_glsl_float</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, <span class="keyword">float</span> x)</span></span>;</span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">output_glsl_vec2</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, <span class="keyword">float</span> x, <span class="keyword">float</span> y)</span></span>;</span><br><span class="line"><span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">output_glsl_vec3</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, <span class="keyword">float</span> x, <span class="keyword">float</span> y, <span class="keyword">float</span> z)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>包括文件读取和gl操作的一些工具类。compile_shader编译shader，参数分别是shader的string和shader类型。<br>output_glsl_float等几个方法根据参数自动生成对应的glsl代码，实现如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">output_glsl_float</span><span class="params">(<span class="keyword">const</span> <span class="built_in">string</span> &amp;name, <span class="keyword">float</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">// Use stringstream to be independent of the current locale in a thread-safe manner.</span></span><br><span class="line">	<span class="built_in">stringstream</span> ss;</span><br><span class="line">	ss.imbue(locale(<span class="string">"C"</span>));</span><br><span class="line">	ss.precision(<span class="number">8</span>);</span><br><span class="line">	ss &lt;&lt; scientific;</span><br><span class="line">	ss &lt;&lt; <span class="string">"const float "</span> &lt;&lt; name &lt;&lt; <span class="string">" = "</span> &lt;&lt; x &lt;&lt; <span class="string">";\n"</span>;</span><br><span class="line">	<span class="keyword">return</span> ss.str();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="ResourcePool"><a href="#ResourcePool" class="headerlink" title="ResourcePool"></a>ResourcePool</h3><p>在多个EffectChains之间共享资源的类，如果有资源在多个EffectChain都要使用，每次获取释放会非常消耗资源，所以可以用ResourcePool，但是所有的EffectChains必须使用共享的OpenGLContext。</p>
+<p>看公共方法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ResourcePool</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	ResourcePool(<span class="keyword">size_t</span> program_freelist_max_length = <span class="number">100</span>,</span><br><span class="line">	             <span class="keyword">size_t</span> texture_freelist_max_bytes = <span class="number">100</span> &lt;&lt; <span class="number">20</span>,  <span class="comment">// 100 MB.</span></span><br><span class="line">	             <span class="keyword">size_t</span> fbo_freelist_max_length = <span class="number">100</span>,  <span class="comment">// Per context.</span></span><br><span class="line">	             <span class="keyword">size_t</span> vao_freelist_max_length = <span class="number">100</span>);  <span class="comment">// Per context.</span></span><br><span class="line">	~ResourcePool();</span><br><span class="line"></span><br><span class="line">	<span class="function">GLuint <span class="title">compile_glsl_program</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; vertex_shader,</span></span></span><br><span class="line"><span class="function"><span class="params">	                            <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; fragment_shader,</span></span></span><br><span class="line"><span class="function"><span class="params">	                            <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt;&amp; frag_shader_outputs)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">release_glsl_program</span><span class="params">(GLuint glsl_program_num)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">GLuint <span class="title">compile_glsl_compute_program</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; compile_shader)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">release_glsl_compute_program</span><span class="params">(GLuint glsl_program_num)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">GLuint <span class="title">use_glsl_program</span><span class="params">(GLuint glsl_program_num)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">unuse_glsl_program</span><span class="params">(GLuint instance_program_num)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">GLuint <span class="title">create_2d_texture</span><span class="params">(GLint internal_format, GLsizei width, GLsizei height)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">release_2d_texture</span><span class="params">(GLuint texture_num)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">GLuint <span class="title">create_fbo</span><span class="params">(GLuint texture0_num,</span></span></span><br><span class="line"><span class="function"><span class="params">	                  GLuint texture1_num = <span class="number">0</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">	                  GLuint texture2_num = <span class="number">0</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">	                  GLuint texture3_num = <span class="number">0</span>)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">release_fbo</span><span class="params">(GLuint fbo_num)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">GLuint <span class="title">create_vec2_vao</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">set</span>&lt;GLint&gt; &amp;attribute_indices,</span></span></span><br><span class="line"><span class="function"><span class="params">	                       GLuint vbo_num)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">release_vec2_vao</span><span class="params">(<span class="keyword">const</span> GLuint vao_num)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">clean_context</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p>可以缓存glsl程序，纹理，FBO，VAO。</p>
+<h3 id="YCbCrInput"><a href="#YCbCrInput" class="headerlink" title="YCbCrInput"></a>YCbCrInput</h3><p>yuv输入类。一个重点是格式设置，一个重点是看片段着色器</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> YCbCrInput::output_fragment_shader()</span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">string</span> frag_shader;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (ycbcr_input_splitting == YCBCR_INPUT_INTERLEAVED) &#123;</span><br><span class="line">		frag_shader += <span class="string">"#define Y_CB_CR_SAME_TEXTURE 1\n"</span>;</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (ycbcr_input_splitting == YCBCR_INPUT_SPLIT_Y_AND_CBCR) &#123;</span><br><span class="line">		cb_cr_offsets_equal =</span><br><span class="line">			(<span class="built_in">fabs</span>(ycbcr_format.cb_x_position - ycbcr_format.cr_x_position) &lt; <span class="number">1e-6</span>) &amp;&amp;</span><br><span class="line">			(<span class="built_in">fabs</span>(ycbcr_format.cb_y_position - ycbcr_format.cr_y_position) &lt; <span class="number">1e-6</span>);</span><br><span class="line">		<span class="keyword">char</span> buf[<span class="number">256</span>];</span><br><span class="line">		<span class="built_in">snprintf</span>(buf, <span class="keyword">sizeof</span>(buf), <span class="string">"#define Y_CB_CR_SAME_TEXTURE 0\n#define CB_CR_SAME_TEXTURE 1\n#define CB_CR_OFFSETS_EQUAL %d\n"</span>,</span><br><span class="line">			cb_cr_offsets_equal);</span><br><span class="line">		frag_shader += buf;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		frag_shader += <span class="string">"#define Y_CB_CR_SAME_TEXTURE 0\n#define CB_CR_SAME_TEXTURE 0\n"</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	frag_shader += read_file(<span class="string">"ycbcr_input.frag"</span>);</span><br><span class="line">	frag_shader += <span class="string">"#undef CB_CR_SAME_TEXTURE\n#undef Y_CB_CR_SAME_TEXTURE\n"</span>;</span><br><span class="line">	<span class="keyword">return</span> frag_shader;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>里面读取了ycbcr_input.frag,看对应源码：</p>
+<figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">vec4</span> FUNCNAME(<span class="type">vec2</span> tc) &#123;</span><br><span class="line">	<span class="comment">// OpenGL's origin is bottom-left, but most graphics software assumes</span></span><br><span class="line">	<span class="comment">// a top-left origin. Thus, for inputs that come from the user,</span></span><br><span class="line">	<span class="comment">// we flip the y coordinate.</span></span><br><span class="line">	tc.y = <span class="number">1.0</span> - tc.y;</span><br><span class="line"></span><br><span class="line">	<span class="type">vec3</span> ycbcr;</span><br><span class="line"><span class="meta">#if Y_CB_CR_SAME_TEXTURE</span></span><br><span class="line">	ycbcr = tex2D(PREFIX(tex_y), tc).xyz;</span><br><span class="line"><span class="meta">#else</span></span><br><span class="line">	ycbcr.x = tex2D(PREFIX(tex_y), tc).x;</span><br><span class="line">  <span class="meta">#if CB_CR_SAME_TEXTURE</span></span><br><span class="line">    <span class="meta">#if CB_CR_OFFSETS_EQUAL</span></span><br><span class="line">	ycbcr.yz = tex2D(PREFIX(tex_cbcr), tc + PREFIX(cb_offset)).xy;</span><br><span class="line">    <span class="meta">#else</span></span><br><span class="line">	ycbcr.y = tex2D(PREFIX(tex_cbcr), tc + PREFIX(cb_offset)).x;</span><br><span class="line">	ycbcr.z = tex2D(PREFIX(tex_cbcr), tc + PREFIX(cr_offset)).x;</span><br><span class="line">    <span class="meta">#endif</span></span><br><span class="line">  <span class="meta">#else</span></span><br><span class="line">	ycbcr.y = tex2D(PREFIX(tex_cb), tc + PREFIX(cb_offset)).x;</span><br><span class="line">	ycbcr.z = tex2D(PREFIX(tex_cr), tc + PREFIX(cr_offset)).x;</span><br><span class="line">  <span class="meta">#endif</span></span><br><span class="line"><span class="meta">#endif</span></span><br><span class="line"></span><br><span class="line">	ycbcr -= PREFIX(<span class="keyword">offset</span>);</span><br><span class="line"></span><br><span class="line">	<span class="type">vec4</span> rgba;</span><br><span class="line">	rgba.rgb = PREFIX(inv_ycbcr_matrix) * ycbcr;</span><br><span class="line">	rgba.a = <span class="number">1.0</span>;</span><br><span class="line">	<span class="keyword">return</span> rgba;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里有两个纹理输入，PREFIX(tex_y)和(PREFIX(tex_cbcr)，PREFIX是预处理标记，因为会对应多个Effect，shader代码会处理一遍防止重名等问题。<br>有y和ub的纹理就可以通过偏移量获取到yuv数据，然后通过转换矩阵转成rgb数据。</p>
+<h3 id="EffectChain"><a href="#EffectChain" class="headerlink" title="EffectChain"></a>EffectChain</h3><p>最后介绍最重要的EffectChain，效果链，实际结构是有向图，节点Node定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	Effect *effect;</span><br><span class="line">	<span class="keyword">bool</span> disabled;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Edges in the graph (forward and backward).</span></span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Node *&gt; outgoing_links;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Node *&gt; incoming_links;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// For unit tests only. Do not use from other code.</span></span><br><span class="line">	<span class="comment">// Will contain an arbitrary choice if the node is in multiple phases.</span></span><br><span class="line">	Phase *containing_phase;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Node是双向链表结构，而且输入和输出节点都可以是多个。</p>
+<p>多个Node可以组成Phase，包含一个单独的glsl程序。所有的节点组成EffectChain，有时有些glsl程序输入发生了变化，不得不用多个glsl程序，就需要用到phase.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Phase</span> &#123;</span></span><br><span class="line">	Node *output_node;</span><br><span class="line"></span><br><span class="line">	GLuint glsl_program_num;  <span class="comment">// Owned by the resource_pool.</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Position and texcoord attribute indexes, although it doesn't matter</span></span><br><span class="line">	<span class="comment">// which is which, because they contain the same data.</span></span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">set</span>&lt;GLint&gt; attribute_indexes;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Inputs are only inputs from other phases (ie., those that come from RTT);</span></span><br><span class="line">	<span class="comment">// input textures are counted as part of &lt;effects&gt;.</span></span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Phase *&gt; inputs;</span><br><span class="line">	<span class="comment">// Bound sampler numbers for each input. Redundant in a sense</span></span><br><span class="line">	<span class="comment">// (it always corresponds to the index), but we need somewhere</span></span><br><span class="line">	<span class="comment">// to hold the value for the uniform.</span></span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; input_samplers;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Node *&gt; effects;  <span class="comment">// In order.</span></span><br><span class="line">	<span class="keyword">unsigned</span> output_width, output_height, virtual_output_width, virtual_output_height;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Whether this phase is compiled as a compute shader, ie., the last effect is</span></span><br><span class="line">	<span class="comment">// marked as one.</span></span><br><span class="line">	<span class="keyword">bool</span> is_compute_shader;</span><br><span class="line">	Node *compute_shader_node;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// If &lt;is_compute_shader&gt;, which image unit the output buffer is bound to.</span></span><br><span class="line">	<span class="comment">// This is used as source for a Uniform&lt;int&gt; below.</span></span><br><span class="line">	<span class="keyword">int</span> outbuf_image_unit;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// These are used in transforming from unnormalized to normalized coordinates</span></span><br><span class="line">	<span class="comment">// in compute shaders.</span></span><br><span class="line">	<span class="keyword">int</span> uniform_output_size[<span class="number">2</span>];</span><br><span class="line">	Point2D inv_output_size, output_texcoord_adjust;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Identifier used to create unique variables in GLSL.</span></span><br><span class="line">	<span class="comment">// Unique per-phase to increase cacheability of compiled shaders.</span></span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::pair&lt;Node *, NodeLinkType&gt;, <span class="built_in">std</span>::<span class="built_in">string</span>&gt; effect_ids;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Uniforms for this phase; combined from all the effects.</span></span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">int</span>&gt;&gt; uniforms_image2d;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">int</span>&gt;&gt; uniforms_sampler2d;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">bool</span>&gt;&gt; uniforms_bool;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">int</span>&gt;&gt; uniforms_int;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">int</span>&gt;&gt; uniforms_ivec2;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">float</span>&gt;&gt; uniforms_float;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">float</span>&gt;&gt; uniforms_vec2;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">float</span>&gt;&gt; uniforms_vec3;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;<span class="keyword">float</span>&gt;&gt; uniforms_vec4;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Uniform&lt;Eigen::Matrix3d&gt;&gt; uniforms_mat3;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// For measurement of GPU time used.</span></span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">list</span>&lt;GLuint&gt; timer_query_objects_running;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">list</span>&lt;GLuint&gt; timer_query_objects_free;</span><br><span class="line">	<span class="keyword">uint64_t</span> time_elapsed_ns;</span><br><span class="line">	<span class="keyword">uint64_t</span> num_measured_iterations;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>包含glsl程序需要的要素，按顺序的Effect节点，输入必须也是Phase，输出是Node。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EffectChain</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	EffectChain(<span class="keyword">float</span> aspect_nom, <span class="keyword">float</span> aspect_denom, ResourcePool *resource_pool = <span class="literal">nullptr</span>);</span><br><span class="line">	~EffectChain();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="function">Input *<span class="title">add_input</span><span class="params">(Input *input)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">Effect *<span class="title">add_effect</span><span class="params">(Effect *effect)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> add_effect(effect, last_added_effect());</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function">Effect *<span class="title">add_effect</span><span class="params">(Effect *effect, Effect *input)</span> </span>&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Effect *&gt; inputs;</span><br><span class="line">		inputs.push_back(input);</span><br><span class="line">		<span class="keyword">return</span> add_effect(effect, inputs);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function">Effect *<span class="title">add_effect</span><span class="params">(Effect *effect, Effect *input1, Effect *input2)</span> </span>&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Effect *&gt; inputs;</span><br><span class="line">		inputs.push_back(input1);</span><br><span class="line">		inputs.push_back(input2);</span><br><span class="line">		<span class="keyword">return</span> add_effect(effect, inputs);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function">Effect *<span class="title">add_effect</span><span class="params">(Effect *effect, Effect *input1, Effect *input2, Effect *input3)</span> </span>&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Effect *&gt; inputs;</span><br><span class="line">		inputs.push_back(input1);</span><br><span class="line">		inputs.push_back(input2);</span><br><span class="line">		inputs.push_back(input3);</span><br><span class="line">		<span class="keyword">return</span> add_effect(effect, inputs);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function">Effect *<span class="title">add_effect</span><span class="params">(Effect *effect, Effect *input1, Effect *input2, Effect *input3, Effect *input4)</span> </span>&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Effect *&gt; inputs;</span><br><span class="line">		inputs.push_back(input1);</span><br><span class="line">		inputs.push_back(input2);</span><br><span class="line">		inputs.push_back(input3);</span><br><span class="line">		inputs.push_back(input4);</span><br><span class="line">		<span class="keyword">return</span> add_effect(effect, inputs);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function">Effect *<span class="title">add_effect</span><span class="params">(Effect *effect, Effect *input1, Effect *input2, Effect *input3, Effect *input4, Effect *input5)</span> </span>&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Effect *&gt; inputs;</span><br><span class="line">		inputs.push_back(input1);</span><br><span class="line">		inputs.push_back(input2);</span><br><span class="line">		inputs.push_back(input3);</span><br><span class="line">		inputs.push_back(input4);</span><br><span class="line">		inputs.push_back(input5);</span><br><span class="line">		<span class="keyword">return</span> add_effect(effect, inputs);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function">Effect *<span class="title">add_effect</span><span class="params">(Effect *effect, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Effect *&gt; &amp;inputs)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">add_output</span><span class="params">(<span class="keyword">const</span> ImageFormat &amp;format, OutputAlphaFormat alpha_format)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">add_ycbcr_output</span><span class="params">(<span class="keyword">const</span> ImageFormat &amp;format, OutputAlphaFormat alpha_format,</span></span></span><br><span class="line"><span class="function"><span class="params">	                      <span class="keyword">const</span> YCbCrFormat &amp;ycbcr_format,</span></span></span><br><span class="line"><span class="function"><span class="params">			      YCbCrOutputSplitting output_splitting = YCBCR_OUTPUT_INTERLEAVED,</span></span></span><br><span class="line"><span class="function"><span class="params">	                      GLenum output_type = GL_UNSIGNED_BYTE)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">change_ycbcr_output_format</span><span class="params">(<span class="keyword">const</span> YCbCrFormat &amp;ycbcr_format)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">set_dither_bits</span><span class="params">(<span class="keyword">unsigned</span> num_bits)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">this</span>-&gt;num_dither_bits = num_bits;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">set_output_origin</span><span class="params">(OutputOrigin output_origin)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">this</span>-&gt;output_origin = output_origin;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">set_intermediate_format</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">		GLenum intermediate_format,</span></span></span><br><span class="line"><span class="function"><span class="params">		FramebufferTransformation transformation = NO_FRAMEBUFFER_TRANSFORMATION)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">this</span>-&gt;intermediate_format = intermediate_format;</span><br><span class="line">		<span class="keyword">this</span>-&gt;intermediate_transformation = transformation;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">finalize</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">enable_phase_timing</span><span class="params">(<span class="keyword">bool</span> enable)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">reset_phase_timing</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">print_phase_timing</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">render_to_screen</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		render_to_fbo(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">render_to_fbo</span><span class="params">(GLuint fbo, <span class="keyword">unsigned</span> width, <span class="keyword">unsigned</span> height)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">DestinationTexture</span> &#123;</span></span><br><span class="line">		GLuint texnum;</span><br><span class="line">		GLenum format;</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">render_to_texture</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;DestinationTexture&gt; &amp;destinations, <span class="keyword">unsigned</span> width, <span class="keyword">unsigned</span> height)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">Effect *<span class="title">last_added_effect</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (nodes.empty()) &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> nodes.back()-&gt;effect;</span><br><span class="line">		&#125;	</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function">Node *<span class="title">add_node</span><span class="params">(Effect *effect)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">connect_nodes</span><span class="params">(Node *sender, Node *receiver)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">replace_receiver</span><span class="params">(Node *old_receiver, Node *new_receiver)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">replace_sender</span><span class="params">(Node *new_sender, Node *receiver)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">insert_node_between</span><span class="params">(Node *sender, Node *middle, Node *receiver)</span></span>;</span><br><span class="line">	<span class="function">Node *<span class="title">find_node_for_effect</span><span class="params">(Effect *effect)</span> </span>&#123; <span class="keyword">return</span> node_map[effect]; &#125;</span><br><span class="line"></span><br><span class="line">	<span class="function">GLenum <span class="title">get_input_sampler</span><span class="params">(Node *node, <span class="keyword">unsigned</span> input_num)</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">GLenum <span class="title">has_input_sampler</span><span class="params">(Node *node, <span class="keyword">unsigned</span> input_num)</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">ResourcePool *<span class="title">get_resource_pool</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> resource_pool; &#125;</span><br></pre></td></tr></table></figure>
+<p>add_effect添加特效方法，finalize是生成glsl程序的方法，render_to_screen和render_to_fbo是渲染的方法，connect_nodes可以把输入和输出节点连接起来。</p>
+<h3 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h3><p>fp16是16位和32为数据转换工具类，defs和version就是一些通用定义。</p>
+<h2 id="处理流程"><a href="#处理流程" class="headerlink" title="处理流程"></a>处理流程</h2><h3 id="finalize"><a href="#finalize" class="headerlink" title="finalize"></a>finalize</h3><p>EffectChain.cpp中有两千多行代码，看重要流程代码，理解整体过程。生成EffectChain会进行添加节点，包括节点之间的连接关系，完成后就调用finalize组装，对应代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> EffectChain::finalize()</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; nodes.size(); ++i) &#123;</span><br><span class="line">		nodes[i]-&gt;effect-&gt;rewrite_graph(<span class="keyword">this</span>, nodes[i]);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	find_color_spaces_for_inputs();</span><br><span class="line"></span><br><span class="line">	propagate_alpha();</span><br><span class="line"></span><br><span class="line">	propagate_gamma_and_color_space();</span><br><span class="line"></span><br><span class="line">	fix_internal_color_spaces();</span><br><span class="line">	fix_internal_alpha(<span class="number">6</span>);</span><br><span class="line">	fix_output_color_space();</span><br><span class="line">	fix_output_alpha();</span><br><span class="line"></span><br><span class="line">	fix_internal_gamma_by_asking_inputs(<span class="number">9</span>);</span><br><span class="line">	fix_internal_gamma_by_inserting_nodes(<span class="number">10</span>);</span><br><span class="line">	fix_output_gamma();</span><br><span class="line">	propagate_alpha();</span><br><span class="line">	fix_internal_alpha(<span class="number">13</span>);</span><br><span class="line">	fix_internal_gamma_by_asking_inputs(<span class="number">15</span>);</span><br><span class="line">	fix_internal_gamma_by_inserting_nodes(<span class="number">16</span>);</span><br><span class="line"></span><br><span class="line">	add_ycbcr_conversion_if_needed();</span><br><span class="line"></span><br><span class="line">	add_dither_if_needed();</span><br><span class="line"></span><br><span class="line">	add_dummy_effect_if_needed();</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	<span class="built_in">map</span>&lt;Node *, Phase *&gt; completed_effects;</span><br><span class="line">	construct_phase(find_output_node(), &amp;completed_effects);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (has_dummy_effect &amp;&amp; !phases[phases.size() - <span class="number">2</span>]-&gt;is_compute_shader) &#123;</span><br><span class="line">		resource_pool-&gt;release_glsl_program(phases.back()-&gt;glsl_program_num);</span><br><span class="line">		<span class="keyword">delete</span> phases.back();</span><br><span class="line">		phases.pop_back();</span><br><span class="line">		has_dummy_effect = <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	assert(phases[<span class="number">0</span>]-&gt;inputs.empty());</span><br><span class="line">	</span><br><span class="line">	finalized = <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先遍历每个节点，进行rewrite_graph，然后进行颜色空间等设置。关键步骤是</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">construct_phase(find_output_node(), &amp;completed_effects)；</span><br></pre></td></tr></table></figure>
+<p>生成了phase结构。第一个参数是find_output_node，查找输出节点：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Node *EffectChain::find_output_node()</span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">vector</span>&lt;Node *&gt; output_nodes;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; nodes.size(); ++i) &#123;</span><br><span class="line">		Node *node = nodes[i];</span><br><span class="line">		<span class="keyword">if</span> (node-&gt;disabled) &#123;</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (node-&gt;outgoing_links.empty()) &#123;</span><br><span class="line">			output_nodes.push_back(node);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	assert(output_nodes.size() == <span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> output_nodes[<span class="number">0</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>没有输出的节点的节点就是最终的输出节点，只能有一个输出节点。</p>
+<p>第二个参数是map<node *, phase *>类型的地址，就是返回的数据。</node></p>
+<h3 id="construct-phase"><a href="#construct-phase" class="headerlink" title="construct_phase"></a>construct_phase</h3><p>从给定的效果和随后的链开始构建glsl程序。当需要改变纹理bound时，就会结束一个程序，还有需要多个效果，输出大小改变时也会结束程序。<br>在输出开始用一个简单的深度优先搜索，就不用在每个phase中明确的递归。</p>
+<p>主要逻辑代码，省略部分非主线流程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Phase *EffectChain::construct_phase(Node *output, <span class="built_in">map</span>&lt;Node *, Phase *&gt; *completed_effects)&#123;</span><br><span class="line">	Phase *phase = <span class="keyword">new</span> Phase;</span><br><span class="line">	phase-&gt;output_node = output;</span><br><span class="line">	phase-&gt;is_compute_shader = <span class="literal">false</span>;</span><br><span class="line">	phase-&gt;compute_shader_node = <span class="literal">nullptr</span>;</span><br><span class="line">	</span><br><span class="line">    <span class="built_in">stack</span>&lt;Node *&gt; effects_todo_this_phase;</span><br><span class="line">	effects_todo_this_phase.push(output);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (!effects_todo_this_phase.empty()) &#123;</span><br><span class="line">		Node *node = effects_todo_this_phase.top();</span><br><span class="line">		effects_todo_this_phase.pop();</span><br><span class="line"></span><br><span class="line">		phase-&gt;effects.push_back(node);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Find all the dependencies of this effect, and add them to the stack.</span></span><br><span class="line">		assert(node-&gt;effect-&gt;num_inputs() == node-&gt;incoming_links.size());</span><br><span class="line">		<span class="keyword">for</span> (Node *dep : node-&gt;incoming_links) &#123;</span><br><span class="line">			<span class="keyword">bool</span> start_new_phase = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span>(多种情况...)&#123;</span><br><span class="line">				start_new_phase = <span class="literal">true</span>;</span><br><span class="line">			&#125;</span><br><span class="line">            </span><br><span class="line">            </span><br><span class="line">			<span class="keyword">if</span> (start_new_phase) &#123;</span><br><span class="line">				<span class="comment">// Since we're starting a new phase here, we don't need to impose any</span></span><br><span class="line">				<span class="comment">// new demands on this effect. Restore the status we had before we</span></span><br><span class="line">				<span class="comment">// started looking at it.</span></span><br><span class="line">				dep-&gt;needs_mipmaps = save_needs_mipmaps;</span><br><span class="line"></span><br><span class="line">				phase-&gt;inputs.push_back(construct_phase(dep, completed_effects));</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				effects_todo_this_phase.push(dep);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Propagate the one-to-one status down through the dependency.</span></span><br><span class="line">				dep-&gt;one_to_one_sampling = node-&gt;one_to_one_sampling &amp;&amp;</span><br><span class="line">					dep-&gt;effect-&gt;one_to_one_sampling();</span><br><span class="line">				dep-&gt;strong_one_to_one_sampling = node-&gt;strong_one_to_one_sampling &amp;&amp;</span><br><span class="line">					dep-&gt;effect-&gt;strong_one_to_one_sampling();</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			node-&gt;incoming_link_type.push_back(start_new_phase ? IN_ANOTHER_PHASE : IN_SAME_PHASE);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	...</span><br><span class="line">	compile_glsl_program(phase);</span><br><span class="line">	</span><br><span class="line">	phases.push_back(phase);</span><br><span class="line">    <span class="keyword">return</span> phase;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从输出开始为phase添加节点，判断情况进行中断，如果需要添加新phase，则为新phase递归执行construct_phase方法，否则在当前处理node中添加节点，继续while循环。</p>
+<h3 id="compile-glsl-program"><a href="#compile-glsl-program" class="headerlink" title="compile_glsl_program"></a>compile_glsl_program</h3><p>下一步是为每一个phase编译glsl程序。代码量也多，都是细致的操作代码，原理就是利用c的宏定义进行动态组合成一个glsl程序，相对多个程序需要内存拷贝，这样性能大大提高。解析下关键代码。</p>
+<p>为每一个Node添加专属id：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Give each effect in the phase its own ID.</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; phase-&gt;effects.size(); ++i) &#123;</span><br><span class="line">	Node *node = phase-&gt;effects[i];</span><br><span class="line">	<span class="keyword">char</span> effect_id[<span class="number">256</span>];</span><br><span class="line">	<span class="built_in">sprintf</span>(effect_id, <span class="string">"eff%u"</span>, i);</span><br><span class="line">	<span class="keyword">bool</span> inserted = phase-&gt;effect_ids.insert(make_pair(make_pair(node, IN_SAME_PHASE), effect_id)).second;</span><br><span class="line">	assert(inserted);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>为每个节点添加一个方法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; phase-&gt;effects.size(); ++i) &#123;</span><br><span class="line">	Node *node = phase-&gt;effects[i];</span><br><span class="line">	<span class="keyword">const</span> <span class="built_in">string</span> effect_id = phase-&gt;effect_ids[make_pair(node, IN_SAME_PHASE)];</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">unsigned</span> j = <span class="number">0</span>; j &lt; node-&gt;incoming_links.size(); ++j) &#123;</span><br><span class="line">		<span class="keyword">if</span> (node-&gt;incoming_links.size() == <span class="number">1</span>) &#123;</span><br><span class="line">			frag_shader += <span class="string">"#define INPUT"</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">char</span> buf[<span class="number">256</span>];</span><br><span class="line">			<span class="built_in">sprintf</span>(buf, <span class="string">"#define INPUT%d"</span>, j + <span class="number">1</span>);</span><br><span class="line">			frag_shader += buf;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		Node *input = node-&gt;incoming_links[j];</span><br><span class="line">		NodeLinkType link_type = node-&gt;incoming_link_type[j];</span><br><span class="line">		<span class="keyword">if</span> (i != <span class="number">0</span> &amp;&amp;</span><br><span class="line">		    input-&gt;effect-&gt;is_compute_shader() &amp;&amp;</span><br><span class="line">		    node-&gt;incoming_link_type[j] == IN_SAME_PHASE) &#123;</span><br><span class="line">			<span class="comment">// First effect after the compute shader reads the value</span></span><br><span class="line">			<span class="comment">// that cs_output() wrote to a global variable,</span></span><br><span class="line">			<span class="comment">// ignoring the tc (since all such effects have to be</span></span><br><span class="line">			<span class="comment">// strong one-to-one).</span></span><br><span class="line">			frag_shader += <span class="string">"(tc) CS_OUTPUT_VAL\n"</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			assert(phase-&gt;effect_ids.count(make_pair(input, link_type)));</span><br><span class="line">			frag_shader += <span class="built_in">string</span>(<span class="string">" "</span>) + phase-&gt;effect_ids[make_pair(input, link_type)] + <span class="string">"\n"</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	frag_shader += <span class="string">"\n"</span>;</span><br><span class="line">	frag_shader += <span class="built_in">string</span>(<span class="string">"#define FUNCNAME "</span>) + effect_id + <span class="string">"\n"</span>;</span><br><span class="line">	<span class="keyword">if</span> (node-&gt;effect-&gt;is_compute_shader()) &#123;</span><br><span class="line">		frag_shader += <span class="built_in">string</span>(<span class="string">"#define NORMALIZE_TEXTURE_COORDS(tc) ((tc) * "</span>) + effect_id + <span class="string">"_inv_output_size + "</span> + effect_id + <span class="string">"_output_texcoord_adjust)\n"</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	frag_shader += replace_prefix(node-&gt;effect-&gt;output_fragment_shader(), effect_id);</span><br><span class="line">	frag_shader += <span class="string">"#undef FUNCNAME\n"</span>;</span><br><span class="line">	<span class="keyword">if</span> (node-&gt;incoming_links.size() == <span class="number">1</span>) &#123;</span><br><span class="line">		frag_shader += <span class="string">"#undef INPUT\n"</span>;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">unsigned</span> j = <span class="number">0</span>; j &lt; node-&gt;incoming_links.size(); ++j) &#123;</span><br><span class="line">			<span class="keyword">char</span> buf[<span class="number">256</span>];</span><br><span class="line">			<span class="built_in">sprintf</span>(buf, <span class="string">"#undef INPUT%d\n"</span>, j + <span class="number">1</span>);</span><br><span class="line">			frag_shader += buf;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	frag_shader += <span class="string">"\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>后面还有参数设置方法，组装后片段着色器代码后会编译glsl程序，然后获取参数位置，留待使用，不一一介绍了。</p>
+<p>组合成的glsl片段着色器实例：<br><figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">precision</span> <span class="keyword">highp</span> <span class="type">float</span>;</span><br><span class="line"><span class="keyword">varying</span> <span class="type">vec2</span> tc;</span><br><span class="line"></span><br><span class="line"><span class="meta">#define FUNCNAME eff0</span></span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> eff0_tex;</span><br><span class="line"><span class="type">vec4</span> FUNCNAME(<span class="type">vec2</span> tc) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">texture2D</span>(eff0_tex, <span class="type">vec2</span>(tc.x,<span class="number">1.0</span>-tc.y));</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#undef PREFIX</span></span><br><span class="line"><span class="meta">#undef FUNCNAME</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#define INPUT eff0</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#define FUNCNAME eff1</span></span><br><span class="line"><span class="keyword">uniform</span> <span class="type">float</span> eff1_strength;</span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> eff1_lut;</span><br><span class="line"><span class="type">vec4</span> FUNCNAME(<span class="type">vec2</span> tc) &#123; <span class="type">float</span> strength = eff1_strength; <span class="keyword">lowp</span> <span class="type">vec4</span> textureColor = INPUT(tc); <span class="keyword">mediump</span> <span class="type">float</span> blueColor = textureColor.b * <span class="number">63.0</span>; <span class="keyword">mediump</span> <span class="type">vec2</span> quad1; quad1.y = <span class="built_in">floor</span>(<span class="built_in">floor</span>(blueColor) / <span class="number">8.0</span>); quad1.x = <span class="built_in">floor</span>(blueColor) - (quad1.y * <span class="number">8.0</span>); <span class="keyword">mediump</span> <span class="type">vec2</span> quad2; quad2.y = <span class="built_in">floor</span>(<span class="built_in">ceil</span>(blueColor) / <span class="number">8.0</span>); quad2.x = <span class="built_in">ceil</span>(blueColor) - (quad2.y * <span class="number">8.0</span>); <span class="keyword">highp</span> <span class="type">vec2</span> texPos1; texPos1.x = (quad1.x * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.r); texPos1.y = (quad1.y * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.g); <span class="keyword">highp</span> <span class="type">vec2</span> texPos2; texPos2.x = (quad2.x * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.r); texPos2.y = (quad2.y * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.g); <span class="keyword">lowp</span> <span class="type">vec4</span> newColor1 = <span class="built_in">texture2D</span>(eff1_lut, texPos1); <span class="keyword">lowp</span> <span class="type">vec4</span> newColor2 = <span class="built_in">texture2D</span>(eff1_lut, texPos2); <span class="keyword">lowp</span> <span class="type">vec4</span> newColor = <span class="built_in">mix</span>(newColor1, newColor2, <span class="built_in">fract</span>(blueColor)); <span class="keyword">return</span> <span class="built_in">mix</span>(textureColor, <span class="type">vec4</span>(newColor.rgb, textureColor.w), strength); &#125; </span><br><span class="line"><span class="meta">#undef PREFIX</span></span><br><span class="line"><span class="meta">#undef FUNCNAME</span></span><br><span class="line"><span class="meta">#undef INPUT</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#define INPUT eff1</span></span><br><span class="line"><span class="type">void</span> main()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">gl_FragColor</span> = INPUT(tc);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="render"><a href="#render" class="headerlink" title="render"></a>render</h3><p>opengl渲软流程都一样，但这里都多个phase，前面的phase需要先绘制在纹理上，最后一个phase绘制在目标fbo上，纹理采用resource_pool获取创建的纹理，可以缓存复用。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (last_phase) &#123;</span><br><span class="line">    <span class="comment">// Last phase goes to the output the user specified.</span></span><br><span class="line">    <span class="keyword">if</span> (!phase-&gt;is_compute_shader) &#123;</span><br><span class="line">        assert(dest_fbo != (GLuint)<span class="number">-1</span>);</span><br><span class="line">        glBindFramebuffer(GL_FRAMEBUFFER, dest_fbo);</span><br><span class="line">        check_error();</span><br><span class="line">        GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);</span><br><span class="line">        assert(status == GL_FRAMEBUFFER_COMPLETE);</span><br><span class="line">        glViewport(x, y, width, height);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (dither_effect != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        CHECK(dither_effect-&gt;set_int(<span class="string">"output_width"</span>, width));</span><br><span class="line">        CHECK(dither_effect-&gt;set_int(<span class="string">"output_height"</span>, height));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!last_phase) &#123;</span><br><span class="line">    GLuint tex_num = resource_pool-&gt;create_2d_texture(intermediate_format, phase-&gt;output_width, phase-&gt;output_height);</span><br><span class="line">    output_textures.insert(make_pair(phase, tex_num));</span><br><span class="line">    phase_destinations.push_back(DestinationTexture&#123; tex_num, intermediate_format &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// The output texture needs to have valid state to be written to by a compute shader.</span></span><br><span class="line">    glActiveTexture(GL_TEXTURE0);</span><br><span class="line">    check_error();</span><br><span class="line">    glBindTexture(GL_TEXTURE_2D, tex_num);</span><br><span class="line">    check_error();</span><br><span class="line">    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);</span><br><span class="line">    check_error();</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (phase-&gt;is_compute_shader) &#123;</span><br><span class="line">    assert(!destinations.empty());</span><br><span class="line">    phase_destinations = destinations;</span><br><span class="line">&#125;</span><br><span class="line">execute_phase(phase, output_textures, phase_destinations, &amp;generated_mipmaps);</span><br></pre></td></tr></table></figure>
+<p>execute_phase包含一些输入输出大小，参数，资源缓存等逻辑，最后调用真正的绘制代码glDrawArrays。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/音视频/" rel="tag"># 音视频</a>
+          
+            <a href="/tags/C/" rel="tag"># C</a>
+          
+            <a href="/tags/OpenGl/" rel="tag"># OpenGl</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/27/2019-10-27-mlt/" rel="next" title="mlt框架介绍和结构分析">
+                <i class="fa fa-chevron-left"></i> mlt框架介绍和结构分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/11/02/2019-11-2-Activity启动与StartingWindow/" rel="prev" title="Activity启动与StartingWindow流程深入解析">
+                Activity启动与StartingWindow流程深入解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础介绍"><span class="nav-number">1.</span> <span class="nav-text">基础介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类定义和结构"><span class="nav-number">2.</span> <span class="nav-text">类定义和结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Effect"><span class="nav-number">2.1.</span> <span class="nav-text">Effect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Input"><span class="nav-number">2.2.</span> <span class="nav-text">Input</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#image-format"><span class="nav-number">2.3.</span> <span class="nav-text">image_format</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#utils"><span class="nav-number">2.4.</span> <span class="nav-text">utils</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ResourcePool"><span class="nav-number">2.5.</span> <span class="nav-text">ResourcePool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#YCbCrInput"><span class="nav-number">2.6.</span> <span class="nav-text">YCbCrInput</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EffectChain"><span class="nav-number">2.7.</span> <span class="nav-text">EffectChain</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其它"><span class="nav-number">2.8.</span> <span class="nav-text">其它</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理流程"><span class="nav-number">3.</span> <span class="nav-text">处理流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#finalize"><span class="nav-number">3.1.</span> <span class="nav-text">finalize</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#construct-phase"><span class="nav-number">3.2.</span> <span class="nav-text">construct_phase</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#compile-glsl-program"><span class="nav-number">3.3.</span> <span class="nav-text">compile_glsl_program</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#render"><span class="nav-number">3.4.</span> <span class="nav-text">render</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

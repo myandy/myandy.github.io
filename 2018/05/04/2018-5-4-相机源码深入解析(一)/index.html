@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,Camera,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="相机流程深入解析:从framework到hal调用">
+<meta name="keywords" content="Android,Camera">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android8.0相机源码深入解析(一)">
+<meta property="og:url" content="http://anddymao.com/2018/05/04/2018-5-4-相机源码深入解析(一)/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="相机流程深入解析:从framework到hal调用">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://anddymao.com/img/post_camera_1.png">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.885Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android8.0相机源码深入解析(一)">
+<meta name="twitter:description" content="相机流程深入解析:从framework到hal调用">
+<meta name="twitter:image" content="http://anddymao.com/img/post_camera_1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2018/05/04/2018-5-4-相机源码深入解析(一)/">
+
+
+
+
+
+  <title>Android8.0相机源码深入解析(一) | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2018/05/04/2018-5-4-相机源码深入解析(一)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android8.0相机源码深入解析(一)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-04T12:00:00+08:00">
+                2018-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  相机流程深入解析:从framework到hal调用
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="相机整体架构"><a href="#相机整体架构" class="headerlink" title="相机整体架构"></a>相机整体架构</h1><p>相机api1的HAL接口被设计成了三种运行模式：预览,静态拍摄和视频录制.<br>预览对应于代码中 Camera 类的 startPreview 函数，而静态拍摄对应于Camera类的takePicture函数，视频录制则是在MediaRecorder类的setCamera函数中传入Camera对象实例。整体架构图如下所示:</p>
+<p><img src="/img/post_camera_1.png" alt="Alt text"><br>根据架构图再深入源码研究调用流程,才能真正理解相机的架构.做相机开发的话主要有APP层开发和HAL层开发,HAL层由芯片厂商定制(比如高通等),手机厂商可以再其上增加一些内容.本文的分析基于android8.0源码,着重分析调用流程和层级数据传输,弄懂android架构.需要对binder机制,AIDL及HIDL有一定了解.</p>
+<h1 id="Android相机调用流程解析"><a href="#Android相机调用流程解析" class="headerlink" title="Android相机调用流程解析"></a>Android相机调用流程解析</h1><p>相机api1最基础的方法是startPreview,我们根据startPreview的调用深入了解下api1的相机调用流程.</p>
+<h2 id="从framework到jni"><a href="#从framework到jni" class="headerlink" title="从framework到jni"></a>从framework到jni</h2><p>  看下framework中android.hardware.Camera里面的对应方法,</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Starts capturing and drawing preview frames to the screen.</span></span><br><span class="line"><span class="comment">* Preview will not actually start until a surface is supplied</span></span><br><span class="line"><span class="comment">* with &#123;<span class="doctag">@link</span> #setPreviewDisplay(SurfaceHolder)&#125; or</span></span><br><span class="line"><span class="comment">* &#123;<span class="doctag">@link</span> #setPreviewTexture(SurfaceTexture)&#125;.</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* &lt;p&gt;If &#123;<span class="doctag">@link</span> #setPreviewCallback(Camera.PreviewCallback)&#125;,</span></span><br><span class="line"><span class="comment">* &#123;<span class="doctag">@link</span> #setOneShotPreviewCallback(Camera.PreviewCallback)&#125;, or</span></span><br><span class="line"><span class="comment">* &#123;<span class="doctag">@link</span> #setPreviewCallbackWithBuffer(Camera.PreviewCallback)&#125; were</span></span><br><span class="line"><span class="comment">* called, &#123;<span class="doctag">@link</span> Camera.PreviewCallback#onPreviewFrame(byte[], Camera)&#125;</span></span><br><span class="line"><span class="comment">* will be called when preview data becomes available.</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> RuntimeException if starting preview fails; usually this would be</span></span><br><span class="line"><span class="comment">*    because of a hardware or other low-level error, or because release()</span></span><br><span class="line"><span class="comment">*    has been called on this Camera instance.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">startPreview</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p>讲到需要调用setPreviewDisplay或者setPreviewTexture方法,才能开始预览,如果setPreviewCallback就会在预览时回调.<br>jni方法在android_hardware_Camera.cpp中可以看到注册地方:</p>
+ <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> JNINativeMethod camMethods[] = &#123;</span><br><span class="line">  &#123; <span class="string">"_getNumberOfCameras"</span>,</span><br><span class="line">    <span class="string">"()I"</span>,</span><br><span class="line">    (<span class="keyword">void</span> *)android_hardware_Camera_getNumberOfCameras &#125;,</span><br><span class="line">  &#123; <span class="string">"_getCameraInfo"</span>,</span><br><span class="line">    <span class="string">"(ILandroid/hardware/Camera$CameraInfo;)V"</span>,</span><br><span class="line">    (<span class="keyword">void</span>*)android_hardware_Camera_getCameraInfo &#125;,</span><br><span class="line">  &#123; <span class="string">"native_setup"</span>,</span><br><span class="line">    <span class="string">"(Ljava/lang/Object;IILjava/lang/String;)I"</span>,</span><br><span class="line">    (<span class="keyword">void</span>*)android_hardware_Camera_native_setup &#125;,</span><br><span class="line">  &#123; <span class="string">"native_release"</span>,</span><br><span class="line">    <span class="string">"()V"</span>,</span><br><span class="line">    (<span class="keyword">void</span>*)android_hardware_Camera_release &#125;,</span><br><span class="line">  &#123; <span class="string">"setPreviewSurface"</span>,</span><br><span class="line">    <span class="string">"(Landroid/view/Surface;)V"</span>,</span><br><span class="line">    (<span class="keyword">void</span> *)android_hardware_Camera_setPreviewSurface &#125;,</span><br><span class="line">  &#123; <span class="string">"setPreviewTexture"</span>,</span><br><span class="line">    <span class="string">"(Landroid/graphics/SurfaceTexture;)V"</span>,</span><br><span class="line">    (<span class="keyword">void</span> *)android_hardware_Camera_setPreviewTexture &#125;,</span><br><span class="line">  &#123; <span class="string">"setPreviewCallbackSurface"</span>,</span><br><span class="line">    <span class="string">"(Landroid/view/Surface;)V"</span>,</span><br><span class="line">    (<span class="keyword">void</span> *)android_hardware_Camera_setPreviewCallbackSurface &#125;,</span><br><span class="line">  &#123; <span class="string">"startPreview"</span>,</span><br><span class="line">    <span class="string">"()V"</span>,</span><br><span class="line">    (<span class="keyword">void</span> *)android_hardware_Camera_startPreview &#125;,</span><br><span class="line">  &#123; <span class="string">"_stopPreview"</span>,</span><br><span class="line">    <span class="string">"()V"</span>,</span><br><span class="line">    (<span class="keyword">void</span> *)android_hardware_Camera_stopPreview &#125;,</span><br><span class="line">   ...</span><br></pre></td></tr></table></figure>
+<p>然后就找到对应jni方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">android_hardware_Camera_startPreview</span><span class="params">(JNIEnv *env, jobject thiz)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">     ALOGV(<span class="string">"startPreview"</span>);</span><br><span class="line">     sp&lt;Camera&gt; camera = get_native_camera(env, thiz, <span class="literal">NULL</span>);</span><br><span class="line">     <span class="keyword">if</span> (camera == <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (camera-&gt;startPreview() != NO_ERROR) &#123;</span><br><span class="line">         jniThrowRuntimeException(env, <span class="string">"startPreview failed"</span>);</span><br><span class="line">         <span class="keyword">return</span>;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> sp是强指针,获取到Camera对象,调用startPreview方法,另外我们再简单看下setPreviewCallbackSurface方法,</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">android_hardware_Camera_setPreviewCallbackSurface</span><span class="params">(JNIEnv *env,</span></span></span><br><span class="line"><span class="function"><span class="params">     jobject thiz, jobject jSurface)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">     ALOGV(<span class="string">"setPreviewCallbackSurface"</span>);</span><br><span class="line">     JNICameraContext* context;</span><br><span class="line">     sp&lt;Camera&gt; camera = get_native_camera(env, thiz, &amp;context);</span><br><span class="line">     <span class="keyword">if</span> (camera == <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">     sp&lt;IGraphicBufferProducer&gt; gbp;</span><br><span class="line">     sp&lt;Surface&gt; surface;</span><br><span class="line">     <span class="keyword">if</span> (jSurface) &#123;</span><br><span class="line">         surface = android_view_Surface_getSurface(env, jSurface);</span><br><span class="line">         <span class="keyword">if</span> (surface != <span class="literal">NULL</span>) &#123;</span><br><span class="line">             gbp = surface-&gt;getIGraphicBufferProducer();</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">// Clear out normal preview callbacks</span></span><br><span class="line">     context-&gt;setCallbackMode(env, <span class="literal">false</span>, <span class="literal">false</span>);</span><br><span class="line">     <span class="comment">// Then set up callback surface</span></span><br><span class="line">     <span class="keyword">if</span> (camera-&gt;setPreviewCallbackTarget(gbp) != NO_ERROR) &#123;</span><br><span class="line">         jniThrowException(env, <span class="string">"java/io/IOException"</span>, <span class="string">"setPreviewCallbackTarget failed"</span>);</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 这两个方法都是在android_hardware_Camera.cpp中的静态方法,android_hardware_Camera中还定义了JNICameraContext,用于JNI层调用转换.<br> JNICameraContext及JNI相机上下文,获取Camera同时获取到.这一步就完成android.hardware.camera到JNICameraContext调用逻辑了.<br> get_native_camera是获取native层相机,接下来继续探究底层代码.</p>
+<h2 id="相机native-library"><a href="#相机native-library" class="headerlink" title="相机native library"></a>相机native library</h2><p>这一步我们调用到了相机client,代码在/frameworks/av/camera里,另外还会调用到相机service,代码在/frameworks/av/services/camera/libcameraservice里,先看Camera.cpp的代码.<br>Camera.cpp中startPreview方法,转调到ICamera中了:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// start preview mode</span></span><br><span class="line"><span class="keyword">status_t</span> Camera::startPreview()</span><br><span class="line">&#123;</span><br><span class="line">    ALOGV(<span class="string">"startPreview"</span>);</span><br><span class="line">    sp &lt;::android::hardware::ICamera&gt; c = mCamera;</span><br><span class="line">    <span class="keyword">if</span> (c == <span class="number">0</span>) <span class="keyword">return</span> NO_INIT;</span><br><span class="line">    <span class="keyword">return</span> c-&gt;startPreview();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>startPreview方法在ICamera.h中的定义,CameraClient和CameraService都要使用</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// start preview mode, must call setPreviewTarget first</span></span><br><span class="line"><span class="function"><span class="keyword">virtual</span> status_t        <span class="title">startPreview</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>在ICamera.cpp找到startPreview的实现:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BpCamera</span>:</span> <span class="keyword">public</span> BpInterface&lt;ICamera&gt;</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="keyword">explicit</span> <span class="title">BpCamera</span><span class="params">(<span class="keyword">const</span> sp&lt;IBinder&gt;&amp; impl)</span></span></span><br><span class="line">            : BpInterface&lt;ICamera&gt;(impl)</span><br><span class="line">        &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">         <span class="comment">// start preview mode, must call setPreviewTarget first</span></span><br><span class="line">         <span class="keyword">status_t</span> startPreview()</span><br><span class="line">         &#123;</span><br><span class="line">             ALOGV(<span class="string">"startPreview"</span>);</span><br><span class="line">             Parcel data, reply;</span><br><span class="line">             data.writeInterfaceToken(ICamera::getInterfaceDescriptor());</span><br><span class="line">             remote()-&gt;transact(START_PREVIEW, data, &amp;reply);</span><br><span class="line">             <span class="keyword">return</span> reply.readInt32();</span><br><span class="line">         &#125;</span><br><span class="line">     ...</span><br></pre></td></tr></table></figure>
+<p>  BpCamera是相机BpBinder,就是Binder代理,通过remote()-&gt;transact(),这时会在服务进程中调用对应的BnCamera对象的onTransact()方法,根据对应的code(START_PREVIEW),这样就执行了服务端的startPreview方法,具体可详细了解android binder机制.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> START_PREVIEW: &#123;</span><br><span class="line">    ALOGV(<span class="string">"START_PREVIEW"</span>);</span><br><span class="line">    CHECK_INTERFACE(ICamera, data, reply);</span><br><span class="line">    reply-&gt;writeInt32(startPreview());</span><br><span class="line">    <span class="keyword">return</span> NO_ERROR;</span><br><span class="line">&#125; <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+<p>在CameraService.h中找到了BnCamera的方法定义,属于libcameraservice模块</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Client</span> :</span> <span class="keyword">public</span> hardware::BnCamera, <span class="keyword">public</span> BasicClient</span><br><span class="line">   &#123;</span><br><span class="line">   <span class="keyword">public</span>:</span><br><span class="line">       <span class="keyword">typedef</span> hardware::ICameraClient TCamCallbacks;</span><br><span class="line"></span><br><span class="line">       <span class="comment">// ICamera interface (see ICamera for details)</span></span><br><span class="line">       <span class="keyword">virtual</span> binder::<span class="function">Status <span class="title">disconnect</span><span class="params">()</span></span>;</span><br><span class="line">       <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">connect</span><span class="params">(<span class="keyword">const</span> sp&lt;hardware::ICameraClient&gt;&amp; client)</span> </span>= <span class="number">0</span>;</span><br><span class="line">       <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">lock</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">       <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">unlock</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">       <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">setPreviewTarget</span><span class="params">(<span class="keyword">const</span> sp&lt;IGraphicBufferProducer&gt;&amp; bufferProducer)</span></span>=<span class="number">0</span>;</span><br><span class="line">       <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span>          <span class="title">setPreviewCallbackFlag</span><span class="params">(<span class="keyword">int</span> flag)</span> </span>= <span class="number">0</span>;</span><br><span class="line">       <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">setPreviewCallbackTarget</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="keyword">const</span> sp&lt;IGraphicBufferProducer&gt;&amp; callbackProducer)</span> </span>= <span class="number">0</span>;</span><br><span class="line">       <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">startPreview</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">       ...</span><br></pre></td></tr></table></figure>
+<p>CameraService::Client有API1和API2两种实现,转而定义在CameraClient.h中:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Interface between android.hardware.Camera API and Camera HAL device for version</span></span><br><span class="line"><span class="comment"> * CAMERA_DEVICE_API_VERSION_1_0.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CameraClient</span> :</span> <span class="keyword">public</span> CameraService::Client</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// ICamera interface (see ICamera for details)</span></span><br><span class="line">    <span class="keyword">virtual</span> binder::<span class="function">Status  <span class="title">disconnect</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t        <span class="title">connect</span><span class="params">(<span class="keyword">const</span> sp&lt;hardware::ICameraClient&gt;&amp; client)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t        <span class="title">lock</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t        <span class="title">unlock</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t        <span class="title">setPreviewTarget</span><span class="params">(<span class="keyword">const</span> sp&lt;IGraphicBufferProducer&gt;&amp; bufferProducer)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span>            <span class="title">setPreviewCallbackFlag</span><span class="params">(<span class="keyword">int</span> flag)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t        <span class="title">setPreviewCallbackTarget</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">const</span> sp&lt;IGraphicBufferProducer&gt;&amp; callbackProducer)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t        <span class="title">startPreview</span><span class="params">()</span></span>;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>在CameraServece.cpp找到实现方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// start preview mode</span></span><br><span class="line"><span class="keyword">status_t</span> CameraClient::startPreview() &#123;</span><br><span class="line">    LOG1(<span class="string">"startPreview (pid %d)"</span>, getCallingPid());</span><br><span class="line">    <span class="keyword">return</span> startCameraMode(CAMERA_PREVIEW_MODE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// start recording mode</span></span><br><span class="line"><span class="keyword">status_t</span> CameraClient::startRecording() &#123;</span><br><span class="line">    LOG1(<span class="string">"startRecording (pid %d)"</span>, getCallingPid());</span><br><span class="line">    <span class="keyword">return</span> startCameraMode(CAMERA_RECORDING_MODE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// start preview or recording</span></span><br><span class="line"><span class="keyword">status_t</span> CameraClient::startCameraMode(camera_mode mode) &#123;</span><br><span class="line">    LOG1(<span class="string">"startCameraMode(%d)"</span>, mode);</span><br><span class="line">    Mutex::<span class="function">Autolock <span class="title">lock</span><span class="params">(mLock)</span></span>;</span><br><span class="line">    <span class="keyword">status_t</span> result = checkPidAndHardware();</span><br><span class="line">    <span class="keyword">if</span> (result != NO_ERROR) <span class="keyword">return</span> result;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span>(mode) &#123;</span><br><span class="line">        <span class="keyword">case</span> CAMERA_PREVIEW_MODE:</span><br><span class="line">            <span class="keyword">if</span> (mSurface == <span class="number">0</span> &amp;&amp; mPreviewWindow == <span class="number">0</span>) &#123;</span><br><span class="line">                LOG1(<span class="string">"mSurface is not set yet."</span>);</span><br><span class="line">                <span class="comment">// still able to start preview in this case.</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> startPreviewMode();</span><br><span class="line">        <span class="keyword">case</span> CAMERA_RECORDING_MODE:</span><br><span class="line">            <span class="keyword">if</span> (mSurface == <span class="number">0</span> &amp;&amp; mPreviewWindow == <span class="number">0</span>) &#123;</span><br><span class="line">                ALOGE(<span class="string">"mSurface or mPreviewWindow must be set before startRecordingMode."</span>);</span><br><span class="line">                <span class="keyword">return</span> INVALID_OPERATION;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> startRecordingMode();</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> UNKNOWN_ERROR;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">status_t</span> CameraClient::startPreviewMode() &#123;</span><br><span class="line">    LOG1(<span class="string">"startPreviewMode"</span>);</span><br><span class="line">    <span class="keyword">status_t</span> result = NO_ERROR;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// if preview has been enabled, nothing needs to be done</span></span><br><span class="line">    <span class="keyword">if</span> (mHardware-&gt;previewEnabled()) &#123;</span><br><span class="line">        <span class="keyword">return</span> NO_ERROR;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mPreviewWindow != <span class="number">0</span>) &#123;</span><br><span class="line">        mHardware-&gt;setPreviewScalingMode(</span><br><span class="line">            NATIVE_WINDOW_SCALING_MODE_SCALE_TO_WINDOW);</span><br><span class="line">        mHardware-&gt;setPreviewTransform(mOrientation);</span><br><span class="line">    &#125;</span><br><span class="line">    mHardware-&gt;setPreviewWindow(mPreviewWindow);</span><br><span class="line">    result = mHardware-&gt;startPreview();</span><br><span class="line">    <span class="keyword">if</span> (result == NO_ERROR) &#123;</span><br><span class="line">        sCameraService-&gt;updateProxyDeviceState(</span><br><span class="line">            hardware::ICameraServiceProxy::CAMERA_STATE_ACTIVE,</span><br><span class="line">            mCameraIdStr, mCameraFacing, mClientPackageName);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>分preview模式和录像模式,我们只看preview模式,这里看到mHardware,是一个CameraHardwareInterface对象,终于要进入hal层了,调用了setPreviewWindow,然后startPreview,再使用CameraService对象sCameraService更新代理设备状态.</p>
+<p>总结下本部分调用,从相机client到相机service,从Camera.cpp的方法实际调用了ICamera.cpp,ICamera实现了BpCamera,最后调用到了BnCamera,BnCamera回调写在ICamera.cpp中,但实际是由远程service调用的,这时是生成了服务端的一个代理.CameraService::Client实现了BnCamera,Client又有API1和API2两种实现,<br>最后的方法调入CameraClient中.</p>
+<h2 id="从native到hal"><a href="#从native到hal" class="headerlink" title="从native到hal"></a>从native到hal</h2><p>CameraHardwareInterface承担了native到hal层的转换,代码在libcameraservice模块的device1包里,hidl定义在hardware/interface/camera里,继续研究如何调用到hal层的.直接看CameraHardwareInterface.cpp中的方法实现:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> CameraHardwareInterface::startPreview()</span><br><span class="line">&#123;</span><br><span class="line">    ALOGV(<span class="string">"%s(%s)"</span>, __FUNCTION__, mName.<span class="built_in">string</span>());</span><br><span class="line">    <span class="keyword">if</span> (CC_LIKELY(mHidlDevice != <span class="literal">nullptr</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> CameraProviderManager::mapToStatusT(</span><br><span class="line">                mHidlDevice-&gt;startPreview());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> INVALID_OPERATION;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>mapToStatusT是公共方法,做了一个状态转换,CameraProviderManager在libcameraservice模块的common包里,我们主要看mHidlDevice,CameraHardwareInterface.h中看到mHidlDevice的定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sp&lt;hardware::camera::device::V1_0::ICameraDevice&gt; mHidlDevice;</span><br></pre></td></tr></table></figure>
+<p>hidl是硬件抽象层接口定义语言,以hidlDevice作为代理调用hal层方法,在hardware/interface/camera/device/1.0/ICameraDevice.hal中可以看到对象的方法定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Start preview mode.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @return status The status code for this operation.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">startPreview() generates (Status status);</span><br></pre></td></tr></table></figure>
+<p>在CameraDevice.cpp中找到方法实现:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Return&lt;Status&gt; CameraDevice::startPreview() &#123;</span><br><span class="line">    ALOGV(<span class="string">"%s(%s)"</span>, __FUNCTION__, mCameraId.c_str());</span><br><span class="line">    Mutex::Autolock _l(mLock);</span><br><span class="line">    <span class="keyword">if</span> (!mDevice) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s called while camera is not opened"</span>, __FUNCTION__);</span><br><span class="line">        <span class="keyword">return</span> Status::OPERATION_NOT_SUPPORTED;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mDevice-&gt;ops-&gt;start_preview) &#123;</span><br><span class="line">        <span class="keyword">return</span> getHidlStatus(mDevice-&gt;ops-&gt;start_preview(mDevice));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Status::INTERNAL_ERROR; <span class="comment">// HAL should provide start_preview</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> mDevice是camera_device_t对象,定义在hardware/libhardware/include/hardware/camera.h中</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">camera_device</span> &#123;</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * camera_device.common.version must be in the range</span></span><br><span class="line"><span class="comment">     * HARDWARE_DEVICE_API_VERSION(0,0)-(1,FF). CAMERA_DEVICE_API_VERSION_1_0 is</span></span><br><span class="line"><span class="comment">     * recommended.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">hw_device_t</span> common;</span><br><span class="line">    <span class="keyword">camera_device_ops_t</span> *ops;</span><br><span class="line">    <span class="keyword">void</span> *priv;</span><br><span class="line">&#125; <span class="keyword">camera_device_t</span>;</span><br></pre></td></tr></table></figure>
+<p> camera_device_ops也在hardware/libhardware/include/hardware/camera.h中,定义了start_preview等hal层方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">camera_device_ops</span> &#123;</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Start preview mode.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> (*start_preview)(struct camera_device *);</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>从CameraHardwareInterface通过camera_device调用到hal层的方法,hal层的方法定义在camera_device_ops_t里,接下来看hal层方法的实现.</p>
+<h2 id="HAL层实现"><a href="#HAL层实现" class="headerlink" title="HAL层实现"></a>HAL层实现</h2><p>  终于进入了hal层,这里用的是高通相机框架,QCamera2HardwareInterface即高通对硬件接口的实现,2是to,在QCamera2HardwareInterface中可以看到对应的hal方法的对应关系:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">camera_device_ops_t</span> QCamera2HardwareInterface::mCameraOps = &#123;</span><br><span class="line">    .set_preview_window =        QCamera2HardwareInterface::set_preview_window,</span><br><span class="line">    .set_callbacks =             QCamera2HardwareInterface::set_CallBacks,</span><br><span class="line">    .enable_msg_type =           QCamera2HardwareInterface::enable_msg_type,</span><br><span class="line">    .disable_msg_type =          QCamera2HardwareInterface::disable_msg_type,</span><br><span class="line">    .msg_type_enabled =          QCamera2HardwareInterface::msg_type_enabled,</span><br><span class="line"></span><br><span class="line">    .start_preview =             QCamera2HardwareInterface::start_preview,</span><br><span class="line">    .stop_preview =              QCamera2HardwareInterface::stop_preview,</span><br><span class="line">    .preview_enabled =           QCamera2HardwareInterface::preview_enabled,</span><br><span class="line">    .store_meta_data_in_buffers= QCamera2HardwareInterface::store_meta_data_in_buffers,</span><br><span class="line"></span><br><span class="line">    .start_recording =           QCamera2HardwareInterface::start_recording,</span><br><span class="line">    .stop_recording =            QCamera2HardwareInterface::stop_recording,</span><br><span class="line">    .recording_enabled =         QCamera2HardwareInterface::recording_enabled,</span><br><span class="line">    .release_recording_frame =   QCamera2HardwareInterface::release_recording_frame,</span><br><span class="line"></span><br><span class="line">    .auto_focus =                QCamera2HardwareInterface::auto_focus,</span><br><span class="line">    .cancel_auto_focus =         QCamera2HardwareInterface::cancel_auto_focus,</span><br><span class="line"></span><br><span class="line">    .take_picture =              QCamera2HardwareInterface::take_picture,</span><br><span class="line">    .cancel_picture =            QCamera2HardwareInterface::cancel_picture,</span><br><span class="line"></span><br><span class="line">    .set_parameters =            QCamera2HardwareInterface::set_parameters,</span><br><span class="line">    .get_parameters =            QCamera2HardwareInterface::get_parameters,</span><br><span class="line">    .put_parameters =            QCamera2HardwareInterface::put_parameters,</span><br><span class="line">    .send_command =              QCamera2HardwareInterface::send_command,</span><br><span class="line"></span><br><span class="line">    .release =                   QCamera2HardwareInterface::release,</span><br><span class="line">    .dump =                      QCamera2HardwareInterface::dump,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>继续看start_preview方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*===========================================================================</span></span><br><span class="line"><span class="comment"> * FUNCTION   : start_preview</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * DESCRIPTION: start preview</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * PARAMETERS :</span></span><br><span class="line"><span class="comment"> *   @device  : ptr to camera device struct</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * RETURN     : int32_t type of status</span></span><br><span class="line"><span class="comment"> *              NO_ERROR  -- success</span></span><br><span class="line"><span class="comment"> *              none-zero failure code</span></span><br><span class="line"><span class="comment"> *==========================================================================*/</span></span><br><span class="line"><span class="keyword">int</span> QCamera2HardwareInterface::start_preview(struct camera_device *device)</span><br><span class="line">&#123;</span><br><span class="line">    KPI_ATRACE_CAMSCOPE_CALL(CAMSCOPE_HAL1_START_PREVIEW);</span><br><span class="line">    <span class="keyword">int</span> ret = NO_ERROR;</span><br><span class="line">    QCamera2HardwareInterface *hw =</span><br><span class="line">        <span class="keyword">reinterpret_cast</span>&lt;QCamera2HardwareInterface *&gt;(device-&gt;priv);</span><br><span class="line">    <span class="keyword">if</span> (!hw) &#123;</span><br><span class="line">        LOGE(<span class="string">"NULL camera device"</span>);</span><br><span class="line">        <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">    &#125;</span><br><span class="line">    LOGI(<span class="string">"[KPI Perf]: E PROFILE_START_PREVIEW camera id %d"</span>,</span><br><span class="line">             hw-&gt;getCameraId());</span><br><span class="line"></span><br><span class="line">    hw-&gt;m_perfLockMgr.acquirePerfLockIfExpired(PERF_LOCK_START_PREVIEW);</span><br><span class="line">    hw-&gt;lockAPI();</span><br><span class="line">    <span class="keyword">qcamera_api_result_t</span> apiResult;</span><br><span class="line">    <span class="keyword">qcamera_sm_evt_enum_t</span> evt = QCAMERA_SM_EVT_START_PREVIEW;</span><br><span class="line">    <span class="keyword">uint32_t</span> cam_type = CAM_TYPE_MAIN;</span><br><span class="line">    <span class="keyword">if</span> (hw-&gt;isDualCamera()) &#123;</span><br><span class="line">        cam_type = MM_CAMERA_DUAL_CAM;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (hw-&gt;isNoDisplayMode(cam_type)) &#123;</span><br><span class="line">        evt = QCAMERA_SM_EVT_START_NODISPLAY_PREVIEW;</span><br><span class="line">    &#125;</span><br><span class="line">    ret = hw-&gt;processAPI(evt, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret == NO_ERROR) &#123;</span><br><span class="line">        hw-&gt;waitAPIResult(evt, &amp;apiResult);</span><br><span class="line">        ret = apiResult.status;</span><br><span class="line">    &#125;</span><br><span class="line">    hw-&gt;unlockAPI();</span><br><span class="line">    LOGI(<span class="string">"[KPI Perf]: X ret = %d"</span>, ret);</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用qcamera_sm_evt_enum_t是一个枚举,用hw-&gt;processAPI处理,结果给apiResult,看processAPI方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*===========================================================================</span></span><br><span class="line"><span class="comment"> * FUNCTION   : processAPI</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * DESCRIPTION: process API calls from upper layer</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * PARAMETERS :</span></span><br><span class="line"><span class="comment"> *   @api         : API to be processed</span></span><br><span class="line"><span class="comment"> *   @api_payload : ptr to API payload if any</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * RETURN     : int32_t type of status</span></span><br><span class="line"><span class="comment"> *              NO_ERROR  -- success</span></span><br><span class="line"><span class="comment"> *              none-zero failure code</span></span><br><span class="line"><span class="comment"> *==========================================================================*/</span></span><br><span class="line"><span class="keyword">int</span> QCamera2HardwareInterface::processAPI(<span class="keyword">qcamera_sm_evt_enum_t</span> api, <span class="keyword">void</span> *api_payload)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = DEAD_OBJECT;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (m_smThreadActive) &#123;</span><br><span class="line">        ret = m_stateMachine.procAPI(api, api_payload);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>转调给了m_stateMachine,含义是状态机,是一个QCameraStateMachine对象,继续看实现:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*===========================================================================</span></span><br><span class="line"><span class="comment"> * FUNCTION   : procAPI</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * DESCRIPTION: process incoming API request from framework layer.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * PARAMETERS :</span></span><br><span class="line"><span class="comment"> *   @evt          : event to be processed</span></span><br><span class="line"><span class="comment"> *   @api_payload  : API payload. Can be NULL if not needed.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * RETURN     : int32_t type of status</span></span><br><span class="line"><span class="comment"> *              NO_ERROR  -- success</span></span><br><span class="line"><span class="comment"> *              none-zero failure code</span></span><br><span class="line"><span class="comment"> *==========================================================================*/</span></span><br><span class="line"><span class="keyword">int32_t</span> QCameraStateMachine::procAPI(<span class="keyword">qcamera_sm_evt_enum_t</span> evt,</span><br><span class="line">                                     <span class="keyword">void</span> *api_payload)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">qcamera_sm_cmd_t</span> *node =</span><br><span class="line">        (<span class="keyword">qcamera_sm_cmd_t</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">qcamera_sm_cmd_t</span>));</span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">NULL</span> == node) &#123;</span><br><span class="line">        LOGE(<span class="string">"No memory for qcamera_sm_cmd_t"</span>);</span><br><span class="line">        <span class="keyword">return</span> NO_MEMORY;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memset</span>(node, <span class="number">0</span>, <span class="keyword">sizeof</span>(<span class="keyword">qcamera_sm_cmd_t</span>));</span><br><span class="line">    node-&gt;cmd = QCAMERA_SM_CMD_TYPE_API;</span><br><span class="line">    node-&gt;evt = evt;</span><br><span class="line">    node-&gt;evt_payload = api_payload;</span><br><span class="line">    <span class="keyword">if</span> (api_queue.enqueue((<span class="keyword">void</span> *)node)) &#123;</span><br><span class="line">        cam_sem_post(&amp;cmd_sem);</span><br><span class="line">        <span class="keyword">return</span> NO_ERROR;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        LOGE(<span class="string">"API enqueue failed API = %d"</span>, evt);</span><br><span class="line">        <span class="built_in">free</span>(node);</span><br><span class="line">        <span class="keyword">return</span> UNKNOWN_ERROR;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里有一个api_queue队列处理api请求,找到队列处理过程:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*===========================================================================</span></span><br><span class="line"><span class="comment"> * FUNCTION   : smEvtProcRoutine</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * DESCRIPTION: Statemachine process thread routine to handle events</span></span><br><span class="line"><span class="comment"> *              in different state.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * PARAMETERS :</span></span><br><span class="line"><span class="comment"> *   @data    : ptr to QCameraStateMachine object</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * RETURN     : none</span></span><br><span class="line"><span class="comment"> *==========================================================================*/</span></span><br><span class="line"><span class="keyword">void</span> *QCameraStateMachine::smEvtProcRoutine(<span class="keyword">void</span> *data)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> running = <span class="number">1</span>, ret;</span><br><span class="line">    QCameraStateMachine *pme = (QCameraStateMachine *)data;</span><br><span class="line"></span><br><span class="line">    LOGH(<span class="string">"E"</span>);</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            ret = cam_sem_wait(&amp;pme-&gt;cmd_sem);</span><br><span class="line">            <span class="keyword">if</span> (ret != <span class="number">0</span> &amp;&amp; errno != EINVAL) &#123;</span><br><span class="line">                LOGE(<span class="string">"cam_sem_wait error (%s)"</span>,</span><br><span class="line">                            strerror(errno));</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">while</span> (ret != <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// we got notified about new cmd avail in cmd queue</span></span><br><span class="line">        <span class="comment">// first check API cmd queue</span></span><br><span class="line">        <span class="keyword">qcamera_sm_cmd_t</span> *node = (<span class="keyword">qcamera_sm_cmd_t</span> *)pme-&gt;api_queue.dequeue();</span><br><span class="line">        <span class="keyword">if</span> (node == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="comment">// no API cmd, then check evt cmd queue</span></span><br><span class="line">            node = (<span class="keyword">qcamera_sm_cmd_t</span> *)pme-&gt;evt_queue.dequeue();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (node != <span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="keyword">switch</span> (node-&gt;cmd) &#123;</span><br><span class="line">            <span class="keyword">case</span> QCAMERA_SM_CMD_TYPE_API:</span><br><span class="line">                pme-&gt;stateMachine(node-&gt;evt, node-&gt;evt_payload);</span><br><span class="line">                <span class="comment">// API is in a way sync call, so evt_payload is managed by HWI</span></span><br><span class="line">                <span class="comment">// no need to free payload for API</span></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> QCAMERA_SM_CMD_TYPE_EVT:</span><br><span class="line">                pme-&gt;stateMachine(node-&gt;evt, node-&gt;evt_payload);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// EVT is async call, so payload need to be free after use</span></span><br><span class="line">                <span class="built_in">free</span>(node-&gt;evt_payload);</span><br><span class="line">                node-&gt;evt_payload = <span class="literal">NULL</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> QCAMERA_SM_CMD_TYPE_EXIT:</span><br><span class="line">                running = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">free</span>(node);</span><br><span class="line">            node = <span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">while</span> (running);</span><br><span class="line">    LOGH(<span class="string">"X"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>大概明白smEvtProcRoutine是一个周期性方法,在其中处理各种类型的命令,注释很清楚,QCAMERA_SM_CMD_TYPE_API是由HWI调用的,不需要自己清理返回数据,QCAMERA_SM_CMD_TYPE_EVT是异步调用的,用于其它事件(例如人脸返回等数据),需要清理返回数据,QCAMERA_SM_CMD_TYPE_EXIT是退出.<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*===========================================================================</span></span><br><span class="line"><span class="comment"> * FUNCTION   : stateMachine</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * DESCRIPTION: finite state machine entry function. Depends on state,</span></span><br><span class="line"><span class="comment"> *              incoming event will be handled differently.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * PARAMETERS :</span></span><br><span class="line"><span class="comment"> *   @evt      : event to be processed</span></span><br><span class="line"><span class="comment"> *   @payload  : event payload. Can be NULL if not needed.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * RETURN     : int32_t type of status</span></span><br><span class="line"><span class="comment"> *              NO_ERROR  -- success</span></span><br><span class="line"><span class="comment"> *              none-zero failure code</span></span><br><span class="line"><span class="comment"> *==========================================================================*/</span></span><br><span class="line"><span class="keyword">int32_t</span> QCameraStateMachine::stateMachine(<span class="keyword">qcamera_sm_evt_enum_t</span> evt, <span class="keyword">void</span> *payload)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int32_t</span> rc = NO_ERROR;</span><br><span class="line">    LOGL(<span class="string">"m_state %d, event (%d)"</span>, m_state, evt);</span><br><span class="line">    <span class="keyword">switch</span> (m_state) &#123;</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_STATE_PREVIEW_STOPPED:</span><br><span class="line">        rc = procEvtPreviewStoppedState(evt, payload);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_STATE_PREVIEW_READY:</span><br><span class="line">        rc = procEvtPreviewReadyState(evt, payload);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_STATE_PREVIEWING:</span><br><span class="line">        rc = procEvtPreviewingState(evt, payload);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_STATE_PREPARE_SNAPSHOT:</span><br><span class="line">        rc = procEvtPrepareSnapshotState(evt, payload);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_STATE_PIC_TAKING:</span><br><span class="line">        rc = procEvtPicTakingState(evt, payload);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_STATE_RECORDING:</span><br><span class="line">        rc = procEvtRecordingState(evt, payload);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_STATE_VIDEO_PIC_TAKING:</span><br><span class="line">        rc = procEvtVideoPicTakingState(evt, payload);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_STATE_PREVIEW_PIC_TAKING:</span><br><span class="line">        rc = procEvtPreviewPicTakingState(evt, payload);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> rc;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在不同状态下对应的处理,如果在preview状态:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int32_t</span> QCameraStateMachine::procEvtPreviewingState(<span class="keyword">qcamera_sm_evt_enum_t</span> evt,</span><br><span class="line">                                                    <span class="keyword">void</span> *payload)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int32_t</span> rc = NO_ERROR;</span><br><span class="line">    <span class="keyword">qcamera_api_result_t</span> result;</span><br><span class="line">    <span class="built_in">memset</span>(&amp;result, <span class="number">0</span>, <span class="keyword">sizeof</span>(<span class="keyword">qcamera_api_result_t</span>));</span><br><span class="line"></span><br><span class="line">    LOGL(<span class="string">"event (%d)"</span>, evt);</span><br><span class="line">    <span class="keyword">switch</span> (evt) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_EVT_START_PREVIEW:</span><br><span class="line">    <span class="keyword">case</span> QCAMERA_SM_EVT_START_NODISPLAY_PREVIEW:</span><br><span class="line">    &#123;</span><br><span class="line">         <span class="comment">// no ops here</span></span><br><span class="line">         LOGW(<span class="string">"Already in previewing, no ops here to start preview"</span>);</span><br><span class="line">         applyDelayedMsgs();</span><br><span class="line">         rc = NO_ERROR;</span><br><span class="line">         result.status = rc;</span><br><span class="line">         result.request_api = evt;</span><br><span class="line">         result.result_type = QCAMERA_API_RESULT_TYPE_DEF;</span><br><span class="line">         m_parent-&gt;signalAPIResult(&amp;result);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">     ...</span><br></pre></td></tr></table></figure></p>
+<p>调用m_parent的signalAPIResult返回结果,LOG也看到已经在preview状态,不需要操作.再看下procEvtPreviewStoppedState中的处理:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> QCAMERA_SM_EVT_START_PREVIEW:</span><br><span class="line">    &#123;</span><br><span class="line">        rc = m_parent-&gt;waitDeferredWork(m_parent-&gt;mParamInitJob);</span><br><span class="line">        <span class="keyword">if</span> (NO_ERROR != rc) &#123;</span><br><span class="line">            LOGE(<span class="string">"Param init deferred work failed"</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (m_parent-&gt;mPreviewWindow == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            rc = m_parent-&gt;preparePreview();</span><br><span class="line">            <span class="keyword">if</span>(rc == NO_ERROR) &#123;</span><br><span class="line">                <span class="comment">// preview window is not set yet, move to previewReady state</span></span><br><span class="line">                m_state = QCAMERA_SM_STATE_PREVIEW_READY;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                LOGE(<span class="string">"preparePreview failed"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            rc = m_parent-&gt;preparePreview();</span><br><span class="line">            <span class="keyword">if</span> (rc == NO_ERROR) &#123;</span><br><span class="line">                applyDelayedMsgs();</span><br><span class="line">                rc = m_parent-&gt;startPreview();</span><br><span class="line">                <span class="keyword">if</span> (rc != NO_ERROR) &#123;</span><br><span class="line">                    m_parent-&gt;unpreparePreview();</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">// start preview success, move to previewing state</span></span><br><span class="line">                    m_state = QCAMERA_SM_STATE_PREVIEWING;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        result.status = rc;</span><br><span class="line">        result.request_api = evt;</span><br><span class="line">        result.result_type = QCAMERA_API_RESULT_TYPE_DEF;</span><br><span class="line">        m_parent-&gt;signalAPIResult(&amp;result);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>判断m_parent-&gt;mPreviewWindow的状态进行了不同处理,m_parent是QCamera2HardwareInterface对象,通过这个状态机可能又调回startPreview,正常应该是调用preparePreview方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*===========================================================================</span></span><br><span class="line"><span class="comment"> * FUNCTION   : preparePreview</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * DESCRIPTION: add channels needed for preview</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * PARAMETERS : none</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * RETURN     : int32_t type of status</span></span><br><span class="line"><span class="comment"> *              NO_ERROR  -- success</span></span><br><span class="line"><span class="comment"> *              none-zero failure code</span></span><br><span class="line"><span class="comment"> *==========================================================================*/</span></span><br><span class="line"><span class="keyword">int32_t</span> QCamera2HardwareInterface::preparePreview()</span><br><span class="line">&#123;</span><br><span class="line">    ATRACE_CAMSCOPE_CALL(CAMSCOPE_HAL1_PREPAREPREVIEW);</span><br><span class="line">    <span class="keyword">int32_t</span> rc = NO_ERROR;</span><br><span class="line"></span><br><span class="line">    LOGI(<span class="string">"E"</span>);</span><br><span class="line">    rc = mParameters.setStreamConfigure(<span class="literal">false</span>, <span class="literal">false</span>, <span class="literal">false</span>);</span><br><span class="line">    <span class="keyword">if</span> (rc != NO_ERROR) &#123;</span><br><span class="line">        LOGE(<span class="string">"setStreamConfigure failed %d"</span>, rc);</span><br><span class="line">        <span class="keyword">return</span> rc;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    LOGI(<span class="string">"X rc = %d"</span>, rc);</span><br><span class="line">    <span class="keyword">return</span> rc;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>mParameters是QCameraParameterIntf对象,最后使用的是QCameraParameters对象,这里可以做很多配置操作.<br>本层的话看到了setPreview方法的由camera_device_ops_t到QCamera2HardwareInterface的对应,再看到了状态机QCameraStateMachine,又能回到QCamera2HardwareInterface,再进入调用QCameraParameters获取参数等.</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>整个setPreview方法从framework到hal层的调用步骤就完全走通了,借此对android的架构和相机的架构都更深入了解了.下一篇会分析相机api1的参数传递过程.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/Camera/" rel="tag"># Camera</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/04/2017-12-4-YUV和RGB互相转换及OpenGL显示YUV数据/" rel="next" title="YUV和RGB互相转换及OpenGL显示YUV数据">
+                <i class="fa fa-chevron-left"></i> YUV和RGB互相转换及OpenGL显示YUV数据
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/05/2018-5-5-相机源码深入解析(二)/" rel="prev" title="Android8.0相机源码深入解析(二)">
+                Android8.0相机源码深入解析(二) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#相机整体架构"><span class="nav-number">1.</span> <span class="nav-text">相机整体架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Android相机调用流程解析"><span class="nav-number">2.</span> <span class="nav-text">Android相机调用流程解析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#从framework到jni"><span class="nav-number">2.1.</span> <span class="nav-text">从framework到jni</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相机native-library"><span class="nav-number">2.2.</span> <span class="nav-text">相机native library</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#从native到hal"><span class="nav-number">2.3.</span> <span class="nav-text">从native到hal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HAL层实现"><span class="nav-number">2.4.</span> <span class="nav-text">HAL层实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

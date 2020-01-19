@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,Camera,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="相机流程深入解析:hal到app数据传递">
+<meta name="keywords" content="Android,Camera">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android8.0相机源码深入解析(三)">
+<meta property="og:url" content="http://anddymao.com/2018/05/07/2018-5-7-相机源码深入解析(三)/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="相机流程深入解析:hal到app数据传递">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.885Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android8.0相机源码深入解析(三)">
+<meta name="twitter:description" content="相机流程深入解析:hal到app数据传递">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2018/05/07/2018-5-7-相机源码深入解析(三)/">
+
+
+
+
+
+  <title>Android8.0相机源码深入解析(三) | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2018/05/07/2018-5-7-相机源码深入解析(三)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android8.0相机源码深入解析(三)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-07T12:00:00+08:00">
+                2018-05-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  相机流程深入解析:hal到app数据传递
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>上一篇介绍了app到hal层数据传递,本偏介绍hal到app的数据传递.</p>
+<h2 id="数据传递场景"><a href="#数据传递场景" class="headerlink" title="数据传递场景"></a>数据传递场景</h2><p>app到hal层主要传递配置参数,hal到app传递数据用于哪些场景呢.Camera有很多回调方法,FaceDetection,onPreviewFrame,onPictureTaken等,这些明显是需要传回数据的.<br>我们到Camera.java中找回调方法的使用位置:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">EventHandler</span> <span class="keyword">extends</span> <span class="title">Handler</span></span></span><br><span class="line"><span class="class"> </span>&#123;</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> Camera mCamera;</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="title">EventHandler</span><span class="params">(Camera c, Looper looper)</span> </span>&#123;</span><br><span class="line">         <span class="keyword">super</span>(looper);</span><br><span class="line">         mCamera = c;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="meta">@Override</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">         <span class="keyword">switch</span>(msg.what) &#123;</span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_SHUTTER:</span><br><span class="line">             <span class="keyword">if</span> (mShutterCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 mShutterCallback.onShutter();</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_RAW_IMAGE:</span><br><span class="line">             <span class="keyword">if</span> (mRawImageCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 mRawImageCallback.onPictureTaken((<span class="keyword">byte</span>[])msg.obj, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_COMPRESSED_IMAGE:</span><br><span class="line">             <span class="keyword">if</span> (mJpegCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 mJpegCallback.onPictureTaken((<span class="keyword">byte</span>[])msg.obj, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_PREVIEW_FRAME:</span><br><span class="line">             PreviewCallback pCb = mPreviewCallback;</span><br><span class="line">             <span class="keyword">if</span> (pCb != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 <span class="keyword">if</span> (mOneShot) &#123;</span><br><span class="line">                     <span class="comment">// Clear the callback variable before the callback</span></span><br><span class="line">                     <span class="comment">// in case the app calls setPreviewCallback from</span></span><br><span class="line">                     <span class="comment">// the callback function</span></span><br><span class="line">                     mPreviewCallback = <span class="keyword">null</span>;</span><br><span class="line">                 &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!mWithBuffer) &#123;</span><br><span class="line">                     <span class="comment">// We're faking the camera preview mode to prevent</span></span><br><span class="line">                     <span class="comment">// the app from being flooded with preview frames.</span></span><br><span class="line">                     <span class="comment">// Set to oneshot mode again.</span></span><br><span class="line">                     setHasPreviewCallback(<span class="keyword">true</span>, <span class="keyword">false</span>);</span><br><span class="line">                 &#125;</span><br><span class="line">                 pCb.onPreviewFrame((<span class="keyword">byte</span>[])msg.obj, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_POSTVIEW_FRAME:</span><br><span class="line">             <span class="keyword">if</span> (mPostviewCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 mPostviewCallback.onPictureTaken((<span class="keyword">byte</span>[])msg.obj, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_FOCUS:</span><br><span class="line">             AutoFocusCallback cb = <span class="keyword">null</span>;</span><br><span class="line">             <span class="keyword">synchronized</span> (mAutoFocusCallbackLock) &#123;</span><br><span class="line">                 cb = mAutoFocusCallback;</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">if</span> (cb != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 <span class="keyword">boolean</span> success = msg.arg1 == <span class="number">0</span> ? <span class="keyword">false</span> : <span class="keyword">true</span>;</span><br><span class="line">                 cb.onAutoFocus(success, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_ZOOM:</span><br><span class="line">             <span class="keyword">if</span> (mZoomListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 mZoomListener.onZoomChange(msg.arg1, msg.arg2 != <span class="number">0</span>, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_PREVIEW_METADATA:</span><br><span class="line">             <span class="keyword">if</span> (mFaceListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 mFaceListener.onFaceDetection((Face[])msg.obj, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_ERROR :</span><br><span class="line">             Log.e(TAG, <span class="string">"Error "</span> + msg.arg1);</span><br><span class="line">             <span class="keyword">if</span> (mErrorCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 mErrorCallback.onError(msg.arg1, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">case</span> CAMERA_MSG_FOCUS_MOVE:</span><br><span class="line">             <span class="keyword">if</span> (mAutoFocusMoveCallback != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 mAutoFocusMoveCallback.onAutoFocusMoving(msg.arg1 == <span class="number">0</span> ? <span class="keyword">false</span> : <span class="keyword">true</span>, mCamera);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">default</span>:</span><br><span class="line">             Log.e(TAG, <span class="string">"Unknown message type "</span> + msg.what);</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>看到各种数据传递,包括预览,拍照,人脸,错误,聚焦等,用一个Handler获取消息,obj传递数据,我们根据人脸识别参数CAMERA_MSG_PREVIEW_METADATA来深入分析.</p>
+<h2 id="jni到native-library"><a href="#jni到native-library" class="headerlink" title="jni到native library"></a>jni到native library</h2><p>找到这个消息是哪里发出来的,按照之前经验要去jni中找,没有找到CAMERA_MSG_PREVIEW_METADATA的传递,但在android_hardware_Camera.cpp中找到了传递人脸数据的地方:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> JNICameraContext::postMetadata(JNIEnv *env, <span class="keyword">int32_t</span> msgType, <span class="keyword">camera_frame_metadata_t</span> *metadata)</span><br><span class="line">&#123;</span><br><span class="line">    jobjectArray obj = <span class="literal">NULL</span>;</span><br><span class="line">    obj = (jobjectArray) env-&gt;NewObjectArray(metadata-&gt;number_of_faces,</span><br><span class="line">                                             mFaceClass, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (obj == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"Couldn't allocate face metadata array"</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; metadata-&gt;number_of_faces; i++) &#123;</span><br><span class="line">        jobject face = env-&gt;NewObject(mFaceClass, fields.face_constructor);</span><br><span class="line">        env-&gt;SetObjectArrayElement(obj, i, face);</span><br><span class="line"></span><br><span class="line">        jobject rect = env-&gt;NewObject(mRectClass, fields.rect_constructor);</span><br><span class="line">        env-&gt;SetIntField(rect, fields.rect_left, metadata-&gt;faces[i].rect[<span class="number">0</span>]);</span><br><span class="line">        env-&gt;SetIntField(rect, fields.rect_top, metadata-&gt;faces[i].rect[<span class="number">1</span>]);</span><br><span class="line">        env-&gt;SetIntField(rect, fields.rect_right, metadata-&gt;faces[i].rect[<span class="number">2</span>]);</span><br><span class="line">        env-&gt;SetIntField(rect, fields.rect_bottom, metadata-&gt;faces[i].rect[<span class="number">3</span>]);</span><br><span class="line">        env-&gt;SetObjectField(face, fields.face_rect, rect);</span><br><span class="line">        env-&gt;SetIntField(face, fields.face_score, metadata-&gt;faces[i].score);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">bool</span> optionalFields = metadata-&gt;faces[i].id != <span class="number">0</span></span><br><span class="line">            &amp;&amp; metadata-&gt;faces[i].left_eye[<span class="number">0</span>] != <span class="number">-2000</span> &amp;&amp; metadata-&gt;faces[i].left_eye[<span class="number">1</span>] != <span class="number">-2000</span></span><br><span class="line">            &amp;&amp; metadata-&gt;faces[i].right_eye[<span class="number">0</span>] != <span class="number">-2000</span> &amp;&amp; metadata-&gt;faces[i].right_eye[<span class="number">1</span>] != <span class="number">-2000</span></span><br><span class="line">            &amp;&amp; metadata-&gt;faces[i].mouth[<span class="number">0</span>] != <span class="number">-2000</span> &amp;&amp; metadata-&gt;faces[i].mouth[<span class="number">1</span>] != <span class="number">-2000</span>;</span><br><span class="line">        <span class="keyword">if</span> (optionalFields) &#123;</span><br><span class="line">            <span class="keyword">int32_t</span> id = metadata-&gt;faces[i].id;</span><br><span class="line">            env-&gt;SetIntField(face, fields.face_id, id);</span><br><span class="line"></span><br><span class="line">            jobject leftEye = env-&gt;NewObject(mPointClass, fields.point_constructor);</span><br><span class="line">            env-&gt;SetIntField(leftEye, fields.point_x, metadata-&gt;faces[i].left_eye[<span class="number">0</span>]);</span><br><span class="line">            env-&gt;SetIntField(leftEye, fields.point_y, metadata-&gt;faces[i].left_eye[<span class="number">1</span>]);</span><br><span class="line">            env-&gt;SetObjectField(face, fields.face_left_eye, leftEye);</span><br><span class="line">            env-&gt;DeleteLocalRef(leftEye);</span><br><span class="line"></span><br><span class="line">            jobject rightEye = env-&gt;NewObject(mPointClass, fields.point_constructor);</span><br><span class="line">            env-&gt;SetIntField(rightEye, fields.point_x, metadata-&gt;faces[i].right_eye[<span class="number">0</span>]);</span><br><span class="line">            env-&gt;SetIntField(rightEye, fields.point_y, metadata-&gt;faces[i].right_eye[<span class="number">1</span>]);</span><br><span class="line">            env-&gt;SetObjectField(face, fields.face_right_eye, rightEye);</span><br><span class="line">            env-&gt;DeleteLocalRef(rightEye);</span><br><span class="line"></span><br><span class="line">            jobject mouth = env-&gt;NewObject(mPointClass, fields.point_constructor);</span><br><span class="line">            env-&gt;SetIntField(mouth, fields.point_x, metadata-&gt;faces[i].mouth[<span class="number">0</span>]);</span><br><span class="line">            env-&gt;SetIntField(mouth, fields.point_y, metadata-&gt;faces[i].mouth[<span class="number">1</span>]);</span><br><span class="line">            env-&gt;SetObjectField(face, fields.face_mouth, mouth);</span><br><span class="line">            env-&gt;DeleteLocalRef(mouth);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (mIsExtendedFace) &#123;</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_sm_degree, metadata-&gt;faces[i].smile_degree);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_sm_score, metadata-&gt;faces[i].smile_score);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_blink_detected, metadata-&gt;faces[i].blink_detected);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_recognised, metadata-&gt;faces[i].face_recognised);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_gaze_angle, metadata-&gt;faces[i].gaze_angle);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_updown_dir, metadata-&gt;faces[i].updown_dir);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_leftright_dir, metadata-&gt;faces[i].leftright_dir);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_roll_dir, metadata-&gt;faces[i].roll_dir);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_leye_blink, metadata-&gt;faces[i].leye_blink);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_reye_blink, metadata-&gt;faces[i].reye_blink);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_left_right_gaze, metadata-&gt;faces[i].left_right_gaze);</span><br><span class="line">                env-&gt;SetIntField(face, fields.face_top_bottom_gaze, metadata-&gt;faces[i].top_bottom_gaze);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        env-&gt;DeleteLocalRef(face);</span><br><span class="line">        env-&gt;DeleteLocalRef(rect);</span><br><span class="line">    &#125;</span><br><span class="line">    env-&gt;CallStaticVoidMethod(mCameraJClass, fields.post_event,</span><br><span class="line">            mCameraJObjectWeak, msgType, <span class="number">0</span>, <span class="number">0</span>, obj);</span><br><span class="line">    env-&gt;DeleteLocalRef(obj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里做了一次jni中C到java的数据转换,把C对象转成了java对象的Face数据,然后发送消息到Camera.java的handler中.<br>继续找CAMERA_MSG_PREVIEW_METADATA,在CameraClient中找到了:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> CameraClient::dataCallback(<span class="keyword">int32_t</span> msgType,</span><br><span class="line">        <span class="keyword">const</span> sp&lt;IMemory&gt;&amp; dataPtr, <span class="keyword">camera_frame_metadata_t</span> *metadata, <span class="keyword">void</span>* user) &#123;</span><br><span class="line">    LOG2(<span class="string">"dataCallback(%d)"</span>, msgType);</span><br><span class="line"></span><br><span class="line">    sp&lt;CameraClient&gt; client = getClientFromCookie(user);</span><br><span class="line">    <span class="keyword">if</span> (client.get() == <span class="literal">nullptr</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!client-&gt;lockIfMessageWanted(msgType)) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span> (dataPtr == <span class="number">0</span> &amp;&amp; metadata == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"Null data returned in data callback"</span>);</span><br><span class="line">        client-&gt;handleGenericNotify(CAMERA_MSG_ERROR, UNKNOWN_ERROR, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (msgType &amp; ~CAMERA_MSG_PREVIEW_METADATA) &#123;</span><br><span class="line">        <span class="keyword">case</span> CAMERA_MSG_PREVIEW_FRAME:</span><br><span class="line">            client-&gt;handlePreviewData(msgType, dataPtr, metadata);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> CAMERA_MSG_POSTVIEW_FRAME:</span><br><span class="line">            client-&gt;handlePostview(dataPtr);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> CAMERA_MSG_RAW_IMAGE:</span><br><span class="line">            client-&gt;handleRawPicture(dataPtr);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> CAMERA_MSG_COMPRESSED_IMAGE:</span><br><span class="line">            client-&gt;handleCompressedPicture(dataPtr);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            client-&gt;handleGenericData(msgType, dataPtr, metadata);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里是把CAMERA_MSG_PREVIEW_METADATA消息屏蔽了,不是我们想要的.<br>在FrameProcessor找到了使用地方,FrameProcessor在libcameraservice的api1目录:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> FrameProcessor::callbackFaceDetection(<span class="keyword">const</span> sp&lt;Camera2Client&gt;&amp; client,</span><br><span class="line">                                     <span class="keyword">const</span> camera_frame_metadata &amp;metadata) &#123;</span><br><span class="line"></span><br><span class="line">    camera_frame_metadata *metadata_ptr =</span><br><span class="line">        <span class="keyword">const_cast</span>&lt;camera_frame_metadata*&gt;(&amp;metadata);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Filter out repeated 0-face callbacks,</span></span><br><span class="line"><span class="comment">     * but not when the last frame was &gt;0</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">if</span> (metadata.number_of_faces != <span class="number">0</span> ||</span><br><span class="line">        mLastFrameNumberOfFaces != metadata.number_of_faces) &#123;</span><br><span class="line"></span><br><span class="line">        Camera2Client::SharedCameraCallbacks::Lock</span><br><span class="line">            l(client-&gt;mSharedCameraCallbacks);</span><br><span class="line">        <span class="keyword">if</span> (l.mRemoteCallback != <span class="literal">NULL</span>) &#123;</span><br><span class="line">            l.mRemoteCallback-&gt;dataCallback(CAMERA_MSG_PREVIEW_METADATA,</span><br><span class="line">                                            <span class="literal">NULL</span>,</span><br><span class="line">                                            metadata_ptr);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mLastFrameNumberOfFaces = metadata.number_of_faces;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>在FrameProcessor找到processFaceDetect调用callbackFaceDetection,processSingleFrame调用callbackFaceDetection,FrameProcessorBase::processNewFrames调用processSingleFrame.
+然后看processNewFrames:
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> FrameProcessorBase::threadLoop() &#123;</span><br><span class="line">    <span class="keyword">status_t</span> res;</span><br><span class="line"></span><br><span class="line">    sp&lt;CameraDeviceBase&gt; device;</span><br><span class="line">    &#123;</span><br><span class="line">        device = mDevice.promote();</span><br><span class="line">        <span class="keyword">if</span> (device == <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    res = device-&gt;waitForNextFrame(kWaitDuration);</span><br><span class="line">    <span class="keyword">if</span> (res == OK) &#123;</span><br><span class="line">        processNewFrames(device);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (res != TIMED_OUT) &#123;</span><br><span class="line">        ALOGE(<span class="string">"FrameProcessorBase: Error waiting for new "</span></span><br><span class="line">                <span class="string">"frames: %s (%d)"</span>, strerror(-res), res);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FrameProcessorBase是一个循环,找到启动地方:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> TProviderPtr&gt;</span><br><span class="line"><span class="keyword">status_t</span> CameraDeviceClient::initializeImpl(TProviderPtr providerPtr) &#123;</span><br><span class="line">    ATRACE_CALL();</span><br><span class="line">    <span class="keyword">status_t</span> res;</span><br><span class="line"></span><br><span class="line">    res = Camera2ClientBase::initialize(providerPtr);</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String8 threadName;</span><br><span class="line">    mFrameProcessor = <span class="keyword">new</span> FrameProcessorBase(mDevice);</span><br><span class="line">    threadName = String8::format(<span class="string">"CDU-%s-FrameProc"</span>, mCameraIdStr.<span class="built_in">string</span>());</span><br><span class="line">    mFrameProcessor-&gt;run(threadName.<span class="built_in">string</span>());</span><br><span class="line"></span><br><span class="line">    mFrameProcessor-&gt;registerListener(FRAME_PROCESSOR_LISTENER_MIN_ID,</span><br><span class="line">                                      FRAME_PROCESSOR_LISTENER_MAX_ID,</span><br><span class="line">                                      <span class="comment">/*listener*/</span><span class="keyword">this</span>,</span><br><span class="line">                                      <span class="comment">/*sendPartials*/</span><span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>CameraDeviceClient在api2的包里,api2走这部分逻辑,api1部分在Camera2Client找到了:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> TProviderPtr&gt;</span><br><span class="line"><span class="keyword">status_t</span> Camera2Client::initializeImpl(TProviderPtr providerPtr)</span><br><span class="line">&#123;</span><br><span class="line">    ATRACE_CALL();</span><br><span class="line">    ALOGV(<span class="string">"%s: Initializing client for camera %d"</span>, __FUNCTION__, mCameraId);</span><br><span class="line">    <span class="keyword">status_t</span> res;</span><br><span class="line"></span><br><span class="line">    res = Camera2ClientBase::initialize(providerPtr);</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">    ...</span><br><span class="line">    mFrameProcessor = <span class="keyword">new</span> FrameProcessor(mDevice, <span class="keyword">this</span>);</span><br><span class="line">    threadName = String8::format(<span class="string">"C2-%d-FrameProc"</span>,</span><br><span class="line">            mCameraId);</span><br><span class="line">    mFrameProcessor-&gt;run(threadName.<span class="built_in">string</span>());</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>重新理下整个流程,不管api2的部分,在Camera2Client初始化时启动FrameProcessor的线程,给FrameProcessor绑定一个device,FrameProcessor线程调用processNewFrames,processNewFrames调用processSingleFrame,processSingleFrame调用callbackFaceDetection,然后通过CameraClient发出消息CAMERA_MSG_PREVIEW_METADATA消息到app层,触发FaceDetection的回调.<br>api2的不同点就是通过CameraDeviceClient,没有使用Camera2Client.通过包区分API.<br>但我们还没看到实际的人脸识别方法和数据传递,这些肯定是在hal层,继续数据传递代码.</p>
+<h2 id="从native到hal层"><a href="#从native到hal层" class="headerlink" title="从native到hal层"></a>从native到hal层</h2><p>看processNewFrames方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> FrameProcessorBase::processNewFrames(<span class="keyword">const</span> sp&lt;CameraDeviceBase&gt; &amp;device) &#123;</span><br><span class="line">    <span class="keyword">status_t</span> res;</span><br><span class="line">    ATRACE_CALL();</span><br><span class="line">    CaptureResult result;</span><br><span class="line"></span><br><span class="line">    ALOGV(<span class="string">"%s: Camera %s: Process new frames"</span>, __FUNCTION__, device-&gt;getId().<span class="built_in">string</span>());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> ( (res = device-&gt;getNextResult(&amp;result)) == OK) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// <span class="doctag">TODO:</span> instead of getting frame number from metadata, we should read</span></span><br><span class="line">        <span class="comment">// this from result.mResultExtras when CameraDeviceBase interface is fixed.</span></span><br><span class="line">        <span class="keyword">camera_metadata_entry_t</span> entry;</span><br><span class="line"></span><br><span class="line">        entry = result.mMetadata.find(ANDROID_REQUEST_FRAME_COUNT);</span><br><span class="line">        <span class="keyword">if</span> (entry.count == <span class="number">0</span>) &#123;</span><br><span class="line">            ALOGE(<span class="string">"%s: Camera %s: Error reading frame number"</span>,</span><br><span class="line">                    __FUNCTION__, device-&gt;getId().<span class="built_in">string</span>());</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ATRACE_INT(<span class="string">"cam2_frame"</span>, entry.data.i32[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!processSingleFrame(result, device)) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!result.mMetadata.isEmpty()) &#123;</span><br><span class="line">            Mutex::<span class="function">Autolock <span class="title">al</span><span class="params">(mLastFrameMutex)</span></span>;</span><br><span class="line">            mLastFrame.acquire(result.mMetadata);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (res != NOT_ENOUGH_DATA) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Camera %s: Error getting next frame: %s (%d)"</span>,</span><br><span class="line">                __FUNCTION__, device-&gt;getId().<span class="built_in">string</span>(), strerror(-res), res);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在一个while循环里通过device的getNextResult方法获取数据,然后送到processSingleFrame里.<br>获取数据的是device-&gt;getNextResult方法,这个定义在devices3里:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> Camera3Device::getNextResult(CaptureResult *frame) &#123;</span><br><span class="line">    ATRACE_CALL();</span><br><span class="line">    Mutex::<span class="function">Autolock <span class="title">l</span><span class="params">(mOutputLock)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mResultQueue.empty()) &#123;</span><br><span class="line">        <span class="keyword">return</span> NOT_ENOUGH_DATA;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (frame == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: argument cannot be NULL"</span>, __FUNCTION__);</span><br><span class="line">        <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    CaptureResult &amp;result = *(mResultQueue.begin());</span><br><span class="line">    frame-&gt;mResultExtras = result.mResultExtras;</span><br><span class="line">    frame-&gt;mMetadata.acquire(result.mMetadata);</span><br><span class="line">    mResultQueue.erase(mResultQueue.begin());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>mResultQueue是一个队列,获取到一个后然后使用,最后擦除.接下来找mResultQueue的调用:
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Camera3Device::insertResultLocked(CaptureResult *result,</span><br><span class="line">        <span class="keyword">uint32_t</span> frameNumber) &#123;</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="literal">nullptr</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">camera_metadata_t</span> *meta = <span class="keyword">const_cast</span>&lt;<span class="keyword">camera_metadata_t</span> *&gt;(</span><br><span class="line">            result-&gt;mMetadata.getAndLock());</span><br><span class="line">    set_camera_metadata_vendor_id(meta, mVendorTagId);</span><br><span class="line">    result-&gt;mMetadata.unlock(meta);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (result-&gt;mMetadata.update(ANDROID_REQUEST_FRAME_COUNT,</span><br><span class="line">            (<span class="keyword">int32_t</span>*)&amp;frameNumber, <span class="number">1</span>) != OK) &#123;</span><br><span class="line">        SET_ERR(<span class="string">"Failed to set frame number %d in metadata"</span>, frameNumber);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (result-&gt;mMetadata.update(ANDROID_REQUEST_ID, &amp;result-&gt;mResultExtras.requestId, <span class="number">1</span>) != OK) &#123;</span><br><span class="line">        SET_ERR(<span class="string">"Failed to set request ID in metadata for frame %d"</span>, frameNumber);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Valid result, insert into queue</span></span><br><span class="line">    List&lt;CaptureResult&gt;::iterator queuedResult =</span><br><span class="line">            mResultQueue.insert(mResultQueue.end(), CaptureResult(*result));</span><br><span class="line">    ALOGVV(<span class="string">"%s: result requestId = %"</span> PRId32 <span class="string">", frameNumber = %"</span> PRId64</span><br><span class="line">           <span class="string">", burstId = %"</span> PRId32, __FUNCTION__,</span><br><span class="line">           queuedResult-&gt;mResultExtras.requestId,</span><br><span class="line">           queuedResult-&gt;mResultExtras.frameNumber,</span><br><span class="line">           queuedResult-&gt;mResultExtras.burstId);</span><br><span class="line"></span><br><span class="line">    mResultSignal.signal();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>insertResultLocked中有mResultQueue的插入方法,继续查找调用.找到hardware方法processCaptureResult,其调用过程是
+hardware::processCaptureResult-&gt;Camera3Device::processOneCaptureResultLocked-&gt;Camera3Device::sendPartialCaptureResult
+-&gt;Camera3Device::insertResultLocked-&gt;Camera3Device::insertResultLocked.
+hardware::processCaptureResult方法:
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Only one processCaptureResult should be called at a time, so</span></span><br><span class="line"><span class="comment">// the locks won't block. The locks are present here simply to enforce this.</span></span><br><span class="line">hardware::Return&lt;<span class="keyword">void</span>&gt; Camera3Device::processCaptureResult(</span><br><span class="line">        <span class="keyword">const</span> hardware::hidl_vec&lt;</span><br><span class="line">                hardware::camera::device::V3_2::CaptureResult&gt;&amp; results) &#123;</span><br><span class="line">    <span class="comment">// Ideally we should grab mLock, but that can lead to deadlock, and</span></span><br><span class="line">    <span class="comment">// it's not super important to get up to date value of mStatus for this</span></span><br><span class="line">    <span class="comment">// warning print, hence skipping the lock here</span></span><br><span class="line">    <span class="keyword">if</span> (mStatus == STATUS_ERROR) &#123;</span><br><span class="line">        <span class="comment">// Per API contract, HAL should act as closed after device error</span></span><br><span class="line">        <span class="comment">// But mStatus can be set to error by framework as well, so just log</span></span><br><span class="line">        <span class="comment">// a warning here.</span></span><br><span class="line">        ALOGW(<span class="string">"%s: received capture result in error state."</span>, __FUNCTION__);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mProcessCaptureResultLock.tryLock() != OK) &#123;</span><br><span class="line">        <span class="comment">// This should never happen; it indicates a wrong client implementation</span></span><br><span class="line">        <span class="comment">// that doesn't follow the contract. But, we can be tolerant here.</span></span><br><span class="line">        ALOGE(<span class="string">"%s: callback overlapped! waiting 1s..."</span>,</span><br><span class="line">                __FUNCTION__);</span><br><span class="line">        <span class="keyword">if</span> (mProcessCaptureResultLock.timedLock(<span class="number">1000000000</span> <span class="comment">/* 1s */</span>) != OK) &#123;</span><br><span class="line">            ALOGE(<span class="string">"%s: cannot acquire lock in 1s, dropping results"</span>,</span><br><span class="line">                    __FUNCTION__);</span><br><span class="line">            <span class="comment">// really don't know what to do, so bail out.</span></span><br><span class="line">            <span class="keyword">return</span> hardware::Void();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; result : results) &#123;</span><br><span class="line">        processOneCaptureResultLocked(result);</span><br><span class="line">    &#125;</span><br><span class="line">    mProcessCaptureResultLock.unlock();</span><br><span class="line">    <span class="keyword">return</span> hardware::Void();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>这里获取了一个锁,然后处理捕获的结果,最后释放锁.hardware::processCaptureResult就是hidl方法了,果然在ICameraDeviceSession.hal里面找到了定义:
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">processCaptureRequest(vec&lt;CaptureRequest&gt; requests,</span><br><span class="line">        vec&lt;BufferCache&gt; cachesToRemove)</span><br><span class="line">        generates (Status status, <span class="keyword">uint32_t</span> numRequestProcessed);</span><br></pre></td></tr></table></figure>
+<pre><code>在ICameraDeviceSession.cpp里面可以看到方法的实现:
+</code></pre><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">Return&lt;<span class="keyword">void</span>&gt; CameraDeviceSession::processCaptureRequest(</span><br><span class="line">        <span class="keyword">const</span> hidl_vec&lt;CaptureRequest&gt;&amp; requests,</span><br><span class="line">        <span class="keyword">const</span> hidl_vec&lt;BufferCache&gt;&amp; cachesToRemove,</span><br><span class="line">        ICameraDeviceSession::processCaptureRequest_cb _hidl_cb)  &#123;</span><br><span class="line">    updateBufferCaches(cachesToRemove);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint32_t</span> numRequestProcessed = <span class="number">0</span>;</span><br><span class="line">    Status s = Status::OK;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; requests.size(); i++, numRequestProcessed++) &#123;</span><br><span class="line">        s = processOneCaptureRequest(requests[i]);</span><br><span class="line">        <span class="keyword">if</span> (s != Status::OK) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (s == Status::OK &amp;&amp; requests.size() &gt; <span class="number">1</span>) &#123;</span><br><span class="line">        mResultBatcher.registerBatch(requests);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    _hidl_cb(s, numRequestProcessed);</span><br><span class="line">    <span class="keyword">return</span> Void();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>总结一下整体流程:</p>
+<ol>
+<li>CameraServer从hal层调用processCaptureRequest,发出一个CaptureResult到Camera3Device的mResultQueue队列中</li>
+<li>在FrameProcessorBase的线程里等待新的frame,然后调用processNewFrames处理每一帧</li>
+<li>在processNewFrames中循环获取mResultQueue的最新结果,通过processSingleFrame处理,处理调用callbackFaceDetection发送到CameraClient</li>
+<li>callbackFaceDetection发出CAMERA_MSG_PREVIEW_METADATA的消息和metadata数据</li>
+<li>JniContext使用postMetadata把消息发送到framework层</li>
+<li>Camera的EventHandler收到消息,通过mFaceListener回调到app层</li>
+</ol>
+<p>这个流程走下来hal层到app的数据调用基本清楚了,所有的拍照,人脸,预览的数据都是如此传递的.但我们还不清楚CameraServer的整体流程,相机服务什么启动,这些数据从哪里捕获,什么时候下发的.<br>我们下一篇分析相机启动的流程.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/Camera/" rel="tag"># Camera</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/05/2018-5-5-相机源码深入解析(二)/" rel="next" title="Android8.0相机源码深入解析(二)">
+                <i class="fa fa-chevron-left"></i> Android8.0相机源码深入解析(二)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/08/2018-5-8-相机源码深入解析(四)/" rel="prev" title="Android8.0相机源码深入解析(四)">
+                Android8.0相机源码深入解析(四) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#正文"><span class="nav-number">1.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据传递场景"><span class="nav-number">1.1.</span> <span class="nav-text">数据传递场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jni到native-library"><span class="nav-number">1.2.</span> <span class="nav-text">jni到native library</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#从native到hal层"><span class="nav-number">1.3.</span> <span class="nav-text">从native到hal层</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">2.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

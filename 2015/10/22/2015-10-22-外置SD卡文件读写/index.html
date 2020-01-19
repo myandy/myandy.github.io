@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="使用DocumentTree的方法获取Android外置SD卡的写权限">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content=" Android4.4之后的外置SD卡文件读写的解决方法">
+<meta property="og:url" content="http://anddymao.com/2015/10/22/2015-10-22-外置SD卡文件读写/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="使用DocumentTree的方法获取Android外置SD卡的写权限">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://anddymao.com/img/post_sd_1.jpg">
+<meta property="og:image" content="http://anddymao.com/img/post_sd_2.jpg">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.874Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content=" Android4.4之后的外置SD卡文件读写的解决方法">
+<meta name="twitter:description" content="使用DocumentTree的方法获取Android外置SD卡的写权限">
+<meta name="twitter:image" content="http://anddymao.com/img/post_sd_1.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2015/10/22/2015-10-22-外置SD卡文件读写/">
+
+
+
+
+
+  <title> Android4.4之后的外置SD卡文件读写的解决方法 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2015/10/22/2015-10-22-外置SD卡文件读写/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline"> Android4.4之后的外置SD卡文件读写的解决方法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-10-22T12:00:00+08:00">
+                2015-10-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  使用DocumentTree的方法获取Android外置SD卡的写权限
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>在Android4.4之后，普通应用就没有外置SD卡的写权限了，对于要操作外置SD的应用来说就是个灾难了。<br>我最近做的功能是要对视频和图片进行加锁，无法写就无法锁了。怎么解决呢？先百度Google大家都在说这个问题，但没有找到好的解决办法，然后我就去看看其它应用怎么做的。找几个需要控制SD卡的应用，ES文件浏览器。<br>在写外置SD卡文件时会弹出这样一个界面：<br><img src="/img/post_sd_1.jpg" alt="Alt text"><br>点击选择进入系统的一个文件目录界面：<br><img src="/img/post_sd_2.jpg" alt="Alt text"></p>
+<p>点击“选择SD”卡，回来就可以对文件进行操作了。</p>
+<h2 id="探索"><a href="#探索" class="headerlink" title="探索"></a>探索</h2><p>然后我就去反编译看看它是怎么操作的。我反编译了另一个文件管理器的应用，和这个也是差不多，但代码混淆较少，可以看到很多细节。<br>用ApkTool反编译找到Dialog的提示语，再到代码找到Dialog界面。ApkTool得到的代码比较乱，就用的dex2jar反编译得到的代码，保存用Android Studio打开看。</p>
+<p>看到点击Dialog确实后的操作是：<br>this.val$context.startActivityForResult(new Intent(“android.intent.action.OPEN_DOCUMENT_TREE”), this.val$requestCode);</p>
+<p>这个Intent就是进入文件目录，再找回来在OnActivityResult的操作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onActivityResult</span><span class="params">(<span class="keyword">int</span> requestCode, <span class="keyword">int</span> resultCode, Intent data)</span> </span>&#123;</span><br><span class="line">       <span class="keyword">switch</span> (requestCode) &#123;</span><br><span class="line">           <span class="keyword">case</span> SDUtils.REQ_PICK_SDCARD_PATH <span class="comment">/*8712*/</span>:</span><br><span class="line">               <span class="keyword">if</span> (resultCode == RESULT_OK) &#123;</span><br><span class="line">                   Uri treeUri = data.getData();</span><br><span class="line">                   <span class="keyword">if</span> (!<span class="string">":"</span>.equals(treeUri.getPath().substring(treeUri.getPath().length() - <span class="number">1</span>)) || treeUri.getPath().contains(<span class="string">"primary"</span>)) &#123;</span><br><span class="line">                       SDUtils sdUtils = <span class="keyword">new</span> SDUtils();</span><br><span class="line">                       sdUtils.getSdCardUriDialog(SelectVideoActivity.<span class="keyword">this</span>);</span><br><span class="line">                   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                       Logger.get().e(<span class="string">"RESULT_OK"</span>);</span><br><span class="line">                       SDUtils.setSdCardUriPreferences(SelectVideoActivity.<span class="keyword">this</span>, treeUri.toString());</span><br><span class="line">                       lockVideo();</span><br><span class="line">                   &#125;</span><br><span class="line">               &#125;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">super</span>.onActivityResult(requestCode, resultCode, data);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>这开始就是贴的是我改完后的自己代码了，清楚点，都是差不多意思。回来成功选择后，先判断是不是SD卡，不是就继续弹Dialog，是就保存treeUri，就是外置SD的文档Uri。<br>这个Uri和普通Uri是不一样的，打印出来是这样的：<br> content://com.android.externalstorage.documents/tree/6635-3265%3A<br>中间有个tree。</p>
+<p>再去找文件操作时是怎么样的，发现外置SD卡都是通过DocumentFile进行文件写的。先根据之前保存的SD卡uri获取根DocumentFile，在一层一层获取子DocumentFile。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> DocumentFile <span class="title">getDocumentFilePath</span><span class="params">(Context context, String path, <span class="keyword">boolean</span> createDirectories)</span> </span>&#123;</span><br><span class="line">       DocumentFile document = DocumentFile.fromTreeUri(context, Uri.parse(SDUtils.getSdCardUriPreferences(context)));</span><br><span class="line">       Logger.get().e( document.getName()+<span class="string">":"</span>+SDUtils.getSdCardUriPreferences(context));</span><br><span class="line"></span><br><span class="line">       String[] parts = path.split(ZIP_FILE_SEPARATOR);</span><br><span class="line">       <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">3</span>; i &lt; parts.length; i++) &#123;</span><br><span class="line">           DocumentFile nextDocument = document.findFile(parts[i]);</span><br><span class="line">           <span class="keyword">if</span> (nextDocument == <span class="keyword">null</span>) &#123;</span><br><span class="line">               <span class="keyword">if</span> (i &lt; parts.length - <span class="number">1</span>) &#123;</span><br><span class="line">                   <span class="keyword">if</span> (createDirectories) &#123;</span><br><span class="line">                       nextDocument = document.createDirectory(parts[i]);</span><br><span class="line">                   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                       <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">                   &#125;</span><br><span class="line">               &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                   nextDocument = document.createFile(<span class="string">"image"</span>, parts[i]);</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">           document = nextDocument;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> document;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>path是要获取文件的路径，createDirectories是是否要新建，false用于获取DocumentFile执行删除操作，true用于新建文件。遍历不从0开始是因为path的是绝对路径，前面SD卡的路径不需要，从SD卡的第一层目录开始遍历。<br>有了思路就可以更好的找方法了，再在google搜DocumentFile，SD卡相关的，在stackOverFlow找到了这个：<br><a href="http://stackoverflow.com/questions/26744842/how-to-use-the-new-sd-card-access-api-presented-for-lollipop" target="_blank" rel="noopener">http://stackoverflow.com/questions/26744842/how-to-use-the-new-sd-card-access-api-presented-for-lollipop</a><br>改写了其提供的一些方法，下面的copyFile就是。target可写就直接写，android5通过DucumentFile获取outStream,4.4由contentResolve通过普通Uri获取到输出流。然后写到输出流中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">copyFile</span><span class="params">(Context context, <span class="keyword">final</span> File source, <span class="keyword">final</span> File target)</span> </span>&#123;</span><br><span class="line">     FileInputStream inStream = <span class="keyword">null</span>;</span><br><span class="line">     OutputStream outStream = <span class="keyword">null</span>;</span><br><span class="line">     FileChannel inChannel = <span class="keyword">null</span>;</span><br><span class="line">     FileChannel outChannel = <span class="keyword">null</span>;</span><br><span class="line">     <span class="keyword">try</span> &#123;</span><br><span class="line">         inStream = <span class="keyword">new</span> FileInputStream(source);</span><br><span class="line">         <span class="keyword">if</span> (isWritable(target)) &#123;</span><br><span class="line">             <span class="comment">// standard way</span></span><br><span class="line">             outStream = <span class="keyword">new</span> FileOutputStream(target);</span><br><span class="line">             inChannel = inStream.getChannel();</span><br><span class="line">             outChannel = ((FileOutputStream) outStream).getChannel();</span><br><span class="line">             inChannel.transferTo(<span class="number">0</span>, inChannel.size(), outChannel);</span><br><span class="line">             outStream = <span class="keyword">null</span>;</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isAndroid5()) &#123;</span><br><span class="line">             <span class="comment">// Storage Access Framework</span></span><br><span class="line">             DocumentFile targetDocument = getDocumentFilePath(context, target.getAbsolutePath(), <span class="keyword">true</span>);</span><br><span class="line">             <span class="keyword">if</span> (targetDocument != <span class="keyword">null</span>) &#123;</span><br><span class="line">                 outStream = context.getContentResolver().openOutputStream(targetDocument.getUri());</span><br><span class="line">             &#125;</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isKitkat()) &#123;</span><br><span class="line">             <span class="comment">// Workaround for Kitkat ext SD card</span></span><br><span class="line">             Uri uri = getUriFromFile(context, target.getAbsolutePath());</span><br><span class="line">             outStream = context.getContentResolver().openOutputStream(uri);</span><br><span class="line">         &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">             <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">if</span> (outStream != <span class="keyword">null</span>) &#123;</span><br><span class="line">             <span class="comment">// Both for SAF and for Kitkat, write to output stream.</span></span><br><span class="line">             <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4096</span>]; <span class="comment">// MAGIC_NUMBER</span></span><br><span class="line">             <span class="keyword">int</span> bytesRead;</span><br><span class="line">             <span class="keyword">while</span> ((bytesRead = inStream.read(buffer)) != -<span class="number">1</span>) &#123;</span><br><span class="line">                 outStream.write(buffer, <span class="number">0</span>, bytesRead);</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">     &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">         Logger.get().e(<span class="string">"Error when copying file from "</span> + source.getAbsolutePath() + <span class="string">" to "</span> + target.getAbsolutePath(), e);</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">     &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">         <span class="keyword">try</span> &#123;</span><br><span class="line">             inStream.close();</span><br><span class="line">         &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">             <span class="comment">// ignore exception</span></span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">try</span> &#123;</span><br><span class="line">             outStream.close();</span><br><span class="line">         &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">             <span class="comment">// ignore exception</span></span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">try</span> &#123;</span><br><span class="line">             inChannel.close();</span><br><span class="line">         &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">             <span class="comment">// ignore exception</span></span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">try</span> &#123;</span><br><span class="line">             outChannel.close();</span><br><span class="line">         &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">             <span class="comment">// ignore exception</span></span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>其实就是通过DocumentFile的方法实现对外置SD卡文件的操作，关键是步骤获取TreeUri，通过DocumentFile.fromTreeUri方法获取到想要找的文件树对象，从而实现文件操作。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/09/28/2015-09-28-python抓取图片/" rel="next" title="用python爬虫抓取知乎图片">
+                <i class="fa fa-chevron-left"></i> 用python爬虫抓取知乎图片
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/12/31/2015-12-31-Android多个辅助服务/" rel="prev" title="Android上实现多个辅助服务">
+                Android上实现多个辅助服务 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#原因"><span class="nav-number">1.</span> <span class="nav-text">原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#探索"><span class="nav-number">2.</span> <span class="nav-text">探索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

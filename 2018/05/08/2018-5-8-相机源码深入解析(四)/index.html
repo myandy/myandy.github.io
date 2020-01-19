@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,Camera,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="相机流程深入解析:相机启动">
+<meta name="keywords" content="Android,Camera">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android8.0相机源码深入解析(四)">
+<meta property="og:url" content="http://anddymao.com/2018/05/08/2018-5-8-相机源码深入解析(四)/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="相机流程深入解析:相机启动">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.886Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android8.0相机源码深入解析(四)">
+<meta name="twitter:description" content="相机流程深入解析:相机启动">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2018/05/08/2018-5-8-相机源码深入解析(四)/">
+
+
+
+
+
+  <title>Android8.0相机源码深入解析(四) | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2018/05/08/2018-5-8-相机源码深入解析(四)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android8.0相机源码深入解析(四)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-08T12:00:00+08:00">
+                2018-05-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  相机流程深入解析:相机启动
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>上一篇介绍了相机hal到app的数据传递,通过前面三篇对相机数据传输流程弄清楚了,相机各层结构也梳理清除.本篇继续介绍相机启动流程.</p>
+<h2 id="相机服务过程"><a href="#相机服务过程" class="headerlink" title="相机服务过程"></a>相机服务过程</h2><h3 id="服务注册及启动"><a href="#服务注册及启动" class="headerlink" title="服务注册及启动"></a>服务注册及启动</h3><p>CameraServer在7.0之前是在MediaServer里,7.0改成了单独的Server.我们看最新的8.0的代码.<br>CameraServer定义在framework/av/camera/cameraserver.看cameraserver的make文件:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">LOCAL_PATH:= $(call my-dir)</span><br><span class="line"></span><br><span class="line">include $(CLEAR_VARS)</span><br><span class="line"></span><br><span class="line">LOCAL_SRC_FILES:= \</span><br><span class="line">	main_cameraserver.cpp</span><br><span class="line"></span><br><span class="line">LOCAL_SHARED_LIBRARIES := \</span><br><span class="line">	libcameraservice \</span><br><span class="line">	liblog \</span><br><span class="line">	libutils \</span><br><span class="line">	libui \</span><br><span class="line">	libgui \</span><br><span class="line">	libbinder \</span><br><span class="line">	libhidltransport \</span><br><span class="line">	android.hardware.camera.common@<span class="number">1.0</span> \</span><br><span class="line">	android.hardware.camera.provider@<span class="number">2.4</span> \</span><br><span class="line">	android.hardware.camera.device@<span class="number">1.0</span> \</span><br><span class="line">	vendor.qti.hardware.camera.device@<span class="number">1.0</span> \</span><br><span class="line">	android.hardware.camera.device@<span class="number">3.2</span></span><br><span class="line"></span><br><span class="line">LOCAL_MODULE:= cameraserver</span><br><span class="line">LOCAL_32_BIT_ONLY := <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">LOCAL_CFLAGS += -Wall -Wextra -Werror -Wno-unused-parameter</span><br><span class="line"></span><br><span class="line">LOCAL_INIT_RC := cameraserver.rc</span><br><span class="line"></span><br><span class="line">include $(BUILD_EXECUTABLE)</span><br></pre></td></tr></table></figure>
+<p>LOCAL_SHARED_LIBRARIES包括了此前一直讲到的libcameraservice,再加上工具类,provide,device1,device2,device3.2等.aidl的定义也写在这里.<br>这里我们看到很重要的信息LOCAL_INIT_RC := cameraserver.rc,这个就是进程启动地方了.init进程启动后会加载init.rc(system\core\rootdir\init.rc)脚本，当它执行mount_all指令挂载分区时，会加载/{system,vendor,odm}/etc/init目录下的所有rc脚本，这样就会启动cameraserver进程.<br>找到了启动位置,也知道了启动流程,再看启动时做了些什么.看下main_cameraserver.cpp:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc __unused, <span class="keyword">char</span>** argv __unused)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    signal(SIGPIPE, SIG_IGN);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Set 3 threads for HIDL calls</span></span><br><span class="line">    hardware::configureRpcThreadpool(<span class="number">3</span>, <span class="comment">/*willjoin*/</span> <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">    sp&lt;ProcessState&gt; proc(ProcessState::self());</span><br><span class="line">    sp&lt;IServiceManager&gt; sm = defaultServiceManager();</span><br><span class="line">    ALOGI(<span class="string">"ServiceManager: %p"</span>, sm.get());</span><br><span class="line">    CameraService::instantiate();</span><br><span class="line">    ProcessState::self()-&gt;startThreadPool();</span><br><span class="line">    IPCThreadState::self()-&gt;joinThreadPool();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>就一个main方法,让CameraService实例化,然后是让自己启动和加入线程池,这个不细看了.CameraService继承了模板类BinderService,我们找到instantiate方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> SERVICE&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BinderService</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> status_t <span class="title">publish</span><span class="params">(<span class="keyword">bool</span> allowIsolated = <span class="literal">false</span>)</span> </span>&#123;</span><br><span class="line">        sp&lt;IServiceManager&gt; sm(defaultServiceManager());</span><br><span class="line">        <span class="keyword">return</span> sm-&gt;addService(</span><br><span class="line">                String16(SERVICE::getServiceName()),</span><br><span class="line">                <span class="keyword">new</span> SERVICE(), allowIsolated);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">publishAndJoinThreadPool</span><span class="params">(<span class="keyword">bool</span> allowIsolated = <span class="literal">false</span>)</span> </span>&#123;</span><br><span class="line">        publish(allowIsolated);</span><br><span class="line">        joinThreadPool();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">instantiate</span><span class="params">()</span> </span>&#123; publish(); &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> status_t <span class="title">shutdown</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> NO_ERROR; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">joinThreadPool</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        sp&lt;ProcessState&gt; ps(ProcessState::self());</span><br><span class="line">        ps-&gt;startThreadPool();</span><br><span class="line">        ps-&gt;giveThreadPoolName();</span><br><span class="line">        IPCThreadState::self()-&gt;joinThreadPool();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>instantiate调用了publish方法,就是发布,通过ServiceManager添加一个服务.</p>
+<p>在IServiceManager找到addService方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">virtual</span> status_t <span class="title">addService</span><span class="params">(<span class="keyword">const</span> String16&amp; name, <span class="keyword">const</span> sp&lt;IBinder&gt;&amp; service,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">bool</span> allowIsolated)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Parcel data, reply;</span><br><span class="line">    data.writeInterfaceToken(IServiceManager::getInterfaceDescriptor());</span><br><span class="line">    data.writeString16(name);</span><br><span class="line">    data.writeStrongBinder(service);</span><br><span class="line">    data.writeInt32(allowIsolated ? <span class="number">1</span> : <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">status_t</span> err = remote()-&gt;transact(ADD_SERVICE_TRANSACTION, data, &amp;reply);</span><br><span class="line">    <span class="keyword">return</span> err == NO_ERROR ? reply.readExceptionCode() : err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>service是强指针sp<ibinder>&amp;,初始化时会调用其引用对象的onFirstRef方法.<br>继续看CameraService代码,在服务添加后做了什么:</ibinder></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">CameraService::CameraService() :</span><br><span class="line">        mEventLog(DEFAULT_EVENT_LOG_LENGTH),</span><br><span class="line">        mNumberOfCameras(<span class="number">0</span>), mNumberOfNormalCameras(<span class="number">0</span>),</span><br><span class="line">        mSoundRef(<span class="number">0</span>), mInitialized(<span class="literal">false</span>) &#123;</span><br><span class="line">    ALOGI(<span class="string">"CameraService started (pid=%d)"</span>, getpid());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>-&gt;camera_device_status_change = android::camera_device_status_change;</span><br><span class="line">    <span class="keyword">this</span>-&gt;torch_mode_status_change = android::torch_mode_status_change;</span><br><span class="line"></span><br><span class="line">    mServiceLockWrapper = <span class="built_in">std</span>::make_shared&lt;WaitableMutexWrapper&gt;(&amp;mServiceLock);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CameraService::onFirstRef()</span><br><span class="line">&#123;</span><br><span class="line">    ALOGI(<span class="string">"CameraService process starting"</span>);</span><br><span class="line"></span><br><span class="line">    BnCameraService::onFirstRef();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Update battery life tracking if service is restarting</span></span><br><span class="line">    <span class="function">BatteryNotifier&amp; <span class="title">notifier</span><span class="params">(BatteryNotifier::getInstance())</span></span>;</span><br><span class="line">    notifier.noteResetCamera();</span><br><span class="line">    notifier.noteResetFlashlight();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">status_t</span> res = INVALID_OPERATION;</span><br><span class="line"></span><br><span class="line">    res = enumerateProviders();</span><br><span class="line">    <span class="keyword">if</span> (res == OK) &#123;</span><br><span class="line">        mInitialized = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    CameraService::pingCameraServiceProxy();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实例方法里面没有做什么,另外果然看到了onFirstRef方法.这里调用了BnCameraService的onFirstRef方法,然后电池通知,和主线无关,不管.然后枚举providers,最后连接CameraServiceProxy服务.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> CameraService::enumerateProviders() &#123;</span><br><span class="line">    <span class="keyword">status_t</span> res;</span><br><span class="line">    Mutex::<span class="function">Autolock <span class="title">l</span><span class="params">(mServiceLock)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nullptr</span> == mCameraProviderManager.get()) &#123;</span><br><span class="line">        mCameraProviderManager = <span class="keyword">new</span> CameraProviderManager();</span><br><span class="line">        res = mCameraProviderManager-&gt;initialize(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">            ALOGE(<span class="string">"%s: Unable to initialize camera provider manager: %s (%d)"</span>,</span><br><span class="line">                    __FUNCTION__, strerror(-res), res);</span><br><span class="line">            <span class="keyword">return</span> res;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mNumberOfCameras = mCameraProviderManager-&gt;getCameraCount();</span><br><span class="line">    mNumberOfNormalCameras =</span><br><span class="line">            mCameraProviderManager-&gt;getAPI1CompatibleCameraCount();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Setup vendor tags before we call get_camera_info the first time</span></span><br><span class="line">    <span class="comment">// because HAL might need to setup static vendor keys in get_camera_info</span></span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> maybe put this into CameraProviderManager::initialize()?</span></span><br><span class="line">    mCameraProviderManager-&gt;setUpVendorTags();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="literal">nullptr</span> == mFlashlight.get()) &#123;</span><br><span class="line">        mFlashlight = <span class="keyword">new</span> CameraFlashlight(mCameraProviderManager, <span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    res = mFlashlight-&gt;findFlashUnits();</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"Failed to enumerate flash units: %s (%d)"</span>, strerror(-res), res);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; cameraId : mCameraProviderManager-&gt;getCameraDeviceIds()) &#123;</span><br><span class="line">        String8 id8 = String8(cameraId.c_str());</span><br><span class="line">        &#123;</span><br><span class="line">            Mutex::<span class="function">Autolock <span class="title">lock</span><span class="params">(mCameraStatesLock)</span></span>;</span><br><span class="line">            <span class="keyword">auto</span> iter = mCameraStates.find(id8);</span><br><span class="line">            <span class="keyword">if</span> (iter != mCameraStates.end()) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        hardware::camera::common::V1_0::CameraResourceCost cost;</span><br><span class="line">        res = mCameraProviderManager-&gt;getResourceCost(cameraId, &amp;cost);</span><br><span class="line">        <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">            ALOGE(<span class="string">"Failed to query device resource cost: %s (%d)"</span>, strerror(-res), res);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">set</span>&lt;String8&gt; conflicting;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; cost.conflictingDevices.size(); i++) &#123;</span><br><span class="line">            conflicting.emplace(String8(cost.conflictingDevices[i].c_str()));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line">            Mutex::<span class="function">Autolock <span class="title">lock</span><span class="params">(mCameraStatesLock)</span></span>;</span><br><span class="line">            mCameraStates.emplace(id8,</span><br><span class="line">                <span class="built_in">std</span>::make_shared&lt;CameraState&gt;(id8, cost.resourceCost, conflicting));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        onDeviceStatusChanged(id8, CameraDeviceStatus::PRESENT);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mFlashlight-&gt;hasFlashUnit(id8)) &#123;</span><br><span class="line">            mTorchStatusMap.add(id8, TorchModeStatus::AVAILABLE_OFF);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>单独做了flashlight闪光灯的初始化操作,不细看.然后获取所有deviceids,遍历调用getResourceCost方法,这个是返回device消耗的资源,然后做对应操作,最后onDeviceStatusChanged状态改变.</p>
+<h3 id="连接hal层相机设备"><a href="#连接hal层相机设备" class="headerlink" title="连接hal层相机设备"></a>连接hal层相机设备</h3><p>在types.hal里找到了状态值的定义:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> CameraDeviceStatus : <span class="keyword">uint32_t</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The camera device is not currently connected, and trying to reference it</span></span><br><span class="line"><span class="comment">     * in provider method calls must return status code ILLEGAL_ARGUMENT.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    NOT_PRESENT = <span class="number">0</span>,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The camera device is connected, and opening it is possible, as long as</span></span><br><span class="line"><span class="comment">     * sufficient resources are available.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * By default, the framework must assume all devices returned by</span></span><br><span class="line"><span class="comment">     * ICameraProvider::getCameraIdList() are in this state.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    PRESENT = <span class="number">1</span>,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The camera device is connected, but it is undergoing enumeration and</span></span><br><span class="line"><span class="comment">     * startup, and so opening the device must return CAMERA_IN_USE.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Attempting to call ICameraProvider::getCameraCharacteristics() must</span></span><br><span class="line"><span class="comment">     * succeed, however.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ENUMERATING = <span class="number">2</span>,</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>NOT_PRESENT是未连接,PRESENT是连接,ENUMERATING就是占用,那经过enumerateProviders就连接到了相机设备.enumerateProviders调用了mCameraProviderManager的初始化方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">CameraProviderManager::HardwareServiceInteractionProxy</span><br><span class="line">CameraProviderManager::sHardwareServiceInteractionProxy&#123;&#125;;</span><br><span class="line"></span><br><span class="line">CameraProviderManager::~CameraProviderManager() &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">status_t</span> CameraProviderManager::initialize(wp&lt;CameraProviderManager::StatusListener&gt; listener,</span><br><span class="line">        ServiceInteractionProxy* proxy) &#123;</span><br><span class="line">    <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lock(mInterfaceMutex);</span><br><span class="line">    <span class="keyword">if</span> (proxy == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: No valid service interaction proxy provided"</span>, __FUNCTION__);</span><br><span class="line">        <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">    &#125;</span><br><span class="line">    mListener = listener;</span><br><span class="line">    mServiceProxy = proxy;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Registering will trigger notifications for all already-known providers</span></span><br><span class="line">    <span class="keyword">bool</span> success = mServiceProxy-&gt;registerForNotifications(</span><br><span class="line">        <span class="comment">/* instance name, empty means no filter */</span> <span class="string">""</span>,</span><br><span class="line">        <span class="keyword">this</span>);</span><br><span class="line">    <span class="keyword">if</span> (!success) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Unable to register with hardware service manager for notifications "</span></span><br><span class="line">                <span class="string">"about camera providers"</span>, __FUNCTION__);</span><br><span class="line">        <span class="keyword">return</span> INVALID_OPERATION;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// See if there's a passthrough HAL, but let's not complain if there's not</span></span><br><span class="line">    addProviderLocked(kLegacyProviderName, <span class="comment">/*expected*/</span> <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> pDeviceInfo = pFindDeviceInfoLocked(</span><br><span class="line">            <span class="comment">/*minVersion*/</span> &#123;<span class="number">1</span>,<span class="number">0</span>&#125;, <span class="comment">/*maxVersion*/</span> &#123;<span class="number">2</span>,<span class="number">0</span>&#125;);</span><br><span class="line">    <span class="keyword">auto</span> *pDeviceInfo1 = <span class="keyword">static_cast</span>&lt;ProviderInfo::DeviceInfo1*&gt;(pDeviceInfo);</span><br><span class="line">        gSession = pDeviceInfo1-&gt;mInterface;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(gSession != <span class="literal">nullptr</span>)</span><br><span class="line">       mQHidlDevice = vendor::qti::hardware::camera::device::V1_0::IQCameraDevice::castFrom(gSession);</span><br><span class="line"></span><br><span class="line">     mQHidlDevice-&gt;addParallelProcessListener(mHidlParallList);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>CameraProviderManager是一个hidl代理,那肯定就是这里连接到了hal层方法了.先注册了一个通知,通过addProviderLocked连接到hal,然后获取deviceInfo,再获得mQHidlDevice,就可以调到hal层方法了.看下addProviderLocked方法:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> CameraProviderManager::addProviderLocked(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; newProvider, <span class="keyword">bool</span> expected) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; providerInfo : mProviders) &#123;</span><br><span class="line">        <span class="keyword">if</span> (providerInfo-&gt;mProviderName == newProvider) &#123;</span><br><span class="line">            ALOGW(<span class="string">"%s: Camera provider HAL with name '%s' already registered"</span>, __FUNCTION__,</span><br><span class="line">                    newProvider.c_str());</span><br><span class="line">            <span class="keyword">return</span> ALREADY_EXISTS;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sp&lt;provider::V2_4::ICameraProvider&gt; interface;</span><br><span class="line">    interface = mServiceProxy-&gt;getService(newProvider);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (interface == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (expected) &#123;</span><br><span class="line">            ALOGE(<span class="string">"%s: Camera provider HAL '%s' is not actually available"</span>, __FUNCTION__,</span><br><span class="line">                    newProvider.c_str());</span><br><span class="line">            <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> OK;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sp&lt;ProviderInfo&gt; providerInfo =</span><br><span class="line">            <span class="keyword">new</span> ProviderInfo(newProvider, interface, <span class="keyword">this</span>);</span><br><span class="line">    <span class="keyword">status_t</span> res = providerInfo-&gt;initialize();</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mProviders.push_back(providerInfo);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>获取hidl的代理服务,关键是ProviderInfo的initialize方法,然后添加进mProviders里,继续看initialize方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> CameraProviderManager::ProviderInfo::initialize() &#123;</span><br><span class="line">    <span class="keyword">status_t</span> res = parseProviderName(mProviderName, &amp;mType, &amp;mId);</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Invalid provider name, ignoring"</span>, __FUNCTION__);</span><br><span class="line">        <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">    &#125;</span><br><span class="line">    ALOGI(<span class="string">"Connecting to new camera provider: %s, isRemote? %d"</span>,</span><br><span class="line">            mProviderName.c_str(), mInterface-&gt;isRemote());</span><br><span class="line">    hardware::Return&lt;Status&gt; status = mInterface-&gt;setCallback(<span class="keyword">this</span>);</span><br><span class="line">    <span class="keyword">if</span> (!status.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Transaction error setting up callbacks with camera provider '%s': %s"</span>,</span><br><span class="line">                __FUNCTION__, mProviderName.c_str(), status.description().c_str());</span><br><span class="line">        <span class="keyword">return</span> DEAD_OBJECT;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (status != Status::OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Unable to register callbacks with camera provider '%s'"</span>,</span><br><span class="line">                __FUNCTION__, mProviderName.c_str());</span><br><span class="line">        <span class="keyword">return</span> mapToStatusT(status);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    hardware::Return&lt;<span class="keyword">bool</span>&gt; linked = mInterface-&gt;linkToDeath(<span class="keyword">this</span>, <span class="comment">/*cookie*/</span> mId);</span><br><span class="line">    <span class="keyword">if</span> (!linked.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Transaction error in linking to camera provider '%s' death: %s"</span>,</span><br><span class="line">                __FUNCTION__, mProviderName.c_str(), linked.description().c_str());</span><br><span class="line">        <span class="keyword">return</span> DEAD_OBJECT;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!linked) &#123;</span><br><span class="line">        ALOGW(<span class="string">"%s: Unable to link to provider '%s' death notifications"</span>,</span><br><span class="line">                __FUNCTION__, mProviderName.c_str());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Get initial list of camera devices, if any</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; devices;</span><br><span class="line">    hardware::Return&lt;<span class="keyword">void</span>&gt; ret = mInterface-&gt;getCameraIdList([&amp;status, &amp;devices](</span><br><span class="line">            Status idStatus,</span><br><span class="line">            <span class="keyword">const</span> hardware::hidl_vec&lt;hardware::hidl_string&gt;&amp; cameraDeviceNames) &#123;</span><br><span class="line">        status = idStatus;</span><br><span class="line">        <span class="keyword">if</span> (status == Status::OK) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; cameraDeviceNames.size(); i++) &#123;</span><br><span class="line">                devices.push_back(cameraDeviceNames[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; &#125;);</span><br><span class="line">    <span class="keyword">if</span> (!ret.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Transaction error in getting camera ID list from provider '%s': %s"</span>,</span><br><span class="line">                __FUNCTION__, mProviderName.c_str(), linked.description().c_str());</span><br><span class="line">        <span class="keyword">return</span> DEAD_OBJECT;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (status != Status::OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Unable to query for camera devices from provider '%s'"</span>,</span><br><span class="line">                __FUNCTION__, mProviderName.c_str());</span><br><span class="line">        <span class="keyword">return</span> mapToStatusT(status);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    sp&lt;StatusListener&gt; listener = mManager-&gt;getStatusListener();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; device : devices) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> id;</span><br><span class="line">        <span class="keyword">status_t</span> res = addDevice(device,</span><br><span class="line">                hardware::camera::common::V1_0::CameraDeviceStatus::PRESENT, &amp;id);</span><br><span class="line">        <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">            ALOGE(<span class="string">"%s: Unable to enumerate camera device '%s': %s (%d)"</span>,</span><br><span class="line">                    __FUNCTION__, device.c_str(), strerror(-res), res);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; device : mDevices) &#123;</span><br><span class="line">        mUniqueCameraIds.insert(device-&gt;mId);</span><br><span class="line">        <span class="keyword">if</span> (device-&gt;isAPI1Compatible()) &#123;</span><br><span class="line">            mUniqueAPI1CompatibleCameraIds.insert(device-&gt;mId);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    mUniqueDeviceCount = mUniqueCameraIds.size();</span><br><span class="line"></span><br><span class="line">    ALOGI(<span class="string">"Camera provider %s ready with %zu camera devices"</span>,</span><br><span class="line">            mProviderName.c_str(), mDevices.size());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里获取到camera设备,有device1,2,3,4,然后遍历调用addDevice方法,看addDevice方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> CameraProviderManager::ProviderInfo::addDevice(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name,</span><br><span class="line">        CameraDeviceStatus initialStatus, <span class="comment">/*out*/</span> <span class="built_in">std</span>::<span class="built_in">string</span>* parsedId) &#123;</span><br><span class="line">    ALOGI(<span class="string">"Enumerating new camera device: %s"</span>, name.c_str());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">uint16_t</span> major, minor;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> type, id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">status_t</span> res = parseDeviceName(name, &amp;major, &amp;minor, &amp;type, &amp;id);</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (type != mType) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Device type %s does not match provider type %s"</span>, __FUNCTION__,</span><br><span class="line">                type.c_str(), mType.c_str());</span><br><span class="line">        <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (mManager-&gt;isValidDeviceLocked(id, major)) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Device %s: ID %s is already in use for device major version %d"</span>, __FUNCTION__,</span><br><span class="line">                name.c_str(), id.c_str(), major);</span><br><span class="line">        <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;DeviceInfo&gt; deviceInfo;</span><br><span class="line">    <span class="keyword">switch</span> (major) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            deviceInfo = initializeDeviceInfo&lt;DeviceInfo1&gt;(name, mProviderTagid,</span><br><span class="line">                    id, minor);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            deviceInfo = initializeDeviceInfo&lt;DeviceInfo3&gt;(name, mProviderTagid,</span><br><span class="line">                    id, minor);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            ALOGE(<span class="string">"%s: Device %s: Unknown HIDL device HAL major version %d:"</span>, __FUNCTION__,</span><br><span class="line">                    name.c_str(), major);</span><br><span class="line">            <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (deviceInfo == <span class="literal">nullptr</span>) <span class="keyword">return</span> BAD_VALUE;</span><br><span class="line">    deviceInfo-&gt;mStatus = initialStatus;</span><br><span class="line"></span><br><span class="line">    mDevices.push_back(<span class="built_in">std</span>::move(deviceInfo));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (parsedId != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        *parsedId = id;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过initializeDeviceInfo获取到deviceInfo,看initializeDeviceInfo方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">DeviceInfoT</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">std</span>:</span>:<span class="built_in">unique_ptr</span>&lt;CameraProviderManager::ProviderInfo::DeviceInfo&gt;</span><br><span class="line">    CameraProviderManager::ProviderInfo::initializeDeviceInfo(</span><br><span class="line">        <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;name, <span class="keyword">const</span> <span class="keyword">metadata_vendor_id_t</span> tagId,</span><br><span class="line">        <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;id, <span class="keyword">uint16_t</span> minorVersion) <span class="keyword">const</span> &#123;</span><br><span class="line">    Status status;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> cameraInterface =</span><br><span class="line">            getDeviceInterface&lt;<span class="keyword">typename</span> DeviceInfoT::InterfaceT&gt;(name);</span><br><span class="line">    <span class="keyword">if</span> (cameraInterface == <span class="literal">nullptr</span>) <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line">    CameraResourceCost resourceCost;</span><br><span class="line">    cameraInterface-&gt;getResourceCost([&amp;status, &amp;resourceCost](</span><br><span class="line">        Status s, CameraResourceCost cost) &#123;</span><br><span class="line">                status = s;</span><br><span class="line">                resourceCost = cost;</span><br><span class="line">            &#125;);</span><br><span class="line">    <span class="keyword">if</span> (status != Status::OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Unable to obtain resource costs for camera device %s: %s"</span>, __FUNCTION__,</span><br><span class="line">                name.c_str(), statusToString(status));</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;DeviceInfo&gt;(</span><br><span class="line">        <span class="keyword">new</span> DeviceInfoT(name, tagId, id, minorVersion, resourceCost,</span><br><span class="line">                cameraInterface));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>DeviceInfoT是一个模板类,找到DeviceInfo1的定义:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">DeviceInfo1</span> :</span> <span class="keyword">public</span> DeviceInfo &#123;</span><br><span class="line">    <span class="keyword">typedef</span> hardware::camera::device::V1_0::ICameraDevice InterfaceT;</span><br><span class="line">    <span class="keyword">const</span> sp&lt;InterfaceT&gt; mInterface;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t <span class="title">setTorchMode</span><span class="params">(<span class="keyword">bool</span> enabled)</span> override</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t <span class="title">getCameraInfo</span><span class="params">(hardware::CameraInfo *info)</span> <span class="keyword">const</span> override</span>;</span><br><span class="line">    <span class="comment">//In case of Device1Info assume that we are always API1 compatible</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span> <span class="title">isAPI1Compatible</span><span class="params">()</span> <span class="keyword">const</span> override </span>&#123; <span class="keyword">return</span> <span class="literal">true</span>; &#125;</span><br><span class="line">    DeviceInfo1(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name, <span class="keyword">const</span> <span class="keyword">metadata_vendor_id_t</span> tagId,</span><br><span class="line">            <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;id, <span class="keyword">uint16_t</span> minorVersion,</span><br><span class="line">            <span class="keyword">const</span> hardware::camera::common::V1_0::CameraResourceCost&amp; resourceCost,</span><br><span class="line">            sp&lt;InterfaceT&gt; interface);</span><br><span class="line">    <span class="keyword">virtual</span> ~DeviceInfo1();</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    CameraParameters2 mDefaultParameters;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>DeviceInfo1的mInterface就是一个ICameraDevice接口,可以用来调用hal层方法,看DeviceInfo1的实例方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">CameraProviderManager::ProviderInfo::DeviceInfo1::DeviceInfo1(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name,</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">metadata_vendor_id_t</span> tagId, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;id,</span><br><span class="line">        <span class="keyword">uint16_t</span> minorVersion,</span><br><span class="line">        <span class="keyword">const</span> CameraResourceCost&amp; resourceCost,</span><br><span class="line">        sp&lt;InterfaceT&gt; interface) :</span><br><span class="line">        DeviceInfo(name, tagId, id, hardware::hidl_version&#123;<span class="number">1</span>, minorVersion&#125;,</span><br><span class="line">                   resourceCost),</span><br><span class="line">        mInterface(interface) &#123;</span><br><span class="line">    <span class="comment">// Get default parameters and initialize flash unit availability</span></span><br><span class="line">    <span class="comment">// Requires powering on the camera device</span></span><br><span class="line">    hardware::Return&lt;Status&gt; status = mInterface-&gt;open(<span class="literal">nullptr</span>);</span><br><span class="line">    <span class="keyword">if</span> (!status.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Transaction error opening camera device %s to check for a flash unit: %s"</span>,</span><br><span class="line">                __FUNCTION__, mId.c_str(), status.description().c_str());</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (status != Status::OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Unable to open camera device %s to check for a flash unit: %s"</span>, __FUNCTION__,</span><br><span class="line">                mId.c_str(), CameraProviderManager::statusToString(status));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    hardware::Return&lt;<span class="keyword">void</span>&gt; ret;</span><br><span class="line">    ret = mInterface-&gt;getParameters([<span class="keyword">this</span>](<span class="keyword">const</span> hardware::hidl_string&amp; parms) &#123;</span><br><span class="line">                mDefaultParameters.unflatten(String8(parms.c_str()));</span><br><span class="line">            &#125;);</span><br><span class="line">    <span class="keyword">if</span> (!ret.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Transaction error reading camera device %s params to check for a flash unit: %s"</span>,</span><br><span class="line">                __FUNCTION__, mId.c_str(), status.description().c_str());</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *flashMode =</span><br><span class="line">            mDefaultParameters.get(CameraParameters::KEY_SUPPORTED_FLASH_MODES);</span><br><span class="line">    <span class="keyword">if</span> (flashMode &amp;&amp; <span class="built_in">strstr</span>(flashMode, CameraParameters::FLASH_MODE_TORCH)) &#123;</span><br><span class="line">        mHasFlashUnit = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ret = mInterface-&gt;close();</span><br><span class="line">    <span class="keyword">if</span> (!ret.isOk()) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Transaction error closing camera device %s after check for a flash unit: %s"</span>,</span><br><span class="line">                __FUNCTION__, mId.c_str(), status.description().c_str());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里调用了mInterface的open方法,就调用到了相机hal的启动方法了.hal层方法留到之后单独分析.</p>
+<h3 id="流程总结"><a href="#流程总结" class="headerlink" title="流程总结"></a>流程总结</h3><p>相机库的启动过程大概就是这样了.总结一下.</p>
+<p>相机服务启动流程:</p>
+<ol>
+<li>init进程启动后启动其它系统服务,包括相机服务,调用cameraserver.rc的main方法</li>
+<li>cameraserver.rc通过ServiceManager启动CameraService</li>
+<li>CameraService被被创建后调用onFirstRef方法,创建CameraProviderManager</li>
+<li>CameraProviderManager的创建一个ProviderInfo并初始化</li>
+<li>ProviderInfo创建DeviceInfo并初始化</li>
+<li>DeviceInfo初始化时调用ICameraDevice实例的open方法,调用到hal层方法</li>
+<li>CameraService调用pingCameraServiceProxy连接到一个服务代理</li>
+</ol>
+<h2 id="打开相机"><a href="#打开相机" class="headerlink" title="打开相机"></a>打开相机</h2><h3 id="从framework到native"><a href="#从framework到native" class="headerlink" title="从framework到native"></a>从framework到native</h3><p>服务启动后再看下打开相机方法.还是从上层看起,在android.hardare.Camera里找相机启动方法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Creates a new Camera object to access the first back-facing camera on the</span></span><br><span class="line"><span class="comment">  * device. If the device does not have a back-facing camera, this returns</span></span><br><span class="line"><span class="comment">  * null.</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@see</span> #open(int)</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Camera <span class="title">open</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     <span class="keyword">int</span> numberOfCameras = getNumberOfCameras();</span><br><span class="line">     CameraInfo cameraInfo = <span class="keyword">new</span> CameraInfo();</span><br><span class="line">     <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numberOfCameras; i++) &#123;</span><br><span class="line">         getCameraInfo(i, cameraInfo);</span><br><span class="line">         <span class="keyword">if</span> (cameraInfo.facing == CameraInfo.CAMERA_FACING_BACK) &#123;</span><br><span class="line">             <span class="keyword">return</span> <span class="keyword">new</span> Camera(i);</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"> &#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Create a legacy camera object.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> cameraId The hardware camera to access, between 0 and</span></span><br><span class="line"><span class="comment">  * &#123;<span class="doctag">@link</span> #getNumberOfCameras()&#125;-1.</span></span><br><span class="line"><span class="comment">  * <span class="doctag">@param</span> halVersion The HAL API version this camera device to be opened as.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="title">Camera</span><span class="params">(<span class="keyword">int</span> cameraId, <span class="keyword">int</span> halVersion)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">int</span> err = cameraInitVersion(cameraId, halVersion);</span><br><span class="line">     <span class="keyword">if</span> (checkInitErrors(err)) &#123;</span><br><span class="line">         <span class="keyword">if</span> (err == -EACCES) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Fail to connect to camera service"</span>);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (err == -ENODEV) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Camera initialization failed"</span>);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (err == -ENOSYS) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Camera initialization failed because some methods"</span></span><br><span class="line">                     + <span class="string">" are not implemented"</span>);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (err == -EOPNOTSUPP) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Camera initialization failed because the hal"</span></span><br><span class="line">                     + <span class="string">" version is not supported by this device"</span>);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (err == -EINVAL) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Camera initialization failed because the input"</span></span><br><span class="line">                     + <span class="string">" arugments are invalid"</span>);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (err == -EBUSY) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Camera initialization failed because the camera"</span></span><br><span class="line">                     + <span class="string">" device was already opened"</span>);</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (err == -EUSERS) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Camera initialization failed because the max"</span></span><br><span class="line">                     + <span class="string">" number of camera devices were already opened"</span>);</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="comment">// Should never hit this.</span></span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"Unknown camera error"</span>);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">cameraInitVersion</span><span class="params">(<span class="keyword">int</span> cameraId, <span class="keyword">int</span> halVersion)</span> </span>&#123;</span><br><span class="line">     mShutterCallback = <span class="keyword">null</span>;</span><br><span class="line">     mRawImageCallback = <span class="keyword">null</span>;</span><br><span class="line">     mJpegCallback = <span class="keyword">null</span>;</span><br><span class="line">     mPreviewCallback = <span class="keyword">null</span>;</span><br><span class="line">     mPostviewCallback = <span class="keyword">null</span>;</span><br><span class="line">     mUsingPreviewAllocation = <span class="keyword">false</span>;</span><br><span class="line">     mZoomListener = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">     Looper looper;</span><br><span class="line">     <span class="keyword">if</span> ((looper = Looper.myLooper()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">         mEventHandler = <span class="keyword">new</span> EventHandler(<span class="keyword">this</span>, looper);</span><br><span class="line">     &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((looper = Looper.getMainLooper()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">         mEventHandler = <span class="keyword">new</span> EventHandler(<span class="keyword">this</span>, looper);</span><br><span class="line">     &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         mEventHandler = <span class="keyword">null</span>;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span> native_setup(<span class="keyword">new</span> WeakReference&lt;Camera&gt;(<span class="keyword">this</span>), cameraId, halVersion,</span><br><span class="line">             ActivityThread.currentOpPackageName());</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>open方法会去获取相机数量,一般就是前置相机和后置相机.然后调用私有实例方法,检查相机版本,在这个方法里创建了前面几篇一致介绍的mEventHandler,用来接受相机消息.然后就是调用native_setup,jni方法,我们在android_hardware_Camera.cpp找到其实现:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// connect to camera service</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> jint <span class="title">android_hardware_Camera_native_setup</span><span class="params">(JNIEnv *env, jobject thiz,</span></span></span><br><span class="line"><span class="function"><span class="params">    jobject weak_this, jint cameraId, jint halVersion, jstring clientPackageName)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// Convert jstring to String16</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char16_t</span> *rawClientName = <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">const</span> <span class="keyword">char16_t</span>*&gt;(</span><br><span class="line">        env-&gt;GetStringChars(clientPackageName, <span class="literal">NULL</span>));</span><br><span class="line">    jsize rawClientNameLen = env-&gt;GetStringLength(clientPackageName);</span><br><span class="line">    <span class="function">String16 <span class="title">clientName</span><span class="params">(rawClientName, rawClientNameLen)</span></span>;</span><br><span class="line">    env-&gt;ReleaseStringChars(clientPackageName,</span><br><span class="line">                            <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">const</span> jchar*&gt;(rawClientName));</span><br><span class="line"></span><br><span class="line">    sp&lt;Camera&gt; camera;</span><br><span class="line">    <span class="keyword">if</span> (halVersion == CAMERA_HAL_API_VERSION_NORMAL_CONNECT) &#123;</span><br><span class="line">        <span class="comment">// Default path: hal version is don't care, do normal camera connect.</span></span><br><span class="line">        camera = Camera::connect(cameraId, clientName,</span><br><span class="line">                Camera::USE_CALLING_UID, Camera::USE_CALLING_PID);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        jint status = Camera::connectLegacy(cameraId, halVersion, clientName,</span><br><span class="line">                Camera::USE_CALLING_UID, camera);</span><br><span class="line">        <span class="keyword">if</span> (status != NO_ERROR) &#123;</span><br><span class="line">            <span class="keyword">return</span> status;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (camera == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> -EACCES;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// make sure camera hardware is alive</span></span><br><span class="line">    <span class="keyword">if</span> (camera-&gt;getStatus() != NO_ERROR) &#123;</span><br><span class="line">        <span class="keyword">return</span> NO_INIT;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    jclass clazz = env-&gt;GetObjectClass(thiz);</span><br><span class="line">    <span class="keyword">if</span> (clazz == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="comment">// This should never happen</span></span><br><span class="line">        jniThrowRuntimeException(env, <span class="string">"Can't find android/hardware/Camera"</span>);</span><br><span class="line">        <span class="keyword">return</span> INVALID_OPERATION;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// We use a weak reference so the Camera object can be garbage collected.</span></span><br><span class="line">    <span class="comment">// The reference is only used as a proxy for callbacks.</span></span><br><span class="line">    sp&lt;JNICameraContext&gt; context = <span class="keyword">new</span> JNICameraContext(env, weak_this, clazz, camera);</span><br><span class="line">    context-&gt;incStrong((<span class="keyword">void</span>*)android_hardware_Camera_native_setup);</span><br><span class="line">    camera-&gt;setListener(context);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// save context in opaque field</span></span><br><span class="line">    env-&gt;SetLongField(thiz, fields.context, (jlong)context.get());</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Update default display orientation in case the sensor is reverse-landscape</span></span><br><span class="line">    CameraInfo cameraInfo;</span><br><span class="line">    <span class="keyword">status_t</span> rc = Camera::getCameraInfo(cameraId, &amp;cameraInfo);</span><br><span class="line">    <span class="keyword">if</span> (rc != NO_ERROR) &#123;</span><br><span class="line">        <span class="keyword">return</span> rc;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> defaultOrientation = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">switch</span> (cameraInfo.orientation) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">90</span>:</span><br><span class="line">            <span class="keyword">if</span> (cameraInfo.facing == CAMERA_FACING_FRONT) &#123;</span><br><span class="line">                defaultOrientation = <span class="number">180</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">180</span>:</span><br><span class="line">            defaultOrientation = <span class="number">180</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">270</span>:</span><br><span class="line">            <span class="keyword">if</span> (cameraInfo.facing != CAMERA_FACING_FRONT) &#123;</span><br><span class="line">                defaultOrientation = <span class="number">180</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            ALOGE(<span class="string">"Unexpected camera orientation %d!"</span>, cameraInfo.orientation);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (defaultOrientation != <span class="number">0</span>) &#123;</span><br><span class="line">        ALOGV(<span class="string">"Setting default display orientation to %d"</span>, defaultOrientation);</span><br><span class="line">        rc = camera-&gt;sendCommand(CAMERA_CMD_SET_DISPLAY_ORIENTATION,</span><br><span class="line">                defaultOrientation, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span> (rc != NO_ERROR) &#123;</span><br><span class="line">            ALOGE(<span class="string">"Unable to update default orientation: %s (%d)"</span>,</span><br><span class="line">                    strerror(-rc), rc);</span><br><span class="line">            <span class="keyword">return</span> rc;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> NO_ERROR;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法就是连接到相机服务,获取状态,设置监听等.我们只看连接方法,就是Camera::connect方法.</p>
+<h3 id="连接到相机服务"><a href="#连接到相机服务" class="headerlink" title="连接到相机服务"></a>连接到相机服务</h3><p>在Camera.cpp中找到connect方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sp&lt;Camera&gt; Camera::connect(<span class="keyword">int</span> cameraId, <span class="keyword">const</span> String16&amp; clientPackageName,</span><br><span class="line">        <span class="keyword">int</span> clientUid, <span class="keyword">int</span> clientPid)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> CameraBaseT::connect(cameraId, clientPackageName, clientUid, clientPid);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>找到CameraBaseT的定义:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> CameraBase&lt;TCam&gt;         CameraBaseT;</span><br></pre></td></tr></table></figure></p>
+<p>CameraBaseT等同于CameraBase<tcam>,在CameraBase.cpp里找到connect方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> TCam, <span class="keyword">typename</span> TCamTraits&gt;</span><br><span class="line">sp&lt;TCam&gt; CameraBase&lt;TCam, TCamTraits&gt;::connect(<span class="keyword">int</span> cameraId,</span><br><span class="line">                                               <span class="keyword">const</span> String16&amp; clientPackageName,</span><br><span class="line">                                               <span class="keyword">int</span> clientUid, <span class="keyword">int</span> clientPid)</span><br><span class="line">&#123;</span><br><span class="line">    ALOGV(<span class="string">"%s: connect"</span>, __FUNCTION__);</span><br><span class="line">    sp&lt;TCam&gt; c = <span class="keyword">new</span> TCam(cameraId);</span><br><span class="line">    sp&lt;TCamCallbacks&gt; cl = c;</span><br><span class="line">    <span class="keyword">const</span> sp&lt;::android::hardware::ICameraService&gt; cs = getCameraService();</span><br><span class="line"></span><br><span class="line">    binder::Status ret;</span><br><span class="line">    <span class="keyword">if</span> (cs != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        TCamConnectService fnConnectService = TCamTraits::fnConnectService;</span><br><span class="line">        ret = (cs.get()-&gt;*fnConnectService)(cl, cameraId, clientPackageName, clientUid,</span><br><span class="line">                                               clientPid, <span class="comment">/*out*/</span> &amp;c-&gt;mCamera);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (ret.isOk() &amp;&amp; c-&gt;mCamera != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">        IInterface::asBinder(c-&gt;mCamera)-&gt;linkToDeath(c);</span><br><span class="line">        c-&gt;mStatus = NO_ERROR;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ALOGW(<span class="string">"An error occurred while connecting to camera %d: %s"</span>, cameraId,</span><br><span class="line">                (cs == <span class="literal">nullptr</span>) ? <span class="string">"Service not available"</span> : ret.toString8().<span class="built_in">string</span>());</span><br><span class="line">        c.clear();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></tcam></p>
+<p>这里获取了相机服务,然后调用TCamConnectService的fnConnectService方法,找到方法定义:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CameraTraits&lt;Camera&gt;::TCamConnectService CameraTraits&lt;Camera&gt;::fnConnectService =</span><br><span class="line">        &amp;::android::hardware::ICameraService::connect;</span><br></pre></td></tr></table></figure></p>
+<p>connect这是一个远程调用,在aidl找到定义:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Open a camera device through the old camera API</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">ICamera <span class="title">connect</span><span class="params">(ICameraClient client,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">int</span> cameraId,</span></span></span><br><span class="line"><span class="function"><span class="params">        String opPackageName,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">int</span> clientUid, <span class="keyword">int</span> clientPid)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Open a camera device through the new camera API</span></span><br><span class="line"><span class="comment"> * Only supported for device HAL versions &gt;= 3.2</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">ICameraDeviceUser <span class="title">connectDevice</span><span class="params">(ICameraDeviceCallbacks callbacks,</span></span></span><br><span class="line"><span class="function"><span class="params">        String cameraId,</span></span></span><br><span class="line"><span class="function"><span class="params">        String opPackageName,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">int</span> clientUid)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>在CameraService找到connect方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">Status CameraService::connect(</span><br><span class="line">        <span class="keyword">const</span> sp&lt;ICameraClient&gt;&amp; cameraClient,</span><br><span class="line">        <span class="keyword">int</span> cameraId,</span><br><span class="line">        <span class="keyword">const</span> String16&amp; clientPackageName,</span><br><span class="line">        <span class="keyword">int</span> clientUid,</span><br><span class="line">        <span class="keyword">int</span> clientPid,</span><br><span class="line">        <span class="comment">/*out*/</span></span><br><span class="line">        sp&lt;ICamera&gt;* device) &#123;</span><br><span class="line"></span><br><span class="line">    ATRACE_CALL();</span><br><span class="line">    Status ret = Status::ok();</span><br><span class="line">    String8 id = String8::format(<span class="string">"%d"</span>, cameraId);</span><br><span class="line">    sp&lt;Client&gt; client = <span class="literal">nullptr</span>;</span><br><span class="line">    ret = connectHelper&lt;ICameraClient,Client&gt;(cameraClient, id,</span><br><span class="line">            CAMERA_HAL_API_VERSION_UNSPECIFIED, clientPackageName, clientUid, clientPid, API_1,</span><br><span class="line">            <span class="comment">/*legacyMode*/</span> <span class="literal">false</span>, <span class="comment">/*shimUpdateOnly*/</span> <span class="literal">false</span>,</span><br><span class="line">            <span class="comment">/*out*/</span>client);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(!ret.isOk()) &#123;</span><br><span class="line">        logRejected(id, getCallingPid(), String8(clientPackageName),</span><br><span class="line">                ret.toString8());</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    *device = client;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>继续看connectHelper方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">CALLBACK</span>, <span class="title">class</span> <span class="title">CLIENT</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">Status</span> <span class="title">CameraService</span>:</span>:connectHelper(<span class="keyword">const</span> sp&lt;CALLBACK&gt;&amp; cameraCb, <span class="keyword">const</span> String8&amp; cameraId,</span><br><span class="line">        <span class="keyword">int</span> halVersion, <span class="keyword">const</span> String16&amp; clientPackageName, <span class="keyword">int</span> clientUid, <span class="keyword">int</span> clientPid,</span><br><span class="line">        apiLevel effectiveApiLevel, <span class="keyword">bool</span> legacyMode, <span class="keyword">bool</span> shimUpdateOnly,</span><br><span class="line">        <span class="comment">/*out*/</span>sp&lt;CLIENT&gt;&amp; device) &#123;</span><br><span class="line">    binder::Status ret = binder::Status::ok();</span><br><span class="line"></span><br><span class="line">    <span class="function">String8 <span class="title">clientName8</span><span class="params">(clientPackageName)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> originalClientPid = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    ALOGI(<span class="string">"CameraService::connect call (PID %d \"%s\", camera ID %s) for HAL version %s and "</span></span><br><span class="line">            <span class="string">"Camera API version %d"</span>, clientPid, clientName8.<span class="built_in">string</span>(), cameraId.<span class="built_in">string</span>(),</span><br><span class="line">            (halVersion == <span class="number">-1</span>) ? <span class="string">"default"</span> : <span class="built_in">std</span>::to_string(halVersion).c_str(),</span><br><span class="line">            <span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(effectiveApiLevel));</span><br><span class="line"></span><br><span class="line">    sp&lt;CLIENT&gt; client = <span class="literal">nullptr</span>;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// Acquire mServiceLock and prevent other clients from connecting</span></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;AutoConditionLock&gt; lock =</span><br><span class="line">                AutoConditionLock::waitAndAcquire(mServiceLockWrapper, DEFAULT_CONNECT_TIMEOUT_NS);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (lock == <span class="literal">nullptr</span>) &#123;</span><br><span class="line">            ALOGE(<span class="string">"CameraService::connect (PID %d) rejected (too many other clients connecting)."</span></span><br><span class="line">                    , clientPid);</span><br><span class="line">            <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_MAX_CAMERAS_IN_USE,</span><br><span class="line">                    <span class="string">"Cannot open camera %s for \"%s\" (PID %d): Too many other clients connecting"</span>,</span><br><span class="line">                    cameraId.<span class="built_in">string</span>(), clientName8.<span class="built_in">string</span>(), clientPid);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Enforce client permissions and do basic sanity checks</span></span><br><span class="line">        <span class="keyword">if</span>(!(ret = validateConnectLocked(cameraId, clientName8,</span><br><span class="line">                <span class="comment">/*inout*/</span>clientUid, <span class="comment">/*inout*/</span>clientPid, <span class="comment">/*out*/</span>originalClientPid)).isOk()) &#123;</span><br><span class="line">            <span class="keyword">return</span> ret;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Check the shim parameters after acquiring lock, if they have already been updated and</span></span><br><span class="line">        <span class="comment">// we were doing a shim update, return immediately</span></span><br><span class="line">        <span class="keyword">if</span> (shimUpdateOnly) &#123;</span><br><span class="line">            <span class="keyword">auto</span> cameraState = getCameraState(cameraId);</span><br><span class="line">            <span class="keyword">if</span> (cameraState != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!cameraState-&gt;getShimParams().isEmpty()) <span class="keyword">return</span> ret;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">status_t</span> err;</span><br><span class="line"></span><br><span class="line">        sp&lt;BasicClient&gt; clientTmp = <span class="literal">nullptr</span>;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;resource_policy::ClientDescriptor&lt;String8, sp&lt;BasicClient&gt;&gt;&gt; partial;</span><br><span class="line">        <span class="keyword">if</span> ((err = handleEvictionsLocked(cameraId, originalClientPid, effectiveApiLevel,</span><br><span class="line">                IInterface::asBinder(cameraCb), clientName8, <span class="comment">/*out*/</span>&amp;clientTmp,</span><br><span class="line">                <span class="comment">/*out*/</span>&amp;partial)) != NO_ERROR) &#123;</span><br><span class="line">            <span class="keyword">switch</span> (err) &#123;</span><br><span class="line">                <span class="keyword">case</span> -ENODEV:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_DISCONNECTED,</span><br><span class="line">                            <span class="string">"No camera device with ID \"%s\" currently available"</span>,</span><br><span class="line">                            cameraId.<span class="built_in">string</span>());</span><br><span class="line">                <span class="keyword">case</span> -EBUSY:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_CAMERA_IN_USE,</span><br><span class="line">                            <span class="string">"Higher-priority client using camera, ID \"%s\" currently unavailable"</span>,</span><br><span class="line">                            cameraId.<span class="built_in">string</span>());</span><br><span class="line">                <span class="keyword">default</span>:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_INVALID_OPERATION,</span><br><span class="line">                            <span class="string">"Unexpected error %s (%d) opening camera \"%s\""</span>,</span><br><span class="line">                            strerror(-err), err, cameraId.<span class="built_in">string</span>());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (clientTmp.get() != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">            <span class="comment">// Handle special case for API1 MediaRecorder where the existing client is returned</span></span><br><span class="line">            device = <span class="keyword">static_cast</span>&lt;CLIENT*&gt;(clientTmp.get());</span><br><span class="line">            <span class="keyword">return</span> ret;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// give flashlight a chance to close devices if necessary.</span></span><br><span class="line">        mFlashlight-&gt;prepareDeviceOpen(cameraId);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> facing = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">int</span> deviceVersion = getDeviceVersion(cameraId, <span class="comment">/*out*/</span>&amp;facing);</span><br><span class="line">        <span class="keyword">if</span> (facing == <span class="number">-1</span>) &#123;</span><br><span class="line">            ALOGE(<span class="string">"%s: Unable to get camera device \"%s\"  facing"</span>, __FUNCTION__, cameraId.<span class="built_in">string</span>());</span><br><span class="line">            <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_INVALID_OPERATION,</span><br><span class="line">                    <span class="string">"Unable to get camera device \"%s\" facing"</span>, cameraId.<span class="built_in">string</span>());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        sp&lt;BasicClient&gt; tmp = <span class="literal">nullptr</span>;</span><br><span class="line">        <span class="keyword">if</span>(!(ret = makeClient(<span class="keyword">this</span>, cameraCb, clientPackageName, cameraId, facing, clientPid,</span><br><span class="line">                clientUid, getpid(), legacyMode, halVersion, deviceVersion, effectiveApiLevel,</span><br><span class="line">                <span class="comment">/*out*/</span>&amp;tmp)).isOk()) &#123;</span><br><span class="line">            <span class="keyword">return</span> ret;</span><br><span class="line">        &#125;</span><br><span class="line">        client = <span class="keyword">static_cast</span>&lt;CLIENT*&gt;(tmp.get());</span><br><span class="line"></span><br><span class="line">        LOG_ALWAYS_FATAL_IF(client.get() == <span class="literal">nullptr</span>, <span class="string">"%s: CameraService in invalid state"</span>,</span><br><span class="line">                __FUNCTION__);</span><br><span class="line"></span><br><span class="line">        err = client-&gt;initialize(mCameraProviderManager);</span><br><span class="line">        <span class="keyword">if</span> (err != OK) &#123;</span><br><span class="line">            ALOGE(<span class="string">"%s: Could not initialize client from HAL."</span>, __FUNCTION__);</span><br><span class="line">            <span class="comment">// Errors could be from the HAL module open call or from AppOpsManager</span></span><br><span class="line">            <span class="keyword">switch</span>(err) &#123;</span><br><span class="line">                <span class="keyword">case</span> BAD_VALUE:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_ILLEGAL_ARGUMENT,</span><br><span class="line">                            <span class="string">"Illegal argument to HAL module for camera \"%s\""</span>, cameraId.<span class="built_in">string</span>());</span><br><span class="line">                <span class="keyword">case</span> -EBUSY:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_CAMERA_IN_USE,</span><br><span class="line">                            <span class="string">"Camera \"%s\" is already open"</span>, cameraId.<span class="built_in">string</span>());</span><br><span class="line">                <span class="keyword">case</span> -EUSERS:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_MAX_CAMERAS_IN_USE,</span><br><span class="line">                            <span class="string">"Too many cameras already open, cannot open camera \"%s\""</span>,</span><br><span class="line">                            cameraId.<span class="built_in">string</span>());</span><br><span class="line">                <span class="keyword">case</span> PERMISSION_DENIED:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_PERMISSION_DENIED,</span><br><span class="line">                            <span class="string">"No permission to open camera \"%s\""</span>, cameraId.<span class="built_in">string</span>());</span><br><span class="line">                <span class="keyword">case</span> -EACCES:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_DISABLED,</span><br><span class="line">                            <span class="string">"Camera \"%s\" disabled by policy"</span>, cameraId.<span class="built_in">string</span>());</span><br><span class="line">                <span class="keyword">case</span> -ENODEV:</span><br><span class="line">                <span class="keyword">default</span>:</span><br><span class="line">                    <span class="keyword">return</span> STATUS_ERROR_FMT(ERROR_INVALID_OPERATION,</span><br><span class="line">                            <span class="string">"Failed to initialize camera \"%s\": %s (%d)"</span>, cameraId.<span class="built_in">string</span>(),</span><br><span class="line">                            strerror(-err), err);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Update shim paremeters for legacy clients</span></span><br><span class="line">        <span class="keyword">if</span> (effectiveApiLevel == API_1) &#123;</span><br><span class="line">            <span class="comment">// Assume we have always received a Client subclass for API1</span></span><br><span class="line">            sp&lt;Client&gt; shimClient = <span class="keyword">reinterpret_cast</span>&lt;Client*&gt;(client.get());</span><br><span class="line">            String8 rawParams = shimClient-&gt;getParameters();</span><br><span class="line">            <span class="function">CameraParameters <span class="title">params</span><span class="params">(rawParams)</span></span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">auto</span> cameraState = getCameraState(cameraId);</span><br><span class="line">            <span class="keyword">if</span> (cameraState != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">                cameraState-&gt;setShimParams(params);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                ALOGE(<span class="string">"%s: Cannot update shim parameters for camera %s, no such device exists."</span>,</span><br><span class="line">                        __FUNCTION__, cameraId.<span class="built_in">string</span>());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (shimUpdateOnly) &#123;</span><br><span class="line">            <span class="comment">// If only updating legacy shim parameters, immediately disconnect client</span></span><br><span class="line">            mServiceLock.unlock();</span><br><span class="line">            client-&gt;disconnect();</span><br><span class="line">            mServiceLock.lock();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// Otherwise, add client to active clients list</span></span><br><span class="line">            finishConnectLocked(client, partial);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="comment">// lock is destroyed, allow further connect calls</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Important: release the mutex here so the client can call back into the service from its</span></span><br><span class="line">    <span class="comment">// destructor (can be at the end of the call)</span></span><br><span class="line">    device = client;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里创建了BasicClient作为代理调用到hal方法,BasicClient实际是Client.</p>
+<h3 id="连接到hal"><a href="#连接到hal" class="headerlink" title="连接到hal"></a>连接到hal</h3><p>找到CameraService.h中Client的定义:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Client</span> :</span> <span class="keyword">public</span> hardware::BnCamera, <span class="keyword">public</span> BasicClient</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">typedef</span> hardware::ICameraClient TCamCallbacks;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ICamera interface (see ICamera for details)</span></span><br><span class="line">    <span class="keyword">virtual</span> binder::<span class="function">Status <span class="title">disconnect</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">connect</span><span class="params">(<span class="keyword">const</span> sp&lt;hardware::ICameraClient&gt;&amp; client)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">lock</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">unlock</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">setPreviewTarget</span><span class="params">(<span class="keyword">const</span> sp&lt;IGraphicBufferProducer&gt;&amp; bufferProducer)</span></span>=<span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span>          <span class="title">setPreviewCallbackFlag</span><span class="params">(<span class="keyword">int</span> flag)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">setPreviewCallbackTarget</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">const</span> sp&lt;IGraphicBufferProducer&gt;&amp; callbackProducer)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">startPreview</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span>          <span class="title">stopPreview</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span>          <span class="title">previewEnabled</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">setVideoBufferMode</span><span class="params">(<span class="keyword">int32_t</span> videoBufferMode)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">startRecording</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span>          <span class="title">stopRecording</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">bool</span>          <span class="title">recordingEnabled</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span>          <span class="title">releaseRecordingFrame</span><span class="params">(<span class="keyword">const</span> sp&lt;IMemory&gt;&amp; mem)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">autoFocus</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">cancelAutoFocus</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">takePicture</span><span class="params">(<span class="keyword">int</span> msgType)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">setParameters</span><span class="params">(<span class="keyword">const</span> String8&amp; params)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> String8       <span class="title">getParameters</span><span class="params">()</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">sendCommand</span><span class="params">(<span class="keyword">int32_t</span> cmd, <span class="keyword">int32_t</span> arg1, <span class="keyword">int32_t</span> arg2)</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> status_t      <span class="title">setVideoTarget</span><span class="params">(<span class="keyword">const</span> sp&lt;IGraphicBufferProducer&gt;&amp; bufferProducer)</span> </span>= <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Interface used by CameraService</span></span><br><span class="line">    Client(<span class="keyword">const</span> sp&lt;CameraService&gt;&amp; cameraService,</span><br><span class="line">            <span class="keyword">const</span> sp&lt;hardware::ICameraClient&gt;&amp; cameraClient,</span><br><span class="line">            <span class="keyword">const</span> String16&amp; clientPackageName,</span><br><span class="line">            <span class="keyword">const</span> String8&amp; cameraIdStr,</span><br><span class="line">            <span class="keyword">int</span> cameraFacing,</span><br><span class="line">            <span class="keyword">int</span> clientPid,</span><br><span class="line">            <span class="keyword">uid_t</span> clientUid,</span><br><span class="line">            <span class="keyword">int</span> servicePid);</span><br><span class="line">    ~Client();</span><br></pre></td></tr></table></figure></p>
+<p>这里看到了我们很多熟悉的方法包括connect,startPreview,setParameters等等.像前篇介绍的,最后Client的实现在CameraClient中,在CameraClient找到initialize方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> CameraClient::initialize(sp&lt;CameraProviderManager&gt; manager) &#123;</span><br><span class="line">    <span class="keyword">int</span> callingPid = getCallingPid();</span><br><span class="line">    <span class="keyword">status_t</span> res;</span><br><span class="line"></span><br><span class="line">    LOG1(<span class="string">"CameraClient::initialize E (pid %d, id %d)"</span>, callingPid, mCameraId);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Verify ops permissions</span></span><br><span class="line">    res = startCameraOps();</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">char</span> camera_device_name[<span class="number">10</span>];</span><br><span class="line">    <span class="built_in">snprintf</span>(camera_device_name, <span class="keyword">sizeof</span>(camera_device_name), <span class="string">"%d"</span>, mCameraId);</span><br><span class="line"></span><br><span class="line">    mHardware = <span class="keyword">new</span> CameraHardwareInterface(camera_device_name);</span><br><span class="line">    res = mHardware-&gt;initialize(manager);</span><br><span class="line">    <span class="keyword">if</span> (res != OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: Camera %d: unable to initialize device: %s (%d)"</span>,</span><br><span class="line">                __FUNCTION__, mCameraId, strerror(-res), res);</span><br><span class="line">        mHardware.clear();</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mHardware-&gt;setCallbacks(notifyCallback,</span><br><span class="line">            dataCallback,</span><br><span class="line">            dataCallbackTimestamp,</span><br><span class="line">            handleCallbackTimestampBatch,</span><br><span class="line">            (<span class="keyword">void</span> *)(<span class="keyword">uintptr_t</span>)mCameraId);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Enable zoom, error, focus, and metadata messages by default</span></span><br><span class="line">    enableMsgType(CAMERA_MSG_ERROR | CAMERA_MSG_ZOOM | CAMERA_MSG_FOCUS |</span><br><span class="line">                  CAMERA_MSG_PREVIEW_METADATA | CAMERA_MSG_FOCUS_MOVE);</span><br><span class="line"></span><br><span class="line">    LOG1(<span class="string">"CameraClient::initialize X (pid %d, id %d)"</span>, callingPid, mCameraId);</span><br><span class="line">    <span class="keyword">return</span> OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>看到这里创建了一个CameraHardwareInterface,这个属于device1的类,调用其初始化,然后设置监听,最后设置可用的消息类型,再看下CameraHardwareInterface的初始化方法:<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">status_t</span> CameraHardwareInterface::initialize(sp&lt;CameraProviderManager&gt; manager) &#123;</span><br><span class="line">    ALOGI(<span class="string">"Opening camera %s"</span>, mName.<span class="built_in">string</span>());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">status_t</span> ret = manager-&gt;openSession(mName.<span class="built_in">string</span>(), <span class="keyword">this</span>, &amp;mHidlDevice);</span><br><span class="line">    <span class="keyword">if</span> (ret != OK) &#123;</span><br><span class="line">        ALOGE(<span class="string">"%s: openSession failed! %s (%d)"</span>, __FUNCTION__, strerror(-ret), ret);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里也调用了CameraProviderManager,通过openSession方法获得一个hidlDevice,Client里面定义的方法都是通过hidlDevice调用到hal层方法的.</p>
+<h3 id="流程总结-1"><a href="#流程总结-1" class="headerlink" title="流程总结"></a>流程总结</h3><p>总结一下打开相机整体流程:</p>
+<ol>
+<li>Camera.java调用android_hardware_Camera.cpp中的jni方法打开相机</li>
+<li>native层通过binder代理连接到CameraService</li>
+<li>CameraService生成一个CameraClient</li>
+<li>CameraClient生成一个CameraHardwareInterface</li>
+<li>CameraHardwareInterface通过CameraProviderManager的openSession获得hidlDevice调用到hal方法</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/Camera/" rel="tag"># Camera</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/07/2018-5-7-相机源码深入解析(三)/" rel="next" title="Android8.0相机源码深入解析(三)">
+                <i class="fa fa-chevron-left"></i> Android8.0相机源码深入解析(三)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/13/2018-6-13-相机源码深入解析(六)/" rel="prev" title="Android8.0相机源码深入解析(六)">
+                Android8.0相机源码深入解析(六) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#正文"><span class="nav-number">1.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#相机服务过程"><span class="nav-number">1.1.</span> <span class="nav-text">相机服务过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#服务注册及启动"><span class="nav-number">1.1.1.</span> <span class="nav-text">服务注册及启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接hal层相机设备"><span class="nav-number">1.1.2.</span> <span class="nav-text">连接hal层相机设备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流程总结"><span class="nav-number">1.1.3.</span> <span class="nav-text">流程总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#打开相机"><span class="nav-number">1.2.</span> <span class="nav-text">打开相机</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#从framework到native"><span class="nav-number">1.2.1.</span> <span class="nav-text">从framework到native</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接到相机服务"><span class="nav-number">1.2.2.</span> <span class="nav-text">连接到相机服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接到hal"><span class="nav-number">1.2.3.</span> <span class="nav-text">连接到hal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流程总结-1"><span class="nav-number">1.2.4.</span> <span class="nav-text">流程总结</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

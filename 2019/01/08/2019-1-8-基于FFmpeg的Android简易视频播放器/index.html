@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="音视频,FFmpeg,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="自己动手写个视频播放器">
+<meta name="keywords" content="音视频,FFmpeg">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于FFmpeg的Android简易视频播放器">
+<meta property="og:url" content="http://anddymao.com/2019/01/08/2019-1-8-基于FFmpeg的Android简易视频播放器/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="自己动手写个视频播放器">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.890Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="基于FFmpeg的Android简易视频播放器">
+<meta name="twitter:description" content="自己动手写个视频播放器">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2019/01/08/2019-1-8-基于FFmpeg的Android简易视频播放器/">
+
+
+
+
+
+  <title>基于FFmpeg的Android简易视频播放器 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2019/01/08/2019-1-8-基于FFmpeg的Android简易视频播放器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">基于FFmpeg的Android简易视频播放器</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-08T12:00:00+08:00">
+                2019-01-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  自己动手写个视频播放器
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>一个视频文件到播放在屏幕上，主要有这几个步骤，<br>1.解封装，得到视频流和音频流；<br>2.解码 得到视频原始帧，一般是yuv格式数据；<br>3.渲染 把图像帧数据绘制到屏幕上</p>
+<p>前两步使用FFmpeg解析，渲软使用native window操纵界面显示,下面来自己动手试试。</p>
+<h2 id="视频解码"><a href="#视频解码" class="headerlink" title="视频解码"></a>视频解码</h2><p>FFmpeg解码视频步骤：<br>1.av_register_all 注册初始化<br>2.avformat_open_input 打开文件<br>3.av_find_stream_info 查找流信息<br>4.avcode_find_decoder 获取解码器<br>5.avcode_open 打开解码器<br>6.av_read_frame 读取帧</p>
+<p>FFmpeg的方法名都带av即audio and video，都是同时支持音视频的。</p>
+<p>视频解码代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br></pre></td><td class="code"><pre><span class="line">JNIEXPORT jint JNICALL Java_com_anddymao_ffmpegdemo_MainActivity_decode</span><br><span class="line">  (JNIEnv *env, jobject obj, jstring input_jstr, jstring output_jstr)</span><br><span class="line">&#123;</span><br><span class="line">	AVFormatContext	*pFormatCtx;</span><br><span class="line">	int				i, videoindex;</span><br><span class="line">	AVCodecContext	*pCodecCtx;</span><br><span class="line">	AVCodec			*pCodec;</span><br><span class="line">	AVFrame	*pFrame,*pFrameYUV;</span><br><span class="line">	uint8_t *out_buffer;</span><br><span class="line">	AVPacket *packet;</span><br><span class="line">	int y_size;</span><br><span class="line">	int ret, got_picture;</span><br><span class="line">	struct SwsContext *img_convert_ctx;</span><br><span class="line">	FILE *fp_yuv;</span><br><span class="line">	int frame_cnt;</span><br><span class="line">	clock_t time_start, time_finish;</span><br><span class="line">	double  time_duration = 0.0;</span><br><span class="line"></span><br><span class="line">	char input_str[500]=&#123;0&#125;;</span><br><span class="line">	char output_str[500]=&#123;0&#125;;</span><br><span class="line">	char info[1000]=&#123;0&#125;;</span><br><span class="line">	sprintf(input_str,&quot;%s&quot;,(*env)-&gt;GetStringUTFChars(env,input_jstr, NULL));</span><br><span class="line">	sprintf(output_str,&quot;%s&quot;,(*env)-&gt;GetStringUTFChars(env,output_jstr, NULL));</span><br><span class="line"></span><br><span class="line">	//FFmpeg av_log() callback</span><br><span class="line">  av_log_set_callback(custom_log);</span><br><span class="line"></span><br><span class="line">	av_register_all();</span><br><span class="line">	avformat_network_init();</span><br><span class="line">	pFormatCtx = avformat_alloc_context();</span><br><span class="line"></span><br><span class="line">	if(avformat_open_input(&amp;pFormatCtx,input_str,NULL,NULL)!=0)&#123;</span><br><span class="line">		LOGE(&quot;Couldn&apos;t open input stream.\n&quot;);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line">	if(avformat_find_stream_info(pFormatCtx,NULL)&lt;0)&#123;</span><br><span class="line">		LOGE(&quot;Couldn&apos;t find stream information.\n&quot;);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line">	videoindex=-1;</span><br><span class="line">	for(i=0; i&lt;pFormatCtx-&gt;nb_streams; i++)</span><br><span class="line">		if(pFormatCtx-&gt;streams[i]-&gt;codec-&gt;codec_type==AVMEDIA_TYPE_VIDEO)&#123;</span><br><span class="line">			videoindex=i;</span><br><span class="line">			break;</span><br><span class="line">		&#125;</span><br><span class="line">	if(videoindex==-1)&#123;</span><br><span class="line">		LOGE(&quot;Couldn&apos;t find a video stream.\n&quot;);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line">	pCodecCtx=pFormatCtx-&gt;streams[videoindex]-&gt;codec;</span><br><span class="line">	pCodec=avcodec_find_decoder(pCodecCtx-&gt;codec_id);</span><br><span class="line">	if(pCodec==NULL)&#123;</span><br><span class="line">		LOGE(&quot;Couldn&apos;t find Codec.\n&quot;);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line">	if(avcodec_open2(pCodecCtx, pCodec,NULL)&lt;0)&#123;</span><br><span class="line">		LOGE(&quot;Couldn&apos;t open codec.\n&quot;);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	pFrame=av_frame_alloc();</span><br><span class="line">	pFrameYUV=av_frame_alloc();</span><br><span class="line">	out_buffer=(unsigned char *)av_malloc(av_image_get_buffer_size(AV_PIX_FMT_YUV420P,  pCodecCtx-&gt;width, pCodecCtx-&gt;height,1));</span><br><span class="line">	av_image_fill_arrays(pFrameYUV-&gt;data, pFrameYUV-&gt;linesize,out_buffer,</span><br><span class="line">		AV_PIX_FMT_YUV420P,pCodecCtx-&gt;width, pCodecCtx-&gt;height,1);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	packet=(AVPacket *)av_malloc(sizeof(AVPacket));</span><br><span class="line"></span><br><span class="line">	img_convert_ctx = sws_getContext(pCodecCtx-&gt;width, pCodecCtx-&gt;height, pCodecCtx-&gt;pix_fmt,</span><br><span class="line">	pCodecCtx-&gt;width, pCodecCtx-&gt;height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  sprintf(info,   &quot;[Input     ]%s\n&quot;, input_str);</span><br><span class="line">  sprintf(info, &quot;%s[Output    ]%s\n&quot;,info,output_str);</span><br><span class="line">  sprintf(info, &quot;%s[Format    ]%s\n&quot;,info, pFormatCtx-&gt;iformat-&gt;name);</span><br><span class="line">  sprintf(info, &quot;%s[Codec     ]%s\n&quot;,info, pCodecCtx-&gt;codec-&gt;name);</span><br><span class="line">  sprintf(info, &quot;%s[Resolution]%dx%d\n&quot;,info, pCodecCtx-&gt;width,pCodecCtx-&gt;height);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  fp_yuv=fopen(output_str,&quot;wb+&quot;);</span><br><span class="line">  if(fp_yuv==NULL)&#123;</span><br><span class="line">		printf(&quot;Cannot open output file.\n&quot;);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	frame_cnt=0;</span><br><span class="line">	time_start = clock();</span><br><span class="line"></span><br><span class="line">	while(av_read_frame(pFormatCtx, packet)&gt;=0)&#123;</span><br><span class="line">		if(packet-&gt;stream_index==videoindex)&#123;</span><br><span class="line">			ret = avcodec_decode_video2(pCodecCtx, pFrame, &amp;got_picture, packet);</span><br><span class="line">			if(ret &lt; 0)&#123;</span><br><span class="line">				LOGE(&quot;Decode Error.\n&quot;);</span><br><span class="line">				return -1;</span><br><span class="line">			&#125;</span><br><span class="line">			if(got_picture)&#123;</span><br><span class="line">				sws_scale(img_convert_ctx, (const uint8_t* const*)pFrame-&gt;data, pFrame-&gt;linesize, 0, pCodecCtx-&gt;height,</span><br><span class="line">					pFrameYUV-&gt;data, pFrameYUV-&gt;linesize);</span><br><span class="line"></span><br><span class="line">				y_size=pCodecCtx-&gt;width*pCodecCtx-&gt;height;</span><br><span class="line">				fwrite(pFrameYUV-&gt;data[0],1,y_size,fp_yuv);    //Y</span><br><span class="line">				fwrite(pFrameYUV-&gt;data[1],1,y_size/4,fp_yuv);  //U</span><br><span class="line">				fwrite(pFrameYUV-&gt;data[2],1,y_size/4,fp_yuv);  //V</span><br><span class="line">				//Output info</span><br><span class="line">				char pictype_str[10]=&#123;0&#125;;</span><br><span class="line">				switch(pFrame-&gt;pict_type)&#123;</span><br><span class="line">					case AV_PICTURE_TYPE_I:sprintf(pictype_str,&quot;I&quot;);break;</span><br><span class="line">				  case AV_PICTURE_TYPE_P:sprintf(pictype_str,&quot;P&quot;);break;</span><br><span class="line">					case AV_PICTURE_TYPE_B:sprintf(pictype_str,&quot;B&quot;);break;</span><br><span class="line">					default:sprintf(pictype_str,&quot;Other&quot;);break;</span><br><span class="line">				&#125;</span><br><span class="line">				LOGI(&quot;Frame Index: %5d. Type:%s&quot;,frame_cnt,pictype_str);</span><br><span class="line">				frame_cnt++;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		av_free_packet(packet);</span><br><span class="line">	&#125;</span><br><span class="line">	//flush decoder</span><br><span class="line">	//FIX: Flush Frames remained in Codec</span><br><span class="line">	while (1) &#123;</span><br><span class="line">		ret = avcodec_decode_video2(pCodecCtx, pFrame, &amp;got_picture, packet);</span><br><span class="line">		if (ret &lt; 0)</span><br><span class="line">			break;</span><br><span class="line">		if (!got_picture)</span><br><span class="line">			break;</span><br><span class="line">		sws_scale(img_convert_ctx, (const uint8_t* const*)pFrame-&gt;data, pFrame-&gt;linesize, 0, pCodecCtx-&gt;height,</span><br><span class="line">			pFrameYUV-&gt;data, pFrameYUV-&gt;linesize);</span><br><span class="line">		int y_size=pCodecCtx-&gt;width*pCodecCtx-&gt;height;</span><br><span class="line">		fwrite(pFrameYUV-&gt;data[0],1,y_size,fp_yuv);    //Y</span><br><span class="line">		fwrite(pFrameYUV-&gt;data[1],1,y_size/4,fp_yuv);  //U</span><br><span class="line">		fwrite(pFrameYUV-&gt;data[2],1,y_size/4,fp_yuv);  //V</span><br><span class="line">		//Output info</span><br><span class="line">		char pictype_str[10]=&#123;0&#125;;</span><br><span class="line">		switch(pFrame-&gt;pict_type)&#123;</span><br><span class="line">			case AV_PICTURE_TYPE_I:sprintf(pictype_str,&quot;I&quot;);break;</span><br><span class="line">		  case AV_PICTURE_TYPE_P:sprintf(pictype_str,&quot;P&quot;);break;</span><br><span class="line">			case AV_PICTURE_TYPE_B:sprintf(pictype_str,&quot;B&quot;);break;</span><br><span class="line">			default:sprintf(pictype_str,&quot;Other&quot;);break;</span><br><span class="line">		&#125;</span><br><span class="line">		LOGI(&quot;Frame Index: %5d. Type:%s&quot;,frame_cnt,pictype_str);</span><br><span class="line">		frame_cnt++;</span><br><span class="line">	&#125;</span><br><span class="line">	time_finish = clock();</span><br><span class="line">	time_duration=(double)(time_finish - time_start);</span><br><span class="line"></span><br><span class="line">	sprintf(info, &quot;%s[Time      ]%fms\n&quot;,info,time_duration);</span><br><span class="line">	sprintf(info, &quot;%s[Count     ]%d\n&quot;,info,frame_cnt);</span><br><span class="line"></span><br><span class="line">	sws_freeContext(img_convert_ctx);</span><br><span class="line"></span><br><span class="line">  fclose(fp_yuv);</span><br><span class="line"></span><br><span class="line">	av_frame_free(&amp;pFrameYUV);</span><br><span class="line">	av_frame_free(&amp;pFrame);</span><br><span class="line">	avcodec_close(pCodecCtx);</span><br><span class="line">	avformat_close_input(&amp;pFormatCtx);</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里是复制雷神的源码，解码成流后保存到文件中，改到自己工程试了没有问题，注意下读写权限就可以了。</p>
+<p>这里解析出视频帧后打印了视频帧的类型（I，P，B帧）<br>源码在<a href="https://github.com/leixiaohua1020/simplest_ffmpeg_mobile" target="_blank" rel="noopener">https://github.com/leixiaohua1020/simplest_ffmpeg_mobile</a></p>
+<h2 id="视频播放"><a href="#视频播放" class="headerlink" title="视频播放"></a>视频播放</h2><h3 id="底层代码"><a href="#底层代码" class="headerlink" title="底层代码"></a>底层代码</h3><p>视频播放在解码之后需要增加渲软的工作，在c里面用native window就可以对应到java的surface。代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line">ANativeWindow *nativeWindow;</span><br><span class="line">ANativeWindow_Buffer windowBuffer;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">JNIEXPORT jint JNICALL Java_com_anddymao_ffmpegdemo_MainActivity_play</span><br><span class="line">        (JNIEnv *env, jobject obj, jstring input_jstr, jobject surface) &#123;</span><br><span class="line">    AVFormatContext *pFormatCtx;</span><br><span class="line">    int i, videoindex;</span><br><span class="line">    AVCodecContext *pCodecCtx;</span><br><span class="line">    AVCodec *pCodec;</span><br><span class="line">    struct SwsContext *img_convert_ctx;</span><br><span class="line"></span><br><span class="line">    char input_str[500] = &#123;0&#125;;</span><br><span class="line">    sprintf(input_str, &quot;%s&quot;, (*env)-&gt;GetStringUTFChars(env, input_jstr, NULL));</span><br><span class="line"></span><br><span class="line">    av_register_all();</span><br><span class="line">    avformat_network_init();</span><br><span class="line">    pFormatCtx = avformat_alloc_context();</span><br><span class="line"></span><br><span class="line">    if (avformat_open_input(&amp;pFormatCtx, input_str, NULL, NULL) != 0) &#123;</span><br><span class="line">        LOGE(&quot;Couldn&apos;t open input stream.\n&quot;);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line">    if (avformat_find_stream_info(pFormatCtx, NULL) &lt; 0) &#123;</span><br><span class="line">        LOGE(&quot;Couldn&apos;t find stream information.\n&quot;);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line">    videoindex = -1;</span><br><span class="line">    for (i = 0; i &lt; pFormatCtx-&gt;nb_streams; i++)</span><br><span class="line">        if (pFormatCtx-&gt;streams[i]-&gt;codec-&gt;codec_type == AVMEDIA_TYPE_VIDEO) &#123;</span><br><span class="line">            videoindex = i;</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line">    if (videoindex == -1) &#123;</span><br><span class="line">        LOGE(&quot;Couldn&apos;t find a video stream.\n&quot;);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line">    pCodecCtx = pFormatCtx-&gt;streams[videoindex]-&gt;codec;</span><br><span class="line">    pCodec = avcodec_find_decoder(pCodecCtx-&gt;codec_id);</span><br><span class="line">    if (pCodec == NULL) &#123;</span><br><span class="line">        LOGE(&quot;Couldn&apos;t find Codec.\n&quot;);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line">    if (avcodec_open2(pCodecCtx, pCodec, NULL) &lt; 0) &#123;</span><br><span class="line">        LOGE(&quot;Couldn&apos;t open codec.\n&quot;);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //获取界面传下来的surface</span><br><span class="line">    nativeWindow = ANativeWindow_fromSurface(env, surface);</span><br><span class="line">    if (0 == nativeWindow) &#123;</span><br><span class="line">        LOGE(&quot;Couldn&apos;t get native window from surface.\n&quot;);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line">    int width = pCodecCtx-&gt;width;</span><br><span class="line">    int height = pCodecCtx-&gt;height;</span><br><span class="line">    //分配一个帧指针，指向解码后的原始帧</span><br><span class="line">    AVFrame *vFrame = av_frame_alloc();</span><br><span class="line">    AVPacket *vPacket = (AVPacket *) av_malloc(sizeof(AVPacket));</span><br><span class="line">    AVFrame *pFrameRGBA = av_frame_alloc();</span><br><span class="line"></span><br><span class="line">    img_convert_ctx = sws_getContext(width, height, pCodecCtx-&gt;pix_fmt,</span><br><span class="line">                                     width, height, AV_PIX_FMT_RGBA, SWS_BICUBIC, NULL, NULL, NULL);</span><br><span class="line">    if (0 &gt;</span><br><span class="line">        ANativeWindow_setBuffersGeometry(nativeWindow, width, height, WINDOW_FORMAT_RGBA_8888)) &#123;</span><br><span class="line">        LOGE(&quot;Couldn&apos;t set buffers geometry.\n&quot;);</span><br><span class="line">        ANativeWindow_release(nativeWindow);</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //读取帧</span><br><span class="line">    while (av_read_frame(pFormatCtx, vPacket) &gt;= 0) &#123;</span><br><span class="line">        if (vPacket-&gt;stream_index == videoindex) &#123;</span><br><span class="line">            //视频解码</span><br><span class="line">            int ret = avcodec_send_packet(pCodecCtx, vPacket);</span><br><span class="line">            if (ret &lt; 0 &amp;&amp; ret != AVERROR(EAGAIN) &amp;&amp; ret != AVERROR_EOF) &#123;</span><br><span class="line">                LOGE(&quot;video avcodec_send_packet error %d&quot;, ret);</span><br><span class="line">                return -1;</span><br><span class="line">            &#125;</span><br><span class="line">            ret = avcodec_receive_frame(pCodecCtx, vFrame);</span><br><span class="line">            if (ret &lt; 0 &amp;&amp; ret != AVERROR_EOF) &#123;</span><br><span class="line">                LOGE(&quot;video avcodec_receive_frame error %d&quot;, ret);</span><br><span class="line">                av_packet_unref(vPacket);</span><br><span class="line">                continue;</span><br><span class="line">            &#125;</span><br><span class="line">            //转化格式</span><br><span class="line">            sws_scale(img_convert_ctx, (const uint8_t *const *) vFrame-&gt;data, vFrame-&gt;linesize, 0,</span><br><span class="line">                      pCodecCtx-&gt;height,</span><br><span class="line">                      pFrameRGBA-&gt;data, pFrameRGBA-&gt;linesize);</span><br><span class="line">            if (ANativeWindow_lock(nativeWindow, &amp;windowBuffer, NULL) &lt; 0) &#123;</span><br><span class="line">                LOGE(&quot;cannot lock window&quot;);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                av_image_fill_arrays(pFrameRGBA-&gt;data, pFrameRGBA-&gt;linesize,</span><br><span class="line">                                     (const uint8_t *) windowBuffer.bits, AV_PIX_FMT_RGBA,</span><br><span class="line">                                     width, height, 1);</span><br><span class="line">                ANativeWindow_unlockAndPost(nativeWindow);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        av_packet_unref(vPacket);</span><br><span class="line">    &#125;</span><br><span class="line">    //释放内存</span><br><span class="line">    sws_freeContext(img_convert_ctx);</span><br><span class="line">    av_free(vPacket);</span><br><span class="line">    av_free(pFrameRGBA);</span><br><span class="line">    avcodec_close(pCodecCtx);</span><br><span class="line">    avformat_close_input(&amp;pFormatCtx);</span><br><span class="line">    return 0;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>开始在avcodec_receive_frame这边返回了错误，改成continue就可以了，使用cmake可以很方便的调试native代码。</p>
+<h3 id="Java层调用"><a href="#Java层调用" class="headerlink" title="Java层调用"></a>Java层调用</h3><p>java代码就非常简单，添加一个surfaceView，调用play方法就可以了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">        SurfaceView surfaceView = findViewById(R.id.surface_view);</span><br><span class="line">        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public void surfaceCreated(final SurfaceHolder holder) &#123;</span><br><span class="line">                new Thread(new Runnable() &#123;</span><br><span class="line">                    @Override</span><br><span class="line">                    public void run() &#123;</span><br><span class="line">                        play(inputurl, holder.getSurface());</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;).start();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) &#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public void surfaceDestroyed(SurfaceHolder holder) &#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">public native int play(String inputurl, Surface surface);</span><br></pre></td></tr></table></figure>
+<p>添加好文件权限，这个就可以播放了，只有图像的播放，没有控制播放速度，基本的流程就走通了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/音视频/" rel="tag"># 音视频</a>
+          
+            <a href="/tags/FFmpeg/" rel="tag"># FFmpeg</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/07/2019-1-7-Ubuntu下编译FFmpeg到Android使用/" rel="next" title="Ubuntu下编译FFmpeg到Android使用">
+                <i class="fa fa-chevron-left"></i> Ubuntu下编译FFmpeg到Android使用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/29/2019-1-29-python爬虫抓取instagram信息/" rel="prev" title="python爬虫抓取instagram信息">
+                python爬虫抓取instagram信息 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#正文"><span class="nav-number">1.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#视频解码"><span class="nav-number">1.1.</span> <span class="nav-text">视频解码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#视频播放"><span class="nav-number">1.2.</span> <span class="nav-text">视频播放</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#底层代码"><span class="nav-number">1.2.1.</span> <span class="nav-text">底层代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java层调用"><span class="nav-number">1.2.2.</span> <span class="nav-text">Java层调用</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

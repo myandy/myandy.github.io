@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="OpenGL,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="常用滤镜算法详解">
+<meta name="keywords" content="OpenGL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenGL滤镜原理及实现2">
+<meta property="og:url" content="http://anddymao.com/2017/06/19/2017-6-19-OpenGL滤镜原理及实现2/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="常用滤镜算法详解">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://anddymao.com/img/post_filter_4.png">
+<meta property="og:image" content="http://anddymao.com/img/post_filter_3.png">
+<meta property="og:updated_time" content="2019-10-25T03:38:48.884Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OpenGL滤镜原理及实现2">
+<meta name="twitter:description" content="常用滤镜算法详解">
+<meta name="twitter:image" content="http://anddymao.com/img/post_filter_4.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2017/06/19/2017-6-19-OpenGL滤镜原理及实现2/">
+
+
+
+
+
+  <title>OpenGL滤镜原理及实现2 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2017/06/19/2017-6-19-OpenGL滤镜原理及实现2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">OpenGL滤镜原理及实现2</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-19T12:00:00+08:00">
+                2017-06-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  常用滤镜算法详解
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="滤镜算法详解"><a href="#滤镜算法详解" class="headerlink" title="滤镜算法详解"></a>滤镜算法详解</h1><p>看本篇前请先看OpenGL滤镜原理及实现1,1中主要讲了颜色查找表类型滤镜，这里补充下讲解，再介绍下其它的一些滤镜。</p>
+<h2 id="颜色查找表滤镜"><a href="#颜色查找表滤镜" class="headerlink" title="颜色查找表滤镜"></a>颜色查找表滤镜</h2><h3 id="分色颜色转换滤镜"><a href="#分色颜色转换滤镜" class="headerlink" title="分色颜色转换滤镜"></a>分色颜色转换滤镜</h3><p>这种滤镜可以分别对RGB颜色进行转换，读取一张512*3像素的颜色查找表图片，分为RGB三行，位置是原色值，位置上的颜色是转换后的色值。</p>
+<p>实现算法非常简单，片段着色器代码如下：<br><figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">precision</span> <span class="keyword">mediump</span> <span class="type">float</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">varying</span> <span class="keyword">mediump</span> <span class="type">vec2</span> textureCoordinate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> inputImageTexture;</span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> inputImageTexture2;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> main()</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">vec3</span> texel = <span class="built_in">texture2D</span>(inputImageTexture, textureCoordinate).rgb;</span><br><span class="line"></span><br><span class="line">    texel = <span class="type">vec3</span>(</span><br><span class="line">                 <span class="built_in">texture2D</span>(inputImageTexture2, <span class="type">vec2</span>(texel.r, <span class="number">.16666</span>)).r,  <span class="comment">//取上1/3中心点的对应位置颜色</span></span><br><span class="line">                 <span class="built_in">texture2D</span>(inputImageTexture2, <span class="type">vec2</span>(texel.g, <span class="number">.5</span>)).g,      <span class="comment">//取中1/3中心点的对应位置颜色</span></span><br><span class="line">                 <span class="built_in">texture2D</span>(inputImageTexture2, <span class="type">vec2</span>(texel.b, <span class="number">.83333</span>)).b); <span class="comment">//取下1/3中心点的对应位置颜色</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">gl_FragColor</span> = <span class="type">vec4</span>(texel, <span class="number">1.0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/img/post_filter_4.png" alt="分色查找表图"></p>
+<h3 id="512颜色查找表滤镜"><a href="#512颜色查找表滤镜" class="headerlink" title="512颜色查找表滤镜"></a>512颜色查找表滤镜</h3><p>原理前面讲过，就不介绍了，片段着色器代码如下：<br><figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">precision</span> <span class="keyword">mediump</span> <span class="type">float</span>;</span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> inputImageTexture;</span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> inputImageTexture2; <span class="comment">// lookup texture</span></span><br><span class="line"><span class="keyword">uniform</span> <span class="type">float</span> strength;</span><br><span class="line"><span class="type">void</span> main()</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">lowp</span> <span class="type">vec4</span> textureColor = <span class="built_in">texture2D</span>(inputImageTexture, textureCoordinate);</span><br><span class="line"></span><br><span class="line"><span class="keyword">mediump</span> <span class="type">float</span> blueColor = textureColor.b * <span class="number">63.0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">mediump</span> <span class="type">vec2</span> quad1;</span><br><span class="line">quad1.y = <span class="built_in">floor</span>(blueColor/<span class="number">8.0</span>);</span><br><span class="line">quad1.x = <span class="built_in">floor</span>(blueColor) - (quad1.y * <span class="number">8.0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">mediump</span> <span class="type">vec2</span> quad2;</span><br><span class="line">quad2.y = <span class="built_in">floor</span>(<span class="built_in">ceil</span>(blueColor)/<span class="number">7.999</span>);</span><br><span class="line">quad2.x = <span class="built_in">ceil</span>(blueColor) - (quad2.y * <span class="number">8.0</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">highp</span> <span class="type">vec2</span> texPos1;</span><br><span class="line">texPos1.x = (quad1.x * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.r);</span><br><span class="line">texPos1.y = (quad1.y * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.g);</span><br><span class="line"></span><br><span class="line"><span class="keyword">highp</span> <span class="type">vec2</span> texPos2;</span><br><span class="line">texPos2.x = (quad2.x * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.r);</span><br><span class="line">texPos2.y = (quad2.y * <span class="number">0.125</span>) + <span class="number">0.5</span>/<span class="number">512.0</span> + ((<span class="number">0.125</span> - <span class="number">1.0</span>/<span class="number">512.0</span>) * textureColor.g);</span><br><span class="line"></span><br><span class="line"><span class="keyword">lowp</span> <span class="type">vec4</span> newColor1 = <span class="built_in">texture2D</span>(inputImageTexture2, texPos1);</span><br><span class="line"><span class="keyword">lowp</span> <span class="type">vec4</span> newColor2 = <span class="built_in">texture2D</span>(inputImageTexture2, texPos2);</span><br><span class="line"></span><br><span class="line"><span class="keyword">lowp</span> <span class="type">vec4</span> newColor = <span class="built_in">mix</span>(newColor1, newColor2, <span class="built_in">fract</span>(blueColor));</span><br><span class="line"><span class="built_in">gl_FragColor</span> = <span class="built_in">mix</span>(textureColor, <span class="type">vec4</span>(newColor.rgb, textureColor.w), strength);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>因为一共是64个8×8的小正方形，先根据blue色值找到对应的小正方形的坐标，再根据red色值算出位置小正方形内的横坐标，根据green色值算出小正方形内的纵坐标，就可以得出整体坐标了。<br>要注意两个点，一个是位置计算是取中心点，所以有0.5/512等于半个像素的偏移，再计算RG时又向左偏移了一个像素，这样为0时向右偏移半个像素计算，其它值时向左偏移半个像素计算，非常巧妙。<br>还有一个是色值偏差处理，因为只能处理64×64×64中颜色，就会有不准确的问题，之前说到内插法处理偏移，这里就是取两个点的色值根据比例取最后的色值。blueColor取整后只能算到0-63，实际却有0-255，最后就需要根据小数部分计算出最近的两个点，这样就能得出相对准确的值。</p>
+<p><img src="/img/post_filter_3.png" alt="512查找表图"></p>
+<h2 id="基础效果滤镜"><a href="#基础效果滤镜" class="headerlink" title="基础效果滤镜"></a>基础效果滤镜</h2><h3 id="对比度"><a href="#对比度" class="headerlink" title="对比度"></a>对比度</h3><p>对比度是原色值中差值大小，让原色值减去中间数，这里简单点直接定为0.5，乘以对比度的比例，再加上原来的中间数。<br>片段着色器代码如下：<br><figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">vec2</span> textureCoordinate;</span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> inputImageTexture;</span><br><span class="line"><span class="keyword">uniform</span> <span class="keyword">lowp</span> <span class="type">float</span> contrast;</span><br><span class="line"><span class="type">void</span> main()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">lowp</span> <span class="type">vec4</span> textureColor = <span class="built_in">texture2D</span>(inputImageTexture, textureCoordinate);</span><br><span class="line">    <span class="built_in">gl_FragColor</span> = <span class="type">vec4</span>(((textureColor.rgb - <span class="type">vec3</span>(<span class="number">0.5</span>)) * contrast + <span class="type">vec3</span>(<span class="number">0.5</span>)), textureColor.w);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="亮度"><a href="#亮度" class="headerlink" title="亮度"></a>亮度</h3><p>这个非常简单，rgb同时增加一个值就可以增加亮度了，代码就不贴了。</p>
+<h3 id="饱和度"><a href="#饱和度" class="headerlink" title="饱和度"></a>饱和度</h3><p>饱和度是指某一颜色的纯度，饱和度越低越接近灰色，越高就越鲜艳。<br>先根据亮度比例计算出灰度值，用灰度值与原色通过饱和度混合就可以得到新的颜色了。</p>
+<p>片段着色器代码如下：<br><figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">vec2</span> textureCoordinate;</span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> inputImageTexture;</span><br><span class="line"><span class="keyword">uniform</span> <span class="keyword">lowp</span> <span class="type">float</span> saturation; <span class="comment">//0.0-2.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Values from "Graphics Shaders: Theory and Practice" by Bailey and Cunningham</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">mediump</span> <span class="type">vec3</span> luminanceWeighting = <span class="type">vec3</span>(<span class="number">0.2125</span>, <span class="number">0.7154</span>, <span class="number">0.0721</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> main()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">lowp</span> <span class="type">vec4</span> textureColor = <span class="built_in">texture2D</span>(inputImageTexture, textureCoordinate);</span><br><span class="line">    <span class="keyword">lowp</span> <span class="type">float</span> luminance = <span class="built_in">dot</span>(textureColor.rgb, luminanceWeighting);</span><br><span class="line">    <span class="keyword">lowp</span> <span class="type">vec3</span> greyScaleColor = <span class="type">vec3</span>(luminance);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">gl_FragColor</span> = <span class="type">vec4</span>(<span class="built_in">mix</span>(greyScaleColor, textureColor.rgb, saturation), textureColor.w);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="锐化"><a href="#锐化" class="headerlink" title="锐化"></a>锐化</h3><p>可以通过增加相邻像素点之间的对比，使图像清晰化，提高对比度，使画面更加鲜明。<br>算法过程就是根据一定间隔计算上下左右的颜色值，根据锐化程度改变中心点和四周点的差值。</p>
+<p>顶点着色器代码如下：<br><figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">attribute</span> <span class="type">vec4</span> position;</span><br><span class="line"><span class="keyword">attribute</span> <span class="type">vec4</span> inputTextureCoordinate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">uniform</span> <span class="type">float</span> imageWidthFactor;</span><br><span class="line"><span class="keyword">uniform</span> <span class="type">float</span> imageHeightFactor;</span><br><span class="line"><span class="keyword">uniform</span> <span class="type">float</span> sharpness;</span><br><span class="line"></span><br><span class="line"><span class="keyword">varying</span> <span class="type">vec2</span> textureCoordinate;</span><br><span class="line"><span class="keyword">varying</span> <span class="type">vec2</span> leftTextureCoordinate;</span><br><span class="line"><span class="keyword">varying</span> <span class="type">vec2</span> rightTextureCoordinate;</span><br><span class="line"><span class="keyword">varying</span> <span class="type">vec2</span> topTextureCoordinate;</span><br><span class="line"><span class="keyword">varying</span> <span class="type">vec2</span> bottomTextureCoordinate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">varying</span> <span class="type">float</span> centerMultiplier;</span><br><span class="line"><span class="keyword">varying</span> <span class="type">float</span> edgeMultiplier;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> main()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">gl_Position</span> = position;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">mediump</span> <span class="type">vec2</span> widthStep = <span class="type">vec2</span>(imageWidthFactor, <span class="number">0.0</span>);</span><br><span class="line">    <span class="keyword">mediump</span> <span class="type">vec2</span> heightStep = <span class="type">vec2</span>(<span class="number">0.0</span>, imageHeightFactor);</span><br><span class="line"></span><br><span class="line">    textureCoordinate = inputTextureCoordinate.xy;</span><br><span class="line">    leftTextureCoordinate = inputTextureCoordinate.xy - widthStep;</span><br><span class="line">    rightTextureCoordinate = inputTextureCoordinate.xy + widthStep;</span><br><span class="line">    topTextureCoordinate = inputTextureCoordinate.xy + heightStep;</span><br><span class="line">    bottomTextureCoordinate = inputTextureCoordinate.xy - heightStep;</span><br><span class="line"></span><br><span class="line">    centerMultiplier = <span class="number">1.0</span> + <span class="number">4.0</span> * sharpness;</span><br><span class="line">    edgeMultiplier = sharpness;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>片段着色器代码如下：<br><figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">vec2</span> textureCoordinate;</span><br><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">vec2</span> leftTextureCoordinate;</span><br><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">vec2</span> rightTextureCoordinate;</span><br><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">vec2</span> topTextureCoordinate;</span><br><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">vec2</span> bottomTextureCoordinate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">float</span> centerMultiplier;</span><br><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">float</span> edgeMultiplier;</span><br><span class="line"></span><br><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> inputImageTexture;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> main()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">mediump</span> <span class="type">vec3</span> textureColor = <span class="built_in">texture2D</span>(inputImageTexture, textureCoordinate).rgb;</span><br><span class="line">    <span class="keyword">mediump</span> <span class="type">vec3</span> leftTextureColor = <span class="built_in">texture2D</span>(inputImageTexture, leftTextureCoordinate).rgb;</span><br><span class="line">    <span class="keyword">mediump</span> <span class="type">vec3</span> rightTextureColor = <span class="built_in">texture2D</span>(inputImageTexture, rightTextureCoordinate).rgb;</span><br><span class="line">    <span class="keyword">mediump</span> <span class="type">vec3</span> topTextureColor = <span class="built_in">texture2D</span>(inputImageTexture, topTextureCoordinate).rgb;</span><br><span class="line">    <span class="keyword">mediump</span> <span class="type">vec3</span> bottomTextureColor = <span class="built_in">texture2D</span>(inputImageTexture, bottomTextureCoordinate).rgb;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">gl_FragColor</span> = <span class="type">vec4</span>((textureColor * centerMultiplier - (leftTextureColor * edgeMultiplier + rightTextureColor * edgeMultiplier + topTextureColor * edgeMultiplier + bottomTextureColor * edgeMultiplier)), <span class="built_in">texture2D</span>(inputImageTexture, bottomTextureCoordinate).w);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="晕影"><a href="#晕影" class="headerlink" title="晕影"></a>晕影</h3><p>晕影或暗角是指图像的外围部分的亮度或饱和度比中心区域低。<br>算法是先计算和中心点的距离，然后计算出距离在最近距离和最远距离中的比例，最后根据比例混合晕影颜色。</p>
+<p>片段着色器代码如下：<br><figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uniform</span> <span class="type">sampler2D</span> inputImageTexture;</span><br><span class="line"><span class="keyword">varying</span> <span class="keyword">highp</span> <span class="type">vec2</span> textureCoordinate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">uniform</span> <span class="keyword">lowp</span> <span class="type">vec2</span> vignetteCenter;</span><br><span class="line"><span class="keyword">uniform</span> <span class="keyword">lowp</span> <span class="type">vec3</span> vignetteColor;</span><br><span class="line"><span class="keyword">uniform</span> <span class="keyword">highp</span> <span class="type">float</span> vignetteStart;</span><br><span class="line"><span class="keyword">uniform</span> <span class="keyword">highp</span> <span class="type">float</span> vignetteEnd;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> main()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">lowp</span> <span class="type">vec3</span> rgb = <span class="built_in">texture2D</span>(inputImageTexture, textureCoordinate).rgb;</span><br><span class="line">    <span class="keyword">lowp</span> <span class="type">float</span> d = <span class="built_in">distance</span>(textureCoordinate, <span class="type">vec2</span>(vignetteCenter.x, vignetteCenter.y));</span><br><span class="line">    <span class="keyword">lowp</span> <span class="type">float</span> percent = <span class="built_in">smoothstep</span>(vignetteStart, vignetteEnd, d);</span><br><span class="line">    <span class="built_in">gl_FragColor</span> = <span class="type">vec4</span>(<span class="built_in">mix</span>(rgb.x, vignetteColor.x, percent), <span class="built_in">mix</span>(rgb.y, vignetteColor.y, percent), <span class="built_in">mix</span>(rgb.z, vignetteColor.z, percent), <span class="number">1.0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>晕影还可以通过图片叠加的方式去实现，PhotoShop中有各种图片叠加方式都可以转换到OpenGL中。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>还有一些常见效果，比如黑白，模糊等，PhotoShop中的效果都可以在OpenGL中实现，但多种处理叠加后用原始算法就性能非常差了，这时候用颜色查找表滤镜就非常合适了，一种非常好的空间换时间的方法。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/OpenGL/" rel="tag"># OpenGL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/06/18/2017-3-6-18-Android页面启动速度优化/" rel="next" title="Android页面启动速度优化">
+                <i class="fa fa-chevron-left"></i> Android页面启动速度优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/01/2017-12-1-Android跨进程传输数据/" rel="prev" title="Android跨进程传输数据">
+                Android跨进程传输数据 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#滤镜算法详解"><span class="nav-number">1.</span> <span class="nav-text">滤镜算法详解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#颜色查找表滤镜"><span class="nav-number">1.1.</span> <span class="nav-text">颜色查找表滤镜</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#分色颜色转换滤镜"><span class="nav-number">1.1.1.</span> <span class="nav-text">分色颜色转换滤镜</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#512颜色查找表滤镜"><span class="nav-number">1.1.2.</span> <span class="nav-text">512颜色查找表滤镜</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础效果滤镜"><span class="nav-number">1.2.</span> <span class="nav-text">基础效果滤镜</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#对比度"><span class="nav-number">1.2.1.</span> <span class="nav-text">对比度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#亮度"><span class="nav-number">1.2.2.</span> <span class="nav-text">亮度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#饱和度"><span class="nav-number">1.2.3.</span> <span class="nav-text">饱和度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#锐化"><span class="nav-number">1.2.4.</span> <span class="nav-text">锐化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#晕影"><span class="nav-number">1.2.5.</span> <span class="nav-text">晕影</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">2.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
