@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="音视频,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="ffmpeg中如何创建流">
+<meta name="keywords" content="音视频">
+<meta property="og:type" content="article">
+<meta property="og:title" content="音视频参数介绍与ffmpeg中的使用">
+<meta property="og:url" content="http://anddymao.com/2020/06/26/2020-6-26-音视频参数介绍与ffmpeg中的使用/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="ffmpeg中如何创建流">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-08-16T06:13:03.065Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="音视频参数介绍与ffmpeg中的使用">
+<meta name="twitter:description" content="ffmpeg中如何创建流">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2020/06/26/2020-6-26-音视频参数介绍与ffmpeg中的使用/">
+
+
+
+
+
+  <title>音视频参数介绍与ffmpeg中的使用 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2020/06/26/2020-6-26-音视频参数介绍与ffmpeg中的使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">音视频参数介绍与ffmpeg中的使用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-26T14:00:00+08:00">
+                2020-06-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  ffmpeg中如何创建流
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="格式介绍"><a href="#格式介绍" class="headerlink" title="格式介绍"></a>格式介绍</h2><p>一个音视频文件整体在一个封装包里，比如我们熟悉的MP4，AVI,rmvb等等。<br>封装的音视频文件下面会包含多个轨道，每个轨道对应一个流，这些音视频流都由原始数据编码而成，下面介绍下音视频编码的参数。</p>
+<h3 id="视频"><a href="#视频" class="headerlink" title="视频"></a>视频</h3><ol>
+<li><p>编码格式<br>目前的主流是h.264和h.265(hevc)，h264基本android硬解都支持，h265需分机型判断。判断是否支持也需要带宽高大小，不同机型的支持度不一样。android硬解从开始的非常不稳定到现在的主流，<br>但支持度相对于软解还是差些，所以很多播放器都提供手动或者自动的切换软解和硬解。</p>
+</li>
+<li><p>帧率（frame_rate）<br>测量单位为每秒显示帧数(Frames per Second，简称：FPS），android手机刷新帧率为60，现在也有手机出到90帧甚至120帧。更高的帧率等于更高的流畅度,<br>但对硬件的要求也就越高，越高的帧率人眼的感知差别就越不明显了。</p>
+</li>
+<li><p>DTS和PTS<br>DTS(Decoding Time Stamp) : 即解码时间戳，是解码器进行解码时相对于SCR(系统参考时间)的时间戳。它主要标识读入内存的bit流在什么时候开始送入解码器中进行解码。<br>PTS(Presentation Time Stamp) : 即显示时间戳<br>如果没有B帧的话DTS和PTS是一致的，B帧解码依赖前后的帧。</p>
+</li>
+<li><p>系统时基（time_base）<br>多少数字表示1S。视频的时间戳是基于系统时间的，所以需要一个时基。比如time_base为90000。通过时基转换可以得到真正时间。<br>时间戳（毫秒） =  PTS / time_base * 1000 。<br>视频长度time(秒) = st-&gt;duration / time_base 。</p>
+</li>
+<li><p>码率<br>每秒传输的数据量。这个和编码格式，帧率还有视频宽高相关。还和原始视频相关，信息量小的视频和信息量大的视频差异大，就比如公开课这种变化小的视频码率就比较小，动作电影码率就比较大。在手机端做视频录制需要根据视频宽高设置一个推荐值。</p>
+</li>
+</ol>
+<h3 id="音频"><a href="#音频" class="headerlink" title="音频"></a>音频</h3><ol>
+<li><p>采样率（sample_rate）<br>每秒采集数据的次数,例如8K即一秒有8000次采样。音频时间戳直接以采样率为时基</p>
+</li>
+<li><p>采样精度 dataBits<br>每次采集数据的位数，例如PCM_16，即一次采样用16位比特位(bit)存储</p>
+</li>
+<li><p>通道数 channel<br>存在几路音频，例如单通道，双通道等</p>
+</li>
+<li><p>比特率 bitrate<br>针对编码格式，表示压缩编码后每秒的音频数据量大小。<br>对于未压缩的音频格式，比特率就等于采样率值×采样精度值×声道数</p>
+</li>
+</ol>
+<h2 id="FFmpeg中音视频流参数定义与使用"><a href="#FFmpeg中音视频流参数定义与使用" class="headerlink" title="FFmpeg中音视频流参数定义与使用"></a>FFmpeg中音视频流参数定义与使用</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>音视频流参数设置在AVCodecParameters结构体中，各种信息都在其中，且有详细解释。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * This struct describes the properties of an encoded stream.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * sizeof(AVCodecParameters) is not a part of the public ABI, this struct must</span></span><br><span class="line"><span class="comment"> * be allocated with avcodec_parameters_alloc() and freed with</span></span><br><span class="line"><span class="comment"> * avcodec_parameters_free().</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">AVCodecParameters</span> &#123;</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * General type of the encoded data.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">enum</span> AVMediaType codec_type;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Specific type of the encoded data (the codec used).</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">enum</span> AVCodecID   codec_id;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Additional information about the codec (corresponds to the AVI FOURCC).</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">uint32_t</span>         codec_tag;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Extra binary data needed for initializing the decoder, codec-dependent.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Must be allocated with av_malloc() and will be freed by</span></span><br><span class="line"><span class="comment">     * avcodec_parameters_free(). The allocated size of extradata must be at</span></span><br><span class="line"><span class="comment">     * least extradata_size + AV_INPUT_BUFFER_PADDING_SIZE, with the padding</span></span><br><span class="line"><span class="comment">     * bytes zeroed.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">uint8_t</span> *extradata;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Size of the extradata content in bytes.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span>      extradata_size;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * - video: the pixel format, the value corresponds to enum AVPixelFormat.</span></span><br><span class="line"><span class="comment">     * - audio: the sample format, the value corresponds to enum AVSampleFormat.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> format;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The average bitrate of the encoded data (in bits per second).</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int64_t</span> bit_rate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The number of bits per sample in the codedwords.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * This is basically the bitrate per sample. It is mandatory for a bunch of</span></span><br><span class="line"><span class="comment">     * formats to actually decode them. It's the number of bits for one sample in</span></span><br><span class="line"><span class="comment">     * the actual coded bitstream.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * This could be for example 4 for ADPCM</span></span><br><span class="line"><span class="comment">     * For PCM formats this matches bits_per_raw_sample</span></span><br><span class="line"><span class="comment">     * Can be 0</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> bits_per_coded_sample;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * This is the number of valid bits in each output sample. If the</span></span><br><span class="line"><span class="comment">     * sample format has more bits, the least significant bits are additional</span></span><br><span class="line"><span class="comment">     * padding bits, which are always 0. Use right shifts to reduce the sample</span></span><br><span class="line"><span class="comment">     * to its actual size. For example, audio formats with 24 bit samples will</span></span><br><span class="line"><span class="comment">     * have bits_per_raw_sample set to 24, and format set to AV_SAMPLE_FMT_S32.</span></span><br><span class="line"><span class="comment">     * To get the original sample use "(int32_t)sample &gt;&gt; 8"."</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * For ADPCM this might be 12 or 16 or similar</span></span><br><span class="line"><span class="comment">     * Can be 0</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> bits_per_raw_sample;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Codec-specific bitstream restrictions that the stream conforms to.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> profile;</span><br><span class="line">    <span class="keyword">int</span> level;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Video only. The dimensions of the video frame in pixels.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> width;</span><br><span class="line">    <span class="keyword">int</span> height;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Video only. The aspect ratio (width / height) which a single pixel</span></span><br><span class="line"><span class="comment">     * should have when displayed.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * When the aspect ratio is unknown / undefined, the numerator should be</span></span><br><span class="line"><span class="comment">     * set to 0 (the denominator may have any value).</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    AVRational sample_aspect_ratio;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Video only. The order of the fields in interlaced video.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">enum</span> AVFieldOrder                  field_order;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Video only. Additional colorspace characteristics.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">enum</span> AVColorRange                  color_range;</span><br><span class="line">    <span class="keyword">enum</span> AVColorPrimaries              color_primaries;</span><br><span class="line">    <span class="keyword">enum</span> AVColorTransferCharacteristic color_trc;</span><br><span class="line">    <span class="keyword">enum</span> AVColorSpace                  color_space;</span><br><span class="line">    <span class="keyword">enum</span> AVChromaLocation              chroma_location;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Video only. Number of delayed frames.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> video_delay;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Audio only. The channel layout bitmask. May be 0 if the channel layout is</span></span><br><span class="line"><span class="comment">     * unknown or unspecified, otherwise the number of bits set must be equal to</span></span><br><span class="line"><span class="comment">     * the channels field.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">uint64_t</span> channel_layout;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Audio only. The number of audio channels.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span>      channels;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Audio only. The number of audio samples per second.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span>      sample_rate;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Audio only. The number of bytes per coded audio frame, required by some</span></span><br><span class="line"><span class="comment">     * formats.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Corresponds to nBlockAlign in WAVEFORMATEX.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span>      block_align;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Audio only. Audio frame size, if known. Required by some formats to be static.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span>      frame_size;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Audio only. The amount of padding (in samples) inserted by the encoder at</span></span><br><span class="line"><span class="comment">     * the beginning of the audio. I.e. this number of leading decoded samples</span></span><br><span class="line"><span class="comment">     * must be discarded by the caller to get the original audio without leading</span></span><br><span class="line"><span class="comment">     * padding.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> initial_padding;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Audio only. The amount of padding (in samples) appended by the encoder to</span></span><br><span class="line"><span class="comment">     * the end of the audio. I.e. this number of decoded samples must be</span></span><br><span class="line"><span class="comment">     * discarded by the caller from the end of the stream to get the original</span></span><br><span class="line"><span class="comment">     * audio without any trailing padding.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> trailing_padding;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Audio only. Number of samples to skip after a discontinuity.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> seek_preroll;</span><br><span class="line">&#125; AVCodecParameters;</span><br></pre></td></tr></table></figure>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>需要新建的话用avformat_new_stream创建一个新的流，然后设置其codecpar参数就可，下面是我自定义格式的设置例子，可以根据实际需要具体设置。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//视频</span></span><br><span class="line">AVStream *st;</span><br><span class="line">st = avformat_new_stream(ic, <span class="literal">NULL</span>);</span><br><span class="line">st-&gt;codecpar-&gt;codec_type = AVMEDIA_TYPE_VIDEO;</span><br><span class="line">st-&gt;codecpar-&gt;codec_id = AV_CODEC_ID_H264;</span><br><span class="line">st-&gt;codecpar-&gt;format = AV_PIX_FMT_YUV420P;</span><br><span class="line">st-&gt;codecpar-&gt;profile = FF_PROFILE_H264_HIGH;</span><br><span class="line">st-&gt;r_frame_rate.num = <span class="number">0</span>;</span><br><span class="line">st-&gt;r_frame_rate.den = <span class="number">1</span>;</span><br><span class="line">st-&gt;codecpar-&gt;width = <span class="number">640</span>;</span><br><span class="line">st-&gt;codecpar-&gt;height = <span class="number">360</span>;</span><br><span class="line">AVRational fps = &#123;<span class="number">30</span>, <span class="number">1</span>&#125;;</span><br><span class="line">st-&gt;avg_frame_rate = fps;</span><br><span class="line">st-&gt;start_time = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//音频</span></span><br><span class="line">AVStream *audioST = avformat_new_stream(ic, <span class="literal">NULL</span>);</span><br><span class="line">audioST-&gt;codecpar-&gt;codec_type = AVMEDIA_TYPE_AUDIO;</span><br><span class="line">audioST-&gt;codecpar-&gt;codec_id = AV_CODEC_ID_PCM_ALAW;</span><br><span class="line">audioST-&gt;codecpar-&gt;channels = channel;</span><br><span class="line">audioST-&gt;codecpar-&gt;sample_rate = sampleRate;</span><br><span class="line">audioST-&gt;codecpar-&gt;format = AV_SAMPLE_FMT_S16;</span><br></pre></td></tr></table></figure>
+<h2 id="时间计算"><a href="#时间计算" class="headerlink" title="时间计算"></a>时间计算</h2><p>视频需要帧率计算时间，比如60fps，那这样每一帧的时间就是1000/60=16ms。</p>
+<p>音频的话就不需要帧的概念，直接根据参数就可以计算了。<br>假设每帧原始数据有1024个采样点，dataBits为8bit即1byte，单通道。<br>那在采样率为8000时，每帧时长（毫秒数） = 1024 / 8000 <em> 1000 = 128ms<br>时间戳就是128的等差连续数列。<br>每帧原始数据大小 =  1024 </em> 1 byte * 1 = 1024 byte。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/音视频/" rel="tag"># 音视频</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/25/2020-6-25-ijkPlayer深入探究(二)/" rel="next" title="ijkPlayer深入探究(二)">
+                <i class="fa fa-chevron-left"></i> ijkPlayer深入探究(二)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">43</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#格式介绍"><span class="nav-number">1.</span> <span class="nav-text">格式介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#视频"><span class="nav-number">1.1.</span> <span class="nav-text">视频</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#音频"><span class="nav-number">1.2.</span> <span class="nav-text">音频</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FFmpeg中音视频流参数定义与使用"><span class="nav-number">2.</span> <span class="nav-text">FFmpeg中音视频流参数定义与使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定义"><span class="nav-number">2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用"><span class="nav-number">2.2.</span> <span class="nav-text">使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#时间计算"><span class="nav-number">3.</span> <span class="nav-text">时间计算</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
