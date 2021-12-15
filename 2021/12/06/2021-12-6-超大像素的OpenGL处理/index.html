@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/avatar.jpg?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="OpenGL,音视频,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="OpenGL如何突破设备限制对超大bitmap处理">
+<meta name="keywords" content="OpenGL,音视频">
+<meta property="og:type" content="article">
+<meta property="og:title" content="超大像素的OpenGL处理">
+<meta property="og:url" content="http://anddymao.com/2021/12/06/2021-12-6-超大像素的OpenGL处理/index.html">
+<meta property="og:site_name" content="AnddyMao&#39;s Bolg">
+<meta property="og:description" content="OpenGL如何突破设备限制对超大bitmap处理">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2021-12-15T11:41:40.315Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="超大像素的OpenGL处理">
+<meta name="twitter:description" content="OpenGL如何突破设备限制对超大bitmap处理">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://anddymao.com/2021/12/06/2021-12-6-超大像素的OpenGL处理/">
+
+
+
+
+
+  <title>超大像素的OpenGL处理 | AnddyMao's Bolg</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">AnddyMao's Bolg</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Yesterday you said tomorrow</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://anddymao.com/2021/12/06/2021-12-6-超大像素的OpenGL处理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AnddyMao">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/img/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="AnddyMao's Bolg">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">超大像素的OpenGL处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-12-06T14:00:00+08:00">
+                2021-12-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  OpenGL如何突破设备限制对超大bitmap处理
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>OpenGL各个机型上有最大分辨率限制,因为屏幕大小一般也就1k或者2k.这个限制比较老的手机是2048,新的有4096,8192甚至16384的.<br>如果只是做屏幕渲染不会有超出这个大小的情况,但如果要做离屏渲染就有可能超过这个大小了.<br>比如我们的目标是处理一亿像素的原图,比如小米10相机拍的108M照片,其分辨率是12032*9024,那很多手机上OpenGL已经无法处理了,这时候怎么办呢?</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>这时候直接全图加载进OpenGL已经不可能，那是不是可以部分加载，部分处理再合成呢？<br>输入是图片，加载出来是bitmap，在java层做的话需要分割出多个小的bitmap，处理完成后合成一个大的bitmap，理论上可行，但这里的分块和合成太消耗资源了，这里可以放到c层做，<br> 利用指针的特性节省掉分块和合成的时间.</p>
+<h2 id="处理流程"><a href="#处理流程" class="headerlink" title="处理流程"></a>处理流程</h2><h3 id="获取OpenGL最大处理长度"><a href="#获取OpenGL最大处理长度" class="headerlink" title="获取OpenGL最大处理长度"></a>获取OpenGL最大处理长度</h3><p>这个问题从stackoverflow上可以获取到答案,有两种方法,第一种直接获取GL_MAX_TEXTURE_SIZE</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int[] maxTextureSize = new int[1];</span><br><span class="line">GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);</span><br></pre></td></tr></table></figure>
+<p>第二种是通过EGL的配置来获取EGL_MAX_PBUFFER_WIDTH,默认值为2048.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getMaxTextureSize</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     <span class="keyword">final</span> <span class="keyword">int</span> IMAGE_MAX_BITMAP_DIMENSION = <span class="number">2048</span>;</span><br><span class="line">     EGL10 egl = (EGL10) EGLContext.getEGL();</span><br><span class="line">     EGLDisplay display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);</span><br><span class="line">     <span class="keyword">int</span>[] version = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">2</span>];</span><br><span class="line">     egl.eglInitialize(display, version);</span><br><span class="line">     <span class="keyword">int</span>[] totalConfigurations = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">1</span>];</span><br><span class="line">     egl.eglGetConfigs(display, <span class="keyword">null</span>, <span class="number">0</span>, totalConfigurations);</span><br><span class="line">     EGLConfig[] configurationsList = <span class="keyword">new</span> EGLConfig[totalConfigurations[<span class="number">0</span>]];</span><br><span class="line">     egl.eglGetConfigs(display, configurationsList, totalConfigurations[<span class="number">0</span>], totalConfigurations);</span><br><span class="line">     <span class="keyword">int</span>[] textureSize = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">1</span>];</span><br><span class="line">     <span class="keyword">int</span> maximumTextureSize = <span class="number">0</span>;</span><br><span class="line">     <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; totalConfigurations[<span class="number">0</span>]; i++) &#123;</span><br><span class="line">         egl.eglGetConfigAttrib(display, configurationsList[i], EGL10.EGL_MAX_PBUFFER_WIDTH, textureSize);</span><br><span class="line">         <span class="keyword">if</span> (maximumTextureSize &lt; textureSize[<span class="number">0</span>])</span><br><span class="line">             maximumTextureSize = textureSize[<span class="number">0</span>];</span><br><span class="line">     &#125;</span><br><span class="line">     egl.eglTerminate(display);</span><br><span class="line">     <span class="keyword">return</span> Math.max(maximumTextureSize, IMAGE_MAX_BITMAP_DIMENSION);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>第一种方法获取到的最大大小可能与最大纹理无关,所以应该用第二种.</p>
+<h3 id="分块"><a href="#分块" class="headerlink" title="分块"></a>分块</h3><p>读取到bitmap后,可以根据宽高进行分块,分成width/maxTextureSize向上取整块,比如12032就可以分成2048*5+1795.<br>这里不用实际切割bitmap,保留每块的位置待用即可.</p>
+<h3 id="读取bitmap指针"><a href="#读取bitmap指针" class="headerlink" title="读取bitmap指针"></a>读取bitmap指针</h3><p>通过AndroidBitmap_lockPixels就可以获取bitmap对应的指针pixels</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((ret = AndroidBitmap_lockPixels(env, bitmap, (<span class="keyword">void</span> **) &amp;pixelscolor)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">//锁定AndroidBitmap_lockPixels</span></span><br><span class="line">    <span class="comment">//锁定之后，pixelscolor指向图片的首地址</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">pixels = (<span class="keyword">unsigned</span> <span class="keyword">char</span> *) pixelscolor;</span><br></pre></td></tr></table></figure>
+<h3 id="读取纹理"><a href="#读取纹理" class="headerlink" title="读取纹理"></a>读取纹理</h3><p>java层读取纹理只能读取整个bitmap的,c层可以根据指针更加灵活,只需要更改宽度的对齐就可以.<br>stride是原始图片的宽度,按照这个大小进行对其.w,h的想要读取分块的宽高,<br>offset是当前分块的首像素相对原始图像的偏移,记得要看图像格式,如果是RGBA,就是位置偏移再乘以4</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">JNIEXPORT <span class="keyword">void</span> JNICALL</span><br><span class="line">Java_com_anddymao_block_BlockSdkUtils_updateTextureWidthStride(JNIEnv *env,</span><br><span class="line">                                                                             jclass type,</span><br><span class="line">                                                                             jint tex, jint w,</span><br><span class="line">                                                                             jint h,</span><br><span class="line">                                                                             jint stride,</span><br><span class="line">                                                                             jint offset) &#123;</span><br><span class="line"></span><br><span class="line">    byte *buffer = pixels;</span><br><span class="line">    <span class="keyword">if</span> (stride != w) &#123;</span><br><span class="line">        glPixelStorei(GL_UNPACK_ROW_LENGTH, stride);</span><br><span class="line">    &#125;</span><br><span class="line">    glBindTexture(GL_TEXTURE_2D, tex);</span><br><span class="line">    glTexImage2D(GL_TEXTURE_2D, <span class="number">0</span>, GL_RGBA, w, h, <span class="number">0</span>, GL_RGBA, GL_UNSIGNED_BYTE, buffer + offset);</span><br><span class="line">    <span class="keyword">if</span> (stride != w) &#123;</span><br><span class="line">        glPixelStorei(GL_UNPACK_ROW_LENGTH, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>读取到纹理后就可以对这块纹理进行滤镜操作了,操作完再写入原始图片数据中.</p>
+<h3 id="读OpenGL数据并写入"><a href="#读OpenGL数据并写入" class="headerlink" title="读OpenGL数据并写入"></a>读OpenGL数据并写入</h3><p>在java层执行完滤镜操作读取得到数据再传入native层更新是可以的,但这样效率会低一点.<br>我们直接在C层readPixel.同样需要指定宽度的对齐,也是原始图片的宽度.然后找到指针对应位置,执行glReadPixels,数据就自动更新到对应位置了.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">JNIEXPORT <span class="keyword">void</span> JNICALL</span><br><span class="line">Java_com_anddymao_block_BlockSdkUtils_readPixelsAndMerge(JNIEnv *env, jclass type,</span><br><span class="line">                                                                       jint x, jint y,</span><br><span class="line">                                                                       jint w, jint h, jint stride,</span><br><span class="line">                                                                       jint offset) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (stride != w) &#123;</span><br><span class="line">        glPixelStorei(GL_PACK_ROW_LENGTH, stride);</span><br><span class="line">    &#125;</span><br><span class="line">    byte *buffer = pixels + offset;</span><br><span class="line">    glPixelStorei(GL_PACK_ALIGNMENT, <span class="number">1</span>);</span><br><span class="line">    glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buffer);</span><br><span class="line">    <span class="keyword">if</span> (stride != w) &#123;</span><br><span class="line">        glPixelStorei(GL_PACK_ROW_LENGTH, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="解锁bitmap"><a href="#解锁bitmap" class="headerlink" title="解锁bitmap"></a>解锁bitmap</h3><p>用AndroidBitmap_unlockPixels(env, bitmap)解锁bitmap,指针就会废弃掉,bitmap就能可用了,这个bitmap就是最后的输出bitmap.</p>
+<h2 id="执行效率总结"><a href="#执行效率总结" class="headerlink" title="执行效率总结"></a>执行效率总结</h2><p>即使OpengGL能够负担大size的处理,分块处理也会比直接处理快很多,通过这种办法可以进行加速处理.从始至终只需要一个bitmap,内存的消耗也是最低的.</p>
+<h2 id="特殊的处理问题"><a href="#特殊的处理问题" class="headerlink" title="特殊的处理问题"></a>特殊的处理问题</h2><h3 id="位置相关问题"><a href="#位置相关问题" class="headerlink" title="位置相关问题"></a>位置相关问题</h3><p>如果OpenGL处理只和颜色相关,就可以用这种方案直接处理.如果和位置相关,分开后再处理片段着色器位置已改变,就处理不了了,或者自己根据位置的改变传入对应的参数,这样就是麻烦很多.<br>我们在这种情况下也做了支持.</p>
+<h3 id="周边色块相关问题"><a href="#周边色块相关问题" class="headerlink" title="周边色块相关问题"></a>周边色块相关问题</h3><p>如果片段着色器的处理和周边色块相关,比如高斯模糊,马赛克,这种可以每块读取时都往周边扩展一点,最后写入还是按照原始大小.<br>这种情况下做了支持,效果也是没问题的.</p>
+<p>如果不是强烈需要原始超大图,编辑后用一般大小的图片就可以,但系统应用的支持却是没办法,必须做支持.</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>分享了一下之前做这个需求的思路,欢迎共同探讨.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/OpenGL/" rel="tag"># OpenGL</a>
+          
+            <a href="/tags/音视频/" rel="tag"># 音视频</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/08/03/2021-08-03-一种万能hls协议解析方法/" rel="next" title="一种万能hls协议解析方法">
+                <i class="fa fa-chevron-left"></i> 一种万能hls协议解析方法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/12/10/2021-12-10- 用动态帧率进行视频合成/" rel="prev" title="用动态帧率进行视频合成">
+                用动态帧率进行视频合成 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/img/avatar.jpg" alt="AnddyMao">
+            
+              <p class="site-author-name" itemprop="name">AnddyMao</p>
+              <p class="site-description motion-element" itemprop="description">Yesterday you said tomorrow</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:andymao1991@gmail.com" target="_blank" title="Email">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Email</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.weibo.com/anddymao" target="_blank" title="新浪微博">
+                      
+                        <i class="fa fa-fw fa-globe"></i>新浪微博</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.github.com/myandy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-globe"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#处理流程"><span class="nav-number">2.1.</span> <span class="nav-text">处理流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#获取OpenGL最大处理长度"><span class="nav-number">2.1.1.</span> <span class="nav-text">获取OpenGL最大处理长度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分块"><span class="nav-number">2.1.2.</span> <span class="nav-text">分块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读取bitmap指针"><span class="nav-number">2.1.3.</span> <span class="nav-text">读取bitmap指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读取纹理"><span class="nav-number">2.1.4.</span> <span class="nav-text">读取纹理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读OpenGL数据并写入"><span class="nav-number">2.1.5.</span> <span class="nav-text">读OpenGL数据并写入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解锁bitmap"><span class="nav-number">2.1.6.</span> <span class="nav-text">解锁bitmap</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#执行效率总结"><span class="nav-number">2.2.</span> <span class="nav-text">执行效率总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特殊的处理问题"><span class="nav-number">2.3.</span> <span class="nav-text">特殊的处理问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#位置相关问题"><span class="nav-number">2.3.1.</span> <span class="nav-text">位置相关问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#周边色块相关问题"><span class="nav-number">2.3.2.</span> <span class="nav-text">周边色块相关问题</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AnddyMao</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
