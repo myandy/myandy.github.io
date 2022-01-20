@@ -140,7 +140,7 @@ body{background:#fff; overflow: scroll; font-size: 12px;}
 #FeatureAbout .members .member .portrait{width: 100px; height: 100px; border-radius: 60px; margin-bottom: 10px; background: #ccc;}
 #FeatureAbout .members .member .bin{background:url(http://anddymao.com/img/icon_shi.png); background-size: contain;}
 #FeatureAbout .members .member .ghz{background:url(http://anddymao.com/img/icon_ci.png); background-size: contain;}
-#FeatureAbout .members .member .mengfei{background:url(http://cdn.xcz.im/img/App_CZJ.png); background-size: contain;}
+#FeatureAbout .members .member .support{background:url(http://localhost:4000/img/support.webp); background-size: contain;}
 #FeatureAbout .members .member .poem{background:url(http://cdn.xcz.im/img/xinshi.png); background-size: contain;}
 #FeatureAbout .members .member .oracle{background:url(http://cdn.xcz.im/img/jiaguwen.png); background-size: contain;}
 #FeatureAbout .members .member .name{color: #333; font-size: 12px; font-weight: 300; text-align: center;}
