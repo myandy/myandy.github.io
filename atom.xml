@@ -412,9 +412,9 @@
     
       <category term="音视频" scheme="http://anddymao.com/tags/%E9%9F%B3%E8%A7%86%E9%A2%91/"/>
     
-      <category term="C" scheme="http://anddymao.com/tags/C/"/>
-    
       <category term="OpenCV" scheme="http://anddymao.com/tags/OpenCV/"/>
+    
+      <category term="C" scheme="http://anddymao.com/tags/C/"/>
     
   </entry>
   
